@@ -290,6 +290,8 @@ class MeTruyenChuParser(BaseSiteParser):
         return results
 
     def get_chapter_list_url(self, story_url: str, page: int = 1) -> str:
+        # MeTruyenChu uses JavaScript pagination, not URL-based
+        # Return the base URL; pagination will be handled via JavaScript execution
         base = story_url.rstrip("/")
         return base
 
@@ -377,8 +379,29 @@ class MeTruyenChuParser(BaseSiteParser):
             text = link.get_text().strip()
             if text.isdigit():
                 max_page = max(max_page, int(text))
+            # Also check onclick attribute for page number
+            onclick = link.get("onclick", "")
+            if "page(" in onclick:
+                # Extract page number from onclick="page(112629,18)"
+                match = re.search(r"page\(\d+,(\d+)\)", onclick)
+                if match:
+                    max_page = max(max_page, int(match.group(1)))
         
         return max_page
+    
+    def extract_story_id(self, html: str) -> str | None:
+        """Extract story ID from MeTruyenChu page for pagination."""
+        soup = BeautifulSoup(html, "lxml")
+        pagination = soup.select_one(".pagination, .paging")
+        if pagination:
+            # Look for onclick="page(STORY_ID, page_num)"
+            link = pagination.select_one("a[onclick*='page(']")
+            if link:
+                onclick = link.get("onclick", "")
+                match = re.search(r"page\((\d+),", onclick)
+                if match:
+                    return match.group(1)
+        return None
 
 
 # ═══════════════════════════════════════════════════════════

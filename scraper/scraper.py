@@ -220,32 +220,77 @@ async def run_scraper():
             max_pages = parser.parse_max_pages(first_page_html)
             print(f"  Found {len(all_chapters)} chapters on page 1 (Total pages: {max_pages})")
 
-            # If we need more chapters and there are more pages, fetch them
-            # We only fetch up to the page that likely contains CHAPTER_END
-            # Assuming ~50 chapters per page as a heuristic, but we'll be safe
+            # Check if this is MeTruyenChu (JavaScript pagination)
+            is_metruyenchu = parser.name == "metruyenchu"
+            story_id = None
+            
+            if is_metruyenchu and hasattr(parser, 'extract_story_id'):
+                story_id = parser.extract_story_id(first_page_html)
+                print(f"  MeTruyenChu story ID: {story_id}")
+
+            # Fetch remaining pages
+            # For CHAPTER_END = 0 or very large, fetch all pages
+            # Otherwise, fetch until we have enough chapters
             current_max_ch = max([ch["chapter_number"] for ch in all_chapters]) if all_chapters else 0
+            should_fetch_all = CHAPTER_END == 0 or CHAPTER_END > 10000
             
             p = 2
-            while p <= max_pages and current_max_ch < CHAPTER_END:
+            while p <= max_pages:
+                # Stop early if we have enough chapters (unless fetching all)
+                if not should_fetch_all and current_max_ch >= CHAPTER_END:
+                    break
+                
                 print(f"  📑 Fetching chapter list page {p}/{max_pages}...")
                 await random_delay()
-                p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=p)
-                p_html = await fetch_page(page, p_url)
+                
+                if is_metruyenchu and story_id:
+                    # Use JavaScript to load next page
+                    try:
+                        await page.evaluate(f"page({story_id}, {p})")
+                        await page.wait_for_timeout(1000)  # Wait for content to load
+                        p_html = await page.content()
+                    except Exception as e:
+                        print(f"  ⚠️ Failed to load page {p} via JavaScript: {e}")
+                        break
+                else:
+                    # URL-based pagination (TruyenFull)
+                    p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=p)
+                    p_html = await fetch_page(page, p_url)
+                
                 p_chapters = parser.parse_chapter_list(p_html)
                 
                 if not p_chapters:
+                    print(f"  ⚠️ No chapters found on page {p}, stopping")
+                    break
+                
+                # Deduplicate chapters by chapter_number
+                existing_nums = {ch["chapter_number"] for ch in all_chapters}
+                new_chapters = [ch for ch in p_chapters if ch["chapter_number"] not in existing_nums]
+                
+                if not new_chapters:
+                    print(f"  ⚠️ No new chapters on page {p}, stopping")
                     break
                     
-                all_chapters.extend(p_chapters)
+                all_chapters.extend(new_chapters)
                 current_max_ch = max([ch["chapter_number"] for ch in all_chapters])
+                print(f"  Added {len(new_chapters)} new chapters (total: {len(all_chapters)})")
                 p += 1
 
             # Filter to requested range
-            target_chapters = [
-                ch for ch in all_chapters
-                if CHAPTER_START <= ch["chapter_number"] <= CHAPTER_END
-            ]
-            print(f"  Targeting {len(target_chapters)} chapters ({CHAPTER_START}-{CHAPTER_END})")
+            if CHAPTER_END == 0 or CHAPTER_END > 10000:
+                # Scrape all chapters from CHAPTER_START onwards
+                target_chapters = [
+                    ch for ch in all_chapters
+                    if ch["chapter_number"] >= CHAPTER_START
+                ]
+                print(f"  Targeting {len(target_chapters)} chapters (from {CHAPTER_START} to end)")
+            else:
+                # Scrape specific range
+                target_chapters = [
+                    ch for ch in all_chapters
+                    if CHAPTER_START <= ch["chapter_number"] <= CHAPTER_END
+                ]
+                print(f"  Targeting {len(target_chapters)} chapters ({CHAPTER_START}-{CHAPTER_END})")
 
             await random_delay()
 

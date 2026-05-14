@@ -15,6 +15,10 @@ Usage:
 import asyncio
 import json
 import sys
+import io
+
+# Fix Windows console encoding
+sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 from playwright.async_api import async_playwright
 from playwright_stealth import stealth_async
@@ -29,14 +33,14 @@ async def test_search(query: str):
     """Search for a story across all enabled sources."""
     parsers = get_all_parsers()
     print(f"\n{'='*60}")
-    print(f"🔎 SEARCH TEST: \"{query}\"")
+    print(f"SEARCH TEST: \"{query}\"")
     print(f"   Searching {len(parsers)} sources...")
     print(f"{'='*60}\n")
 
     async with async_playwright() as p:
         for parser in parsers:
             search_url = parser.get_search_url(query)
-            print(f"🌐 {parser.config.display_name}")
+            print(f"[{parser.config.display_name}]")
             print(f"   URL: {search_url}")
 
             browser = await p.chromium.launch(headless=True, args=["--no-sandbox"])
@@ -55,13 +59,13 @@ async def test_search(query: str):
                 if response and response.status == 200:
                     html = await page.content()
                     results = parser.parse_search_results(html)
-                    print(f"   ✅ Found {len(results)} results\n")
+                    print(f"   [OK] Found {len(results)} results\n")
 
                     if not results:
                         filename = f"{parser.name}_debug.html"
                         with open(filename, "w", encoding="utf-8") as f:
                             f.write(html)
-                        print(f"   💾 Saved raw HTML to {filename} for inspection\n")
+                        print(f"   [SAVED] Raw HTML to {filename} for inspection\n")
 
                     for i, r in enumerate(results[:5]):  # Show top 5
                         print(f"   [{i+1}] {r['title']}")
@@ -69,10 +73,10 @@ async def test_search(query: str):
                         print(f"       URL: {r['source_url']}")
                         print()
                 else:
-                    print(f"   ❌ Failed (HTTP {response.status if response else 'None'})\n")
+                    print(f"   [FAIL] HTTP {response.status if response else 'None'}\n")
 
             except Exception as e:
-                print(f"   ❌ Error: {e}\n")
+                print(f"   [ERROR] {e}\n")
             finally:
                 await browser.close()
 
@@ -198,7 +202,7 @@ def main():
         print("Usage:")
         print('  python test_local.py search "Đấu La Đại Lục"')
         print('  python test_local.py scrape truyenfull "https://truyenfull.vision/dau-la-dai-luc/"')
-        print('  python test_local.py scrape metruyenchu "https://metruyenchu.com.vn/truyen/dau-la-dai-luc"')
+        print('  python test_local.py scrape metruyenchu "https://metruyenchu.com.vn/dau-la-dai-luc"')
         sys.exit(1)
 
     mode = sys.argv[1]
@@ -222,3 +226,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
