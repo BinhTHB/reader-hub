@@ -2,8 +2,8 @@ name: Story Scraper
 
 on:
   # Scheduled: scrape trending stories daily at 2 AM UTC
-  schedule:
-    - cron: '0 2 * * *'
+  # schedule:
+  #   - cron: '0 2 * * *'
 
   # On-demand: triggered by Supabase Edge Function
   repository_dispatch:
