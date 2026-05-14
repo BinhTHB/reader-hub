@@ -1,0 +1,110 @@
+name: Story Scraper
+
+on:
+  # Scheduled: scrape trending stories daily at 2 AM UTC
+  schedule:
+    - cron: '0 2 * * *'
+
+  # On-demand: triggered by Supabase Edge Function
+  repository_dispatch:
+    types: [scrape-story, search-sources]
+
+  # Manual trigger for testing
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: 'Mode: scrape or search'
+        required: true
+        default: 'scrape'
+        type: choice
+        options:
+          - scrape
+          - search
+      source_url:
+        description: 'Story source URL (for scrape mode)'
+        required: false
+        type: string
+      search_query:
+        description: 'Search query (for search mode)'
+        required: false
+        type: string
+      chapter_start:
+        description: 'Start chapter number'
+        required: false
+        default: '1'
+        type: string
+      chapter_end:
+        description: 'End chapter number'
+        required: false
+        default: '50'
+        type: string
+
+jobs:
+  scrape:
+    if: >
+      github.event_name == 'schedule' ||
+      github.event.action == 'scrape-story' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'scrape')
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: scraper/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -r scraper/requirements.txt
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run scraper
+        working-directory: scraper
+        run: python scraper.py
+        env:
+          STORY_SOURCE_URL: ${{ github.event.client_payload.source_url || github.event.inputs.source_url || '' }}
+          CHAPTER_START: ${{ github.event.client_payload.chapter_start || github.event.inputs.chapter_start || '1' }}
+          CHAPTER_END: ${{ github.event.client_payload.chapter_end || github.event.inputs.chapter_end || '50' }}
+          JOB_ID: ${{ github.event.client_payload.job_id || '' }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_BUCKET_NAME: ${{ secrets.R2_BUCKET_NAME }}
+          R2_PUBLIC_DOMAIN: ${{ secrets.R2_PUBLIC_DOMAIN }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+          PROXY_URL: ${{ secrets.PROXY_URL }}
+          SCRAPE_MIN_DELAY: '2.0'
+          SCRAPE_MAX_DELAY: '5.0'
+          USE_FREE_PROXY: 'true'
+
+  search:
+    if: >
+      github.event.action == 'search-sources' ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'search')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: scraper/requirements.txt
+
+      - name: Install dependencies
+        run: |
+          pip install -r scraper/requirements.txt
+          playwright install chromium
+          playwright install-deps chromium
+
+      - name: Run multi-source search
+        working-directory: scraper
+        run: python search_sources.py "${{ github.event.client_payload.query || github.event.inputs.search_query }}"
+        env:
+          USE_FREE_PROXY: 'true'

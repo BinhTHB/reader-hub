@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+*.apk
+*.aab
+*.ipa
+
+# Expo
+mobile/.expo/
+mobile/android/
+mobile/ios/
+
+# Supabase
+supabase/.temp/
+
+# Scraper Debug Artifacts
+*_debug.html
+test_output.json
+
+# Tooling
+.antigravity/
