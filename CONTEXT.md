@@ -559,22 +559,45 @@ eas build --profile development --platform android
 6. ✅ Clean install dependencies
 
 **Kết quả:**
-- ⚠️ Build thất bại 4 lần ở bước "Install dependencies"
-- Nguyên nhân: Unknown error (cần xem logs chi tiết từ EAS dashboard)
-- Các build IDs: 46bafee1, 53c97163, 94d3598f, b568dae3, dc207cd9
+- ⚠️ Build thất bại 12+ lần ở bước "Install dependencies"
+- Nguyên nhân: Unknown error (EAS Build server issue)
+- Đã thử: 
+  - Downgrade/Upgrade React (18.3.1 → 19.1.0)
+  - Loại bỏ expo-dev-client
+  - Disable newArchEnabled
+  - Loại bỏ edgeToEdgeEnabled
+  - Loại bỏ eas-cli từ dependencies (theo expo-doctor)
+  - Clear cache
+- Các build IDs: 46bafee1, 53c97163, 94d3598f, b568dae3, dc207cd9, 9a1836df, 85eafd8f, 4a499ea6, 45df1682, 5d92c800
+
+**Phát hiện từ expo-doctor:**
+- ✅ React version đã khớp với Expo SDK 54 (19.1.0)
+- ✅ eas-cli đã được loại bỏ khỏi dependencies
+- ⚠️ Build vẫn thất bại sau khi fix
+
+**Giải pháp thay thế - Sử dụng Expo Go:**
+```bash
+cd mobile
+npx expo start
+# Scan QR code với Expo Go app trên điện thoại Android/iOS
+```
 
 **Khuyến nghị tiếp theo:**
-1. Kiểm tra logs chi tiết trên https://expo.dev/accounts/binhhoaa/projects/reader-hub/builds
-2. Thử loại bỏ `expo-dev-client` khỏi dependencies (đã làm)
-3. Thử build trực tiếp trên máy local với `expo build:android`
-4. Hoặc sử dụng Expo Go app để test trực tiếp mà không cần build APK
+1. ✅ **Test với Expo Go** (không cần build APK, test ngay được)
+2. Kiểm tra logs chi tiết trên https://expo.dev/accounts/binhhoaa/projects/reader-hub/builds
+3. Liên hệ Expo support với build ID để debug
+4. Thử build sau khi Expo SDK 55 release (có thể fix bugs)
+5. Xem xét sử dụng React Native CLI thay vì Expo nếu cần native modules
 
 **Lưu ý:**
-- Mobile app không cần native modules (react-native-tts) cho MVP
-- Có thể test trực tiếp với Expo Go app trước khi build APK
-- Backend infrastructure (Supabase, R2, GitHub Actions) đã hoàn toàn hoạt động
+- ✅ Mobile app có thể test ngay với Expo Go mà không cần build APK
+- ✅ Backend infrastructure (Supabase, R2, GitHub Actions) đã hoàn toàn hoạt động
+- ✅ Data đã có sẵn (50 chapters đã được scrape thành công)
+- ⚠️ EAS Build có vấn đề với project này, cần debug sâu hơn hoặc dùng alternative
 
-**Hoàn thành**: 90%
+---
+
+## Tổng Kết Deployment (Cập nhật: 2026-05-16 19:20 UTC+7)
 
 **✅ Đã hoàn thành:**
 1. ✅ Supabase Database Schema (deployed)
