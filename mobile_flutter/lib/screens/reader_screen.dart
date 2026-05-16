@@ -27,18 +27,25 @@ class _ReaderScreenState extends State<ReaderScreen> {
   @override
   void initState() {
     super.initState();
+    print('ReaderScreen initState called for chapter: ${widget.chapter['title']}');
     _loadContent();
     _initTts();
   }
 
   Future<void> _loadContent() async {
+    print('ReaderScreen _loadContent started');
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final content = await R2Service.fetchChapterContent(widget.chapter['r2_url']);
+      final String? r2Url = widget.chapter['text_r2_url'];
+      if (r2Url == null || r2Url.isEmpty) {
+        throw Exception('Lỗi: Chương này chưa có nội dung (text_r2_url is null)');
+      }
+      
+      final content = await R2Service.fetchChapterContent(r2Url);
       setState(() {
         _content = content;
         _isLoading = false;
@@ -158,24 +165,31 @@ class _ReaderScreenState extends State<ReaderScreen> {
                     ],
                   ),
                 )
-              : Column(
-                  children: [
-                    Expanded(
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.all(16),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              _content!.title,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-                            ..._content!.paragraphs.asMap().entries.map((entry) {
+              : _content == null
+                  ? const Center(
+                      child: Text(
+                        'Không thể tải nội dung chương',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : Column(
+                      children: [
+                        Expanded(
+                          child: SingleChildScrollView(
+                            padding: const EdgeInsets.all(16),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _content?.title ?? 'Không có tiêu đề',
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 24,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                ...(_content?.paragraphs ?? []).asMap().entries.map((entry) {
                               final index = entry.key;
                               final paragraph = entry.value;
                               final isCurrentParagraph = index == _currentParagraphIndex && _isPlaying;
