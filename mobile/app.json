@@ -22,7 +22,6 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F0F1A"
       },
-      "edgeToEdgeEnabled": true,
       "package": "com.readerhub.app"
     },
     "web": {

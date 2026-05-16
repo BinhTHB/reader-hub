@@ -13,11 +13,10 @@
     "@supabase/supabase-js": "^2.105.4",
     "expo": "~54.0.33",
     "expo-constants": "~18.0.13",
-    "expo-dev-client": "~6.0.21",
     "expo-linking": "~8.0.12",
     "expo-router": "~6.0.23",
     "expo-status-bar": "~3.0.9",
-    "react": "18.3.1",
+    "react": "19.1.0",
     "react-native": "0.81.5",
     "react-native-gesture-handler": "~2.28.0",
     "react-native-safe-area-context": "~5.6.0",
@@ -25,7 +24,6 @@
   },
   "devDependencies": {
     "@types/react": "~19.1.0",
-    "eas-cli": "^18.13.0",
     "typescript": "~5.9.2"
   },
   "private": true
