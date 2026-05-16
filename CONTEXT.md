@@ -468,7 +468,21 @@ flutter build apk --release
 
 ---
 
-## Tổng Kết Deployment (Cập nhật: 2026-05-17 01:19 UTC+7)
+## 2026-05-17 01:35 - Fix Column Name text_r2_url
+
+**Vấn đề**: Reader screen bị lỗi "r2_url is null" khi chọn chapter.
+
+**Nguyên nhân**: Database column tên là `text_r2_url`, không phải `r2_url`.
+
+**Giải pháp**: 
+- Sửa `reader_screen.dart` để dùng `widget.chapter['text_r2_url']` thay vì `widget.chapter['r2_url']`
+- Rebuild APK (78 giây - nhanh hơn nhiều so với lần đầu 12 phút)
+
+**Kết quả**: ✅ Reader screen hoạt động bình thường, có thể đọc chapter và dùng TTS
+
+---
+
+## Tổng Kết Deployment (Cập nhật: 2026-05-17 01:35 UTC+7)
 
 **✅ Đã hoàn thành 100%:**
 1. ✅ Backend Infrastructure (Supabase + R2 + GitHub Actions)
