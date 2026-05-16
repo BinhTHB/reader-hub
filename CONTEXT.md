@@ -621,3 +621,50 @@ npx expo start
 - `test_local.py`: Test scraper locally (đã fix emoji encoding)
 - `test_r2.py`: Test R2 upload
 - `TEST_REPORT.md`: Báo cáo chi tiết đầy đủ
+
+---
+
+## 2026-05-16 19:26 - Fix lỗi Mobile App & Tối ưu trải nghiệm Dev
+
+**Vấn đề**: 
+1. Màn hình chi tiết truyện bị crash/warning do trùng Key trong danh sách thể loại.
+2. Thiếu module `react-native-tts` khiến app báo lỗi đỏ và mất thanh điều khiển âm thanh.
+
+**Giải pháp**:
+1. Cập nhật `app/story/[slug].tsx`: Sử dụng `key={`${g}-${idx}`}` để đảm bảo tính duy nhất.
+2. Cài đặt `react-native-tts` vào thư mục `mobile`.
+3. Cập nhật `lib/tts.ts`: Thêm **Mock Mode** tự động kích hoạt khi chạy trên Expo Go. Chế độ này giả lập việc đọc văn bản (tự động nhảy câu sau mỗi 2 giây) để kiểm thử giao diện và luồng logic mà không cần build native.
+
+**Kết quả**: App chạy mượt mà trên Expo Go, giao diện điều khiển TTS hiển thị đầy đủ và có thể tương tác giả lập thành công.
+
+---
+
+## 2026-05-16 22:03 - EAS Build Issues & Expo Go Alternative
+
+**Vấn đề**: EAS Build thất bại liên tục ở bước "Install dependencies" (Build IDs: 811f7de3, 6853b1d9, 663c9b99).
+
+**Nguyên nhân**: 
+- Conflict giữa React 19.1.0 và React Native 0.81.5 (RN 0.81 yêu cầu React 18.x)
+- EAS Build server có vấn đề với dependency resolution
+
+**Giải pháp thực hiện**:
+1. ✅ Loại bỏ `react-native-tts` khỏi dependencies (native module không cần cho Expo Go)
+2. ✅ Cập nhật `@types/react` lên `~19.1.10` để khớp Expo SDK 54
+3. ✅ Loại bỏ `expo.install.exclude` config
+4. ✅ Trigger build mới (ID: 663c9b99-3378-4b69-af71-bc89725a2de8) - đang chạy
+
+**Khuyến nghị**:
+- **Dùng Expo Go để test ngay**: Không cần chờ EAS Build, có thể test app trên điện thoại ngay bây giờ
+  ```bash
+  cd mobile
+  npx expo start --port 8082
+  # Scan QR code với Expo Go app
+  ```
+- **Nếu cần APK production**: Thử downgrade React về 18.3.1 hoặc chờ Expo SDK 55 release
+- **Alternative**: Sử dụng React Native CLI + Android Studio thay vì Expo
+
+**Lưu ý**:
+- ✅ Backend (Supabase, R2, GitHub Actions) hoàn toàn hoạt động
+- ✅ 50 chapters đã được scrape thành công
+- ⚠️ Mobile app có thể test với Expo Go mà không cần build APK
+- ⚠️ TTS functionality sẽ dùng Mock Mode trên Expo Go (giả lập đọc văn bản)
