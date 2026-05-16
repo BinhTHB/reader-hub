@@ -10,11 +10,21 @@ Flow:
 6. On proxy failure: rotate to next proxy and retry
 """
 
-import asyncio
 import os
-import random
 import sys
+import asyncio
+import random
+import time
+import argparse
+import io
 import traceback
+from datetime import datetime
+from dotenv import load_dotenv
+
+# Fix Windows console encoding for emojis
+if sys.platform == "win32":
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
+    sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
 from playwright.async_api import async_playwright, Browser, BrowserContext, Page
 from playwright_stealth import stealth_async
@@ -30,14 +40,28 @@ from supabase_client import (
 )
 
 
-# ─── Config ───────────────────────────────────────────────
+# ─── Config & Arguments ──────────────────────────────────────
 
-STORY_SOURCE_URL = os.environ.get("STORY_SOURCE_URL", "")
-CHAPTER_START = int(os.environ.get("CHAPTER_START", "1"))
-CHAPTER_END = int(os.environ.get("CHAPTER_END", "10"))
-PROXY_URL = os.environ.get("PROXY_URL", "")  # Optional paid proxy override
-JOB_ID = os.environ.get("JOB_ID", "")
-USE_FREE_PROXY = os.environ.get("USE_FREE_PROXY", "true").lower() == "true"
+def parse_args():
+    parser = argparse.ArgumentParser(description="Reader Hub Scraper")
+    parser.add_argument("--url", type=str, help="Story source URL to scrape")
+    parser.add_argument("--limit", type=int, default=0, help="Limit number of chapters to scrape (0 for all)")
+    parser.add_argument("--start", type=int, default=1, help="Chapter number to start from")
+    parser.add_argument("--job-id", type=str, help="Scrape job ID for tracking")
+    return parser.parse_args()
+
+# Load .env from root if it exists
+load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+
+args = parse_args()
+
+# Priority: Command line args > Environment variables
+STORY_SOURCE_URL = args.url or os.environ.get("STORY_SOURCE_URL", "")
+CHAPTER_START = args.start or int(os.environ.get("CHAPTER_START", "1"))
+CHAPTER_LIMIT = args.limit or int(os.environ.get("CHAPTER_LIMIT", "0"))
+PROXY_URL = os.environ.get("PROXY_URL", "")
+JOB_ID = args.job_id or os.environ.get("JOB_ID", "")
+USE_FREE_PROXY = os.environ.get("USE_FREE_PROXY", "false").lower() == "true" # Default to false for local stability
 
 # Rate limiting
 MIN_DELAY = float(os.environ.get("SCRAPE_MIN_DELAY", "2.0"))
@@ -76,8 +100,16 @@ async def create_browser_context(playwright, proxy: ProxyInfo | None = None):
     browser = await playwright.chromium.launch(**launch_args)
     context = await browser.new_context(
         viewport={"width": 1366, "height": 768},
-        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
         locale="vi-VN",
+        extra_http_headers={
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+            "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
+            "Cache-Control": "max-age=0",
+            "Sec-Ch-Ua": '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"',
+            "Sec-Ch-Ua-Mobile": "?0",
+            "Sec-Ch-Ua-Platform": '"Windows"',
+        }
     )
     page = await context.new_page()
     await stealth_async(page)
@@ -109,25 +141,43 @@ async def rotate_proxy(playwright, browser: Browser) -> tuple[Browser, BrowserCo
     return await create_browser_context(playwright, current_proxy)
 
 
-async def fetch_page(page: Page, url: str, retries: int = 3) -> str:
+async def fetch_page(page: Page, url: str, retries: int = 3, wait_for_selector: str | None = None) -> str:
     """Navigate to URL and return HTML, with retries."""
+    clean_url = url.split('#')[0]
     for attempt in range(retries):
         try:
-            response = await page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            # Switch back to 'domcontentloaded' for better stability on some sites
+            # and add a manual wait if needed
+            response = await page.goto(clean_url, wait_until="domcontentloaded", timeout=45000)
+            
             if response and response.status == 200:
+                # Give a small extra time for JS to render if needed
+                await asyncio.sleep(random.uniform(2.0, 3.0))
+                if wait_for_selector:
+                    try:
+                        await page.wait_for_selector(wait_for_selector, timeout=10000)
+                    except Exception:
+                        print(f"  ⚠️ Selector {wait_for_selector} not found, but continuing...")
+                
+                # Small extra sleep to let potential obfuscation scripts run
+                await asyncio.sleep(random.uniform(1.0, 2.0))
                 return await page.content()
+            
             elif response and response.status == 403:
                 print(f"  ⚠️ 403 Forbidden on attempt {attempt + 1}, retrying...")
                 await random_delay()
+            elif response and response.status == 500:
+                print(f"  ⚠️ 500 Internal Server Error on attempt {attempt + 1}, possible bot detection. Retrying...")
+                await asyncio.sleep(10) # Longer delay on 500
             else:
                 print(f"  ⚠️ HTTP {response.status if response else 'None'} on attempt {attempt + 1}")
                 await random_delay()
         except Exception as e:
             print(f"  ❌ Error on attempt {attempt + 1}: {e}")
             if attempt < retries - 1:
-                await asyncio.sleep(5)
+                await asyncio.sleep(random.uniform(5, 10))
 
-    raise RuntimeError(f"Failed to fetch {url} after {retries} attempts")
+    raise RuntimeError(f"Failed to fetch {clean_url} after {retries} attempts")
 
 
 async def download_image(page: Page, img_url: str) -> bytes | None:
@@ -152,7 +202,7 @@ async def run_scraper():
     parser = detect_parser(STORY_SOURCE_URL)
     print(f"📖 Using parser: {parser.name}")
     print(f"🔗 Source: {STORY_SOURCE_URL}")
-    print(f"📄 Chapters: {CHAPTER_START} → {CHAPTER_END}")
+    print(f"📄 Chapters: {CHAPTER_START} (Limit: {CHAPTER_LIMIT if CHAPTER_LIMIT > 0 else 'All'})")
 
     # Update job status
     if JOB_ID:
@@ -222,31 +272,30 @@ async def run_scraper():
 
             # Check if this is MeTruyenChu (JavaScript pagination)
             is_metruyenchu = parser.name == "metruyenchu"
-            story_id = None
+            site_internal_id = None
             
             if is_metruyenchu and hasattr(parser, 'extract_story_id'):
-                story_id = parser.extract_story_id(first_page_html)
-                print(f"  MeTruyenChu story ID: {story_id}")
+                site_internal_id = parser.extract_story_id(first_page_html)
+                print(f"  MeTruyenChu internal story ID: {site_internal_id}")
 
             # Fetch remaining pages
-            # For CHAPTER_END = 0 or very large, fetch all pages
-            # Otherwise, fetch until we have enough chapters
+            # Fetch all pages only if limit is 0
             current_max_ch = max([ch["chapter_number"] for ch in all_chapters]) if all_chapters else 0
-            should_fetch_all = CHAPTER_END == 0 or CHAPTER_END > 10000
+            should_fetch_all = CHAPTER_LIMIT == 0
             
             p = 2
             while p <= max_pages:
                 # Stop early if we have enough chapters (unless fetching all)
-                if not should_fetch_all and current_max_ch >= CHAPTER_END:
+                if not should_fetch_all and current_max_ch >= CHAPTER_START + CHAPTER_LIMIT:
                     break
                 
                 print(f"  📑 Fetching chapter list page {p}/{max_pages}...")
                 await random_delay()
                 
-                if is_metruyenchu and story_id:
+                if is_metruyenchu and site_internal_id:
                     # Use JavaScript to load next page
                     try:
-                        await page.evaluate(f"page({story_id}, {p})")
+                        await page.evaluate(f"page({site_internal_id}, {p})")
                         await page.wait_for_timeout(1000)  # Wait for content to load
                         p_html = await page.content()
                     except Exception as e:
@@ -277,7 +326,8 @@ async def run_scraper():
                 p += 1
 
             # Filter to requested range
-            if CHAPTER_END == 0 or CHAPTER_END > 10000:
+            # Filter to requested range
+            if CHAPTER_LIMIT == 0:
                 # Scrape all chapters from CHAPTER_START onwards
                 target_chapters = [
                     ch for ch in all_chapters
@@ -285,12 +335,12 @@ async def run_scraper():
                 ]
                 print(f"  Targeting {len(target_chapters)} chapters (from {CHAPTER_START} to end)")
             else:
-                # Scrape specific range
+                # Scrape limited number of chapters
                 target_chapters = [
                     ch for ch in all_chapters
-                    if CHAPTER_START <= ch["chapter_number"] <= CHAPTER_END
+                    if CHAPTER_START <= ch["chapter_number"] < CHAPTER_START + CHAPTER_LIMIT
                 ]
-                print(f"  Targeting {len(target_chapters)} chapters ({CHAPTER_START}-{CHAPTER_END})")
+                print(f"  Targeting {len(target_chapters)} chapters (starting from {CHAPTER_START}, limit {CHAPTER_LIMIT})")
 
             await random_delay()
 
@@ -307,9 +357,12 @@ async def run_scraper():
 
                 # Fetch chapter page with proxy rotation on failure
                 ch_html = None
+                # Define selector to wait for based on site
+                content_selector = ".truyen, .chapter-c, #chapter-c, .content, #article"
+                
                 for rotation in range(max_proxy_rotations):
                     try:
-                        ch_html = await fetch_page(page, ch_info["source_url"])
+                        ch_html = await fetch_page(page, ch_info["source_url"], wait_for_selector=content_selector)
                         break
                     except RuntimeError:
                         if proxy_pool and proxy_pool.size > 0:
