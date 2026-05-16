@@ -4,6 +4,14 @@ Hệ thống đọc truyện audio theo mô hình **Server-side Scraping (GitHub
 
 ---
 
+## 🎯 Core Principles (Tiêu chí dự án)
+
+1. **Miễn phí 100%**: Ưu tiên sử dụng các dịch vụ Cloud có gói Free Tier tốt (Supabase, Cloudflare R2, GitHub Actions). Nếu phải dùng dịch vụ giới hạn, Rate Limit phải đủ cao để phục vụ nhu cầu cá nhân/nhóm nhỏ.
+2. **Triển khai Cloud hoàn toàn**: Toàn bộ hệ thống (Scraper, Database, Storage, Edge Functions) phải được vận hành trên Cloud. Không phụ thuộc vào máy tính cá nhân (trừ quá trình phát triển code ban đầu).
+3. **Tính bền vững**: Các domain nguồn truyện dễ thay đổi, hệ thống phải được thiết kế để cập nhật cấu hình nhanh chóng mà không cần sửa đổi logic lõi.
+
+---
+
 ## 1. Architecture (Kiến trúc)
 
 ```mermaid
@@ -374,6 +382,191 @@ python test_r2.py
 - R2 storage hoạt động tốt, không có vấn đề
 - Supabase project healthy, chỉ cần deploy schema
 - Mobile app structure tốt, chỉ cần build và test
+
+---
+
+## 2026-05-16 - Ổn định hóa luồng Scraping & Fix lỗi môi trường Windows
+
+**Vấn đề**: Script scraper gặp nhiều lỗi khi chạy trên Windows và bị chặn bởi Cloudflare.
+
+**Giải pháp**:
+1. **Windows Encoding Fix**: Ép `stdout` và `stderr` dùng UTF-8 để in emoji và tiếng Việt không bị crash.
+2. **Database Sync Fix**: Sửa lỗi ghi đè biến `story_id` khiến việc lưu chương vào Supabase bị lỗi null constraint.
+3. **Optimized Fetching**: 
+   - Chuyển `networkidle` sang `domcontentloaded` kết hợp `sleep` ngẫu nhiên để tăng tốc và ổn định.
+   - Vô hiệu hóa `PROXY_URL` mặc định trong `.env` để dùng IP sạch từ local.
+4. **TruyenFull Parser Update**: Loại bỏ `#list-chapter` fragment khỏi URL để Playwright tải trang ổn định hơn.
+5. **Modern Browser Fingerprint**: Cập nhật User-Agent lên Chrome 131 và thêm các headers thực tế.
+
+**Kết quả Test End-to-End**:
+- **TruyenFull**: ✅ Thành công 100%. Đã cào được Story info, upload ảnh bìa lên R2, cào chương và đồng bộ vào Supabase.
+- **MeTruyenChu**: ⚠️ Gặp lỗi HTTP 521 (Cloudflare/Host error). Đề xuất dùng TruyenFull làm nguồn chính hiện tại.
+
+**Lệnh chạy mẫu**:
+```powershell
+python scraper/scraper.py --url "https://truyenfull.vision/dau-la-dai-luc-230420" --start 1 --limit 10
+```
+
+---
+
+## 2026-05-16 - Test GitHub Actions Workflow & Cấu hình Secrets
+
+**Vấn đề**: Cần verify GitHub Actions workflow hoạt động đúng với tất cả secrets.
+
+**Giải pháp**:
+1. **Thêm Repository Secrets**: Sử dụng `gh secret set` để thêm 7 secrets vào GitHub:
+   - `CF_ACCOUNT_ID`
+   - `R2_ACCESS_KEY_ID`
+   - `R2_SECRET_ACCESS_KEY`
+   - `R2_BUCKET_NAME`
+   - `R2_PUBLIC_DOMAIN`
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_KEY`
+
+2. **Test Workflow**: Trigger workflow với URL story thực tế:
+   ```bash
+   gh workflow run "Story Scraper" -f mode="scrape" -f source_url="https://truyenfull.vision/dau-la-dai-luc-230420/" -f chapter_start="1"
+   ```
+
+**Kết quả Test**:
+- ✅ Secrets được cấu hình thành công (verified via `gh secret list`)
+- ✅ Workflow trigger thành công
+- ✅ Dependencies cài đặt thành công (Playwright, Chromium, fonts)
+- ✅ Story info scrape thành công (title, author, cover upload)
+- ❌ Chapter list fetch thất bại: `RuntimeError: Failed to fetch https://truyenfull.vision/dau-la-dai-luc-230420/#list-chapter after 3 attempts`
+
+**Root Cause**: 
+- Playwright không thể load chapter list page qua free proxy
+- HTTP status trả về `None` (connection timeout hoặc proxy error)
+- Free proxy pool có 7 working proxies nhưng vẫn không đủ để bypass Cloudflare
+
+**Lưu ý**:
+- Parser đã loại bỏ fragment `#list-chapter` đúng (dòng 145 trong parsers.py)
+- Vấn đề nằm ở layer fetch_page() khi dùng free proxy
+- Cần optimize proxy rotation hoặc thêm retry logic với exponential backoff
+
+---
+
+## 2026-05-16 - GitHub Actions Scraper Thành Công & Mobile App Setup
+
+**Vấn đề**: Cần verify GitHub Actions có thể scrape toàn bộ truyện và setup mobile app.
+
+**Giải pháp**:
+
+### 1. Fix URL Fragment Issue
+- Thêm logic loại bỏ fragment (`#list-chapter`) trong `fetch_page()` trước khi gọi `page.goto()`
+- URL được clean: `url.split('#')[0]` trước khi navigate
+
+### 2. Disable Free Proxy trong GitHub Actions
+- Free proxy không đủ tin cậy để bypass Cloudflare trên GitHub Actions
+- Set `USE_FREE_PROXY: 'false'` trong workflow
+- Sử dụng IP trực tiếp từ GitHub Actions runner
+
+### 3. Test GitHub Actions Workflow
+**Kết quả**: ✅ **Thành công hoàn toàn!**
+
+```bash
+gh workflow run "Story Scraper" -f mode="scrape" -f source_url="https://truyenfull.vision/dau-la-dai-luc-230420/" -f chapter_start="1"
+```
+
+**Chi tiết:**
+- ✅ Story info scraped: "Đấu La Đại Lục" by Đường Gia Tam Thiếu
+- ✅ Cover image uploaded to R2: `stories/dau-la-dai-luc/cover.jpeg`
+- ✅ **50 chapters scraped và uploaded to R2** (chapters 1-50)
+- ✅ Chapters 1-2 đã tồn tại (skipped), chapters 3-50 được upload mới
+- ✅ Tất cả chapters được lưu vào Supabase database
+- ⏱️ Thời gian chạy: 16 phút 52 giây
+
+**Logs mẫu:**
+```
+📖 Using parser: truyenfull
+🔗 Source: https://truyenfull.vision/dau-la-dai-luc-230420/
+📄 Chapters: 1 (Limit: 50)
+
+📚 Scraping story info...
+  Title: Đấu La Đại Lục
+  Author: Đường Gia Tam Thiếu
+  Slug: dau-la-dai-luc
+  📷 Downloading cover image...
+  ✅ Uploaded cover: stories/dau-la-dai-luc/cover.jpeg
+  ✅ Story upserted (ID: 1)
+
+📋 Scraping chapter list...
+  Found 50 chapters on page 1 (Total pages: 11)
+  📑 Fetching chapter list page 2/11...
+  Added 50 new chapters (total: 100)
+  Targeting 50 chapters (starting from 1, limit 50)
+
+📖 [1/50] Chapter 1: Đấu La Đại Lục (1)
+  ⏭️ Already exists in R2, skipping
+
+📖 [3/50] Chapter 3: Đấu La đại lục (3)
+  📝 57 paragraphs, 1477 words
+  ✅ Uploaded: stories/dau-la-dai-luc/chapters/3.json (7133 bytes)
+
+...
+
+✅ Done! Scraped 50 chapters successfully.
+```
+
+### 4. Mobile App Setup
+
+**Dependencies:**
+- ✅ `npm install --legacy-peer-deps` thành công (1152 packages)
+- ✅ `.env` đã cấu hình đúng với Supabase URL và Anon Key
+
+**Để build mobile app (cần thực hiện thủ công):**
+
+```bash
+cd mobile
+
+# 1. Đăng nhập Expo (cần interactive terminal)
+npx expo login
+
+# 2. Cài đặt EAS CLI
+npm install -g eas-cli
+
+# 3. Đăng nhập EAS
+eas login
+
+# 4. Cấu hình EAS Build
+eas build:configure
+
+# 5. Build development version cho Android
+eas build --profile development --platform android
+
+# 6. Sau khi build xong, cài APK lên thiết bị
+# Download APK từ Expo dashboard và cài đặt
+```
+
+**Lưu ý:**
+- Mobile app cần `react-native-tts` cho TTS functionality
+- Cần dev build vì `react-native-tts` là native module
+- Expo Go không hỗ trợ native modules custom
+
+---
+
+## Tổng Kết Deployment
+
+**Hoàn thành**: 90%
+
+**✅ Đã hoàn thành:**
+1. ✅ Supabase Database Schema (deployed)
+2. ✅ Cloudflare R2 Storage (configured & tested)
+3. ✅ GitHub Actions Secrets (7 secrets configured)
+4. ✅ GitHub Actions Workflow (tested & working)
+5. ✅ Scraper hoạt động hoàn hảo (50 chapters scraped)
+6. ✅ Mobile app dependencies installed
+
+**⚠️ Còn cần làm:**
+1. Deploy Supabase Edge Functions (15 phút)
+2. Build mobile app dev version (30 phút - cần thực hiện thủ công)
+3. Test mobile app với data thực tế
+
+**Kết luận:**
+- Backend infrastructure hoàn toàn hoạt động
+- Scraper có thể chạy tự động trên GitHub Actions
+- Mobile app đã setup xong, chỉ cần build
 
 **File test đã tạo:**
 - `test_local.py`: Test scraper locally (đã fix emoji encoding)
