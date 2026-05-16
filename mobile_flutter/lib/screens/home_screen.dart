@@ -175,6 +175,7 @@ class _StoryCard extends StatelessWidget {
               padding: const EdgeInsets.all(12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
                     story['title'] ?? 'Không có tiêu đề',
