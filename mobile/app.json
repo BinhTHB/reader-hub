@@ -6,7 +6,6 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": false,
     "scheme": "readerhub",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -22,7 +21,8 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#0F0F1A"
       },
-      "package": "com.readerhub.app"
+      "package": "com.readerhub.app",
+      "newArchEnabled": false
     },
     "web": {
       "favicon": "./assets/favicon.png",
