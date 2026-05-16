@@ -559,14 +559,14 @@ eas build --profile development --platform android
 6. ✅ Mobile app dependencies installed
 
 **⚠️ Còn cần làm:**
-1. Deploy Supabase Edge Functions (15 phút)
-2. Build mobile app dev version (30 phút - cần thực hiện thủ công)
-3. Test mobile app với data thực tế
+1. Build mobile app dev version (30 phút - cần thực hiện thủ công)
+2. Test mobile app với data thực tế
 
 **Kết luận:**
-- Backend infrastructure hoàn toàn hoạt động
-- Scraper có thể chạy tự động trên GitHub Actions
-- Mobile app đã setup xong, chỉ cần build
+- ✅ Backend infrastructure hoàn toàn hoạt động
+- ✅ Supabase Edge Functions deployed (search-sources, trigger-scraper)
+- ✅ Scraper có thể chạy tự động trên GitHub Actions
+- ⚠️ Mobile app đã setup xong, chỉ cần build
 
 **File test đã tạo:**
 - `test_local.py`: Test scraper locally (đã fix emoji encoding)
