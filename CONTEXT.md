@@ -546,7 +546,33 @@ eas build --profile development --platform android
 
 ---
 
-## Tổng Kết Deployment
+## 2026-05-16 - Mobile App Build Attempt
+
+**Vấn đề**: Cần build mobile app development version trên EAS Build.
+
+**Giải pháp thực hiện:**
+1. ✅ Cài đặt EAS CLI globally
+2. ✅ Tạo EAS project: `@binhhoaa/reader-hub` (Project ID: f4b505b7-973a-47ec-9177-5b5de336ecd9)
+3. ✅ Cấu hình `eas.json` với development, preview, production profiles
+4. ✅ Downgrade React từ 19.1.0 → 18.3.1 (tương thích hơn)
+5. ✅ Disable `newArchEnabled` trong `app.json`
+6. ✅ Clean install dependencies
+
+**Kết quả:**
+- ⚠️ Build thất bại 4 lần ở bước "Install dependencies"
+- Nguyên nhân: Unknown error (cần xem logs chi tiết từ EAS dashboard)
+- Các build IDs: 46bafee1, 53c97163, 94d3598f, b568dae3, dc207cd9
+
+**Khuyến nghị tiếp theo:**
+1. Kiểm tra logs chi tiết trên https://expo.dev/accounts/binhhoaa/projects/reader-hub/builds
+2. Thử loại bỏ `expo-dev-client` khỏi dependencies (đã làm)
+3. Thử build trực tiếp trên máy local với `expo build:android`
+4. Hoặc sử dụng Expo Go app để test trực tiếp mà không cần build APK
+
+**Lưu ý:**
+- Mobile app không cần native modules (react-native-tts) cho MVP
+- Có thể test trực tiếp với Expo Go app trước khi build APK
+- Backend infrastructure (Supabase, R2, GitHub Actions) đã hoàn toàn hoạt động
 
 **Hoàn thành**: 90%
 
