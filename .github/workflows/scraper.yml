@@ -33,8 +33,8 @@ on:
         required: false
         default: '1'
         type: string
-      chapter_end:
-        description: 'End chapter number'
+      chapter_limit:
+        description: 'Number of chapters to scrape (0 for all)'
         required: false
         default: '50'
         type: string
@@ -68,7 +68,7 @@ jobs:
         env:
           STORY_SOURCE_URL: ${{ github.event.client_payload.source_url || github.event.inputs.source_url || '' }}
           CHAPTER_START: ${{ github.event.client_payload.chapter_start || github.event.inputs.chapter_start || '1' }}
-          CHAPTER_END: ${{ github.event.client_payload.chapter_end || github.event.inputs.chapter_end || '50' }}
+          CHAPTER_LIMIT: ${{ github.event.client_payload.chapter_limit || github.event.inputs.chapter_limit || '50' }}
           JOB_ID: ${{ github.event.client_payload.job_id || '' }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
@@ -80,7 +80,7 @@ jobs:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           SCRAPE_MIN_DELAY: '2.0'
           SCRAPE_MAX_DELAY: '5.0'
-          USE_FREE_PROXY: 'true'
+          USE_FREE_PROXY: 'false'
 
   search:
     if: >
