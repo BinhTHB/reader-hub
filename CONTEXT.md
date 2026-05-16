@@ -692,3 +692,89 @@ npx expo start
 - Sử dụng Expo Go để test và demo app
 - Chờ Expo SDK 55 hoặc liên hệ Expo support
 - Xem xét migrate sang React Native CLI nếu cần APK production ngay
+
+---
+
+## 2026-05-16 23:03 - Migration sang Flutter & Build APK Thành Công
+
+**Quyết định**: Do EAS Build thất bại liên tục, quyết định migrate sang **Flutter** để có build system ổn định hơn.
+
+**Lý do chọn Flutter**:
+1. **Build ổn định**: `flutter build apk` chạy local trên Windows, không phụ thuộc cloud service
+2. **Dễ chỉnh sửa**: Hot reload nhanh, ecosystem lớn, Dart dễ học
+3. **Performance tốt**: Native compilation, mượt mà hơn React Native
+4. **TTS native**: `flutter_tts` hỗ trợ đầy đủ Android TTS API
+
+**Quá trình thực hiện**:
+
+### 1. Setup Flutter SDK (30 phút)
+- Clone Flutter SDK stable từ GitHub: `git clone https://github.com/flutter/flutter.git -b stable`
+- Cài Android Studio + Android SDK
+- Flutter tự động download NDK, Build Tools, Platform SDK khi build
+
+### 2. Tạo Flutter Project (2 giờ)
+**Dependencies**:
+```yaml
+supabase_flutter: ^2.5.0      # Supabase client
+flutter_tts: ^4.0.2            # Text-to-Speech
+http: ^1.2.0                   # HTTP client cho R2
+cached_network_image: ^3.3.1   # Image caching
+provider: ^6.1.2               # State management
+shared_preferences: ^2.2.3     # Local storage
+```
+
+**Cấu trúc code**:
+```
+mobile_flutter/
+├── lib/
+│   ├── config.dart                    # Supabase + R2 config
+│   ├── services/
+│   │   ├── supabase_service.dart      # Auth, stories, chapters, bookmarks
+│   │   ├── r2_service.dart            # Fetch chapter content từ R2
+│   │   └── tts_service.dart           # TTS wrapper
+│   ├── screens/
+│   │   ├── auth_screen.dart           # Login/Register + Skip
+│   │   ├── home_screen.dart           # Grid danh sách truyện
+│   │   ├── story_detail_screen.dart   # Chi tiết + chapter list
+│   │   └── reader_screen.dart         # Reader + TTS controls
+│   └── main.dart                      # App entry point
+```
+
+**Tính năng đã implement**:
+- ✅ Auth: Login/Register/Skip với Supabase Auth
+- ✅ Home: Grid view danh sách truyện với cover images
+- ✅ Story Detail: Thông tin truyện + danh sách chapters
+- ✅ Reader: Đọc chapter với TTS controls (play/pause/stop/speed/next/prev)
+- ✅ TTS: Highlight đoạn đang đọc, điều chỉnh tốc độ 0.3x-1.0x
+- ✅ Image caching: Cover images được cache tự động
+
+### 3. Build APK Production (12 phút)
+```bash
+cd mobile_flutter
+flutter build apk --release
+```
+
+**Kết quả**: ✅ **BUILD THÀNH CÔNG!**
+- File: `build\app\outputs\flutter-apk\app-release.apk`
+- Size: **49.5MB**
+- Build time: 12 phút 23 giây
+- Warnings: Có một số Kotlin compilation warnings nhưng không ảnh hưởng
+
+**So sánh với Expo**:
+| Tiêu chí | Expo (React Native) | Flutter |
+|----------|---------------------|---------|
+| Build APK | ❌ Thất bại 7+ lần (EAS Build server issue) | ✅ Thành công ngay lần đầu |
+| Build time | N/A | 12 phút |
+| Build location | Cloud (EAS Build) | Local (Windows) |
+| Dependencies | Conflict React 19 vs RN 0.81 | Không có conflict |
+| TTS | Mock mode trên Expo Go | Native TTS đầy đủ |
+| APK size | N/A | 49.5MB |
+
+**Kết luận**:
+- ✅ Flutter build system **cực kỳ ổn định** trên Windows
+- ✅ App **hoàn chỉnh** với đầy đủ tính năng (Auth, Home, Detail, Reader, TTS)
+- ✅ Backend (Supabase + R2 + GitHub Actions) **không cần thay đổi gì**
+- ✅ APK **sẵn sàng cài đặt** trên Android device
+- ✅ Code **dễ maintain** và **dễ mở rộng** tính năng
+
+**File APK**: `mobile_flutter/build/app/outputs/flutter-apk/app-release.apk`
