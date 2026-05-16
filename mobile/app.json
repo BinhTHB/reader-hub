@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "scheme": "readerhub",
     "splash": {
       "image": "./assets/splash-icon.png",
@@ -31,6 +31,13 @@
     },
     "plugins": [
       "expo-router"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f4b505b7-973a-47ec-9177-5b5de336ecd9"
+      }
+    },
+    "owner": "binhhoaa"
   }
 }
