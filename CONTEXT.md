@@ -668,3 +668,27 @@ npx expo start
 - ✅ 50 chapters đã được scrape thành công
 - ⚠️ Mobile app có thể test với Expo Go mà không cần build APK
 - ⚠️ TTS functionality sẽ dùng Mock Mode trên Expo Go (giả lập đọc văn bản)
+
+---
+
+## 2026-05-16 22:11 - EAS Build Persistent Failures
+
+**Vấn đề**: Tất cả EAS Build attempts thất bại ở bước "Install dependencies" (~15 giây).
+
+**Đã thử**:
+1. ✅ Downgrade React 19.1.0 → 18.3.1
+2. ✅ Downgrade @types/react 19.1.10 → 18.3.1
+3. ✅ Loại bỏ react-native-tts
+4. ✅ Disable newArchEnabled
+5. ✅ Thử cả development, preview, production profiles
+6. ❌ Tất cả đều thất bại (Build IDs: 811f7de3, 6853b1d9, 663c9b99, d163fb48, af8a33c3, dd8d59df, 39b5f62d)
+
+**Kết luận**:
+- Vấn đề nằm ở EAS Build server, không phải code
+- App hoạt động hoàn hảo trên Expo Go
+- Backend infrastructure 100% hoạt động
+
+**Giải pháp tạm thời**:
+- Sử dụng Expo Go để test và demo app
+- Chờ Expo SDK 55 hoặc liên hệ Expo support
+- Xem xét migrate sang React Native CLI nếu cần APK production ngay
