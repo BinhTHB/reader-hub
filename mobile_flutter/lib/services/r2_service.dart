@@ -12,13 +12,18 @@ class R2Service {
     }
 
     // Fetch from R2
+    print('Fetching chapter from R2: $r2Url');
     final response = await http.get(Uri.parse(r2Url));
     
     if (response.statusCode != 200) {
+      print('R2 Fetch Error: ${response.statusCode}');
       throw Exception('Failed to fetch chapter content: ${response.statusCode}');
     }
 
-    final json = jsonDecode(utf8.decode(response.bodyBytes));
+    final decodedBody = utf8.decode(response.bodyBytes);
+    print('R2 Response received, length: ${decodedBody.length}');
+    
+    final json = jsonDecode(decodedBody);
     final content = ChapterContent.fromJson(json);
 
     // Cache it
@@ -32,6 +37,9 @@ class R2Service {
   }
 
   static String getCoverUrl(String coverPath) {
+    if (coverPath.startsWith('http')) {
+      return coverPath;
+    }
     return '${AppConfig.r2PublicDomain}/$coverPath';
   }
 }

@@ -3,6 +3,7 @@ import 'services/supabase_service.dart';
 import 'services/tts_service.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
+import 'theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,13 +22,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Reader Hub',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF6366F1),
-          brightness: Brightness.dark,
-        ),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.light,
       home: SupabaseService.isAuthenticated 
           ? const HomeScreen() 
           : const AuthScreen(),

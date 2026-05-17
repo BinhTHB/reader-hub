@@ -27,10 +27,6 @@ build/
 *.aab
 *.ipa
 
-# Expo
-mobile/.expo/
-mobile/android/
-mobile/ios/
 
 # Supabase
 supabase/.temp/

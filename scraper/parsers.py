@@ -140,10 +140,12 @@ class TruyenFullParser(BaseSiteParser):
         return results
 
     def get_chapter_list_url(self, story_url: str, page: int = 1) -> str:
-        base = story_url.rstrip("/")
+        # TruyenFull usually lists chapters on the main story page or /danh-sach-chuong/
+        # Removing fragments as they can cause issues with some scrapers
+        base = story_url.split('#')[0].rstrip('/')
         if page > 1:
-            return f"{base}/trang-{page}/#list-chapter"
-        return f"{base}/#list-chapter"
+            return f"{base}/trang-{page}/"
+        return f"{base}/"
 
     def parse_story_info(self, html: str, url: str) -> dict:
         soup = BeautifulSoup(html, "lxml")
@@ -342,26 +344,36 @@ class MeTruyenChuParser(BaseSiteParser):
     def parse_chapter_content(self, html: str) -> dict:
         soup = BeautifulSoup(html, "lxml")
 
-        title_el = soup.select_one("h2.current-chapter, .chapter-title h2, h2, .chapter-title, h1")
+        # More robust title selection
+        title_el = soup.select_one("h2.current-chapter, .chapter-title h2, h2, .chapter-title, h1, .title-chapter")
         title = self.clean_text(title_el.get_text()) if title_el else ""
 
-        content_el = soup.select_one(".truyen, #chapter-c, .chapter-c, .chapter-content, #article")
+        # Broad list of content selectors for MeTruyenChu variants
+        content_el = soup.select_one(".truyen, #chapter-c, .chapter-c, .chapter-content, #article, .content, .content-inner")
         if not content_el:
             return {"title": title, "paragraphs": [], "word_count": 0}
 
-        for tag in content_el.find_all(["script", "style", "ins", "iframe", "noscript"]):
+        # Remove ads and unwanted elements
+        for tag in content_el.find_all(["script", "style", "ins", "iframe", "noscript", "div", "center"]):
+            # Keep div if it's not nested ads (some sites wrap content in divs)
+            if tag.name == "div" and not tag.get("class") and not tag.get("id"):
+                continue
             tag.decompose()
 
         paragraphs = []
-        for p in content_el.find_all("p"):
-            text = self.clean_text(p.get_text())
-            if text and len(text) > 1:
-                paragraphs.append(text)
-
+        # Try finding p tags first
+        p_tags = content_el.find_all("p")
+        if p_tags:
+            for p in p_tags:
+                text = self.clean_text(p.get_text())
+                if text and len(text) > 3: # Ignore very short artifacts
+                    paragraphs.append(text)
+        
+        # If no p tags, split by br or newlines
         if not paragraphs:
             for line in content_el.get_text(separator="\n").split("\n"):
                 text = self.clean_text(line)
-                if text and len(text) > 1:
+                if text and len(text) > 3:
                     paragraphs.append(text)
 
         return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
@@ -425,7 +437,9 @@ def detect_parser(url: str) -> BaseSiteParser:
     """Auto-detect the appropriate parser based on the URL domain."""
     site = get_site_by_url(url)
     if site and site.name in PARSERS:
-        return PARSERS[site.name]
+        parser = PARSERS[site.name]
+        parser.config = site # Gán config động chứa tên miền thực tế của truyện
+        return parser
     raise ValueError(f"No parser available for URL: {url}")
 
 

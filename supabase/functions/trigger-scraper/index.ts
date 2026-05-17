@@ -26,7 +26,7 @@ interface ScrapeRequest {
   story_id: number;
   source_url: string;
   chapter_start?: number;
-  chapter_end?: number;
+  chapter_limit?: number;
 }
 
 serve(async (req: Request) => {
@@ -46,11 +46,11 @@ serve(async (req: Request) => {
 
     // Parse request
     const body: ScrapeRequest = await req.json();
-    const { story_id, source_url, chapter_start = 1, chapter_end = 50 } = body;
+    const { story_id, source_url, chapter_start = 1, chapter_limit = 50 } = body;
 
-    if (!story_id || !source_url) {
+    if (!source_url) {
       return new Response(
-        JSON.stringify({ error: "story_id and source_url are required" }),
+        JSON.stringify({ error: "source_url is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -63,10 +63,10 @@ serve(async (req: Request) => {
     const { data: job, error: jobError } = await supabase
       .from("scrape_jobs")
       .insert({
-        story_id,
+        story_id: story_id || null,
         status: "pending",
         chapter_start,
-        chapter_end,
+        chapter_end: chapter_limit, // Store limit in the end column for now
       })
       .select()
       .single();
@@ -90,10 +90,10 @@ serve(async (req: Request) => {
         event_type: "scrape-story",
         client_payload: {
           job_id: job.id,
-          story_id,
+          story_id: story_id || null,
           source_url,
           chapter_start,
-          chapter_end,
+          chapter_limit,
         },
       }),
     });
@@ -116,9 +116,9 @@ serve(async (req: Request) => {
         message: "Scraper triggered successfully",
         job_id: job.id,
         details: {
-          story_id,
+          story_id: story_id || null,
           chapter_start,
-          chapter_end,
+          chapter_limit,
         },
       }),
       {

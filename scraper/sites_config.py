@@ -57,8 +57,37 @@ def get_enabled_sites() -> list[SiteConfig]:
 
 
 def get_site_by_url(url: str) -> SiteConfig | None:
-    """Find the matching site config for a URL."""
+    """Find the matching site config for a URL and dynamically update its base URL."""
+    from urllib.parse import urlparse
     url_lower = url.lower()
+    
+    parsed = urlparse(url)
+    if not parsed.scheme or not parsed.netloc:
+        return None
+    dynamic_base = f"{parsed.scheme}://{parsed.netloc}"
+    
+    # Smart matching for TruyenFull (covers vision, today, com, vn, click...)
+    if "truyenfull" in url_lower:
+        base_config = SITES["truyenfull"]
+        return SiteConfig(
+            name=base_config.name,
+            display_name=base_config.display_name,
+            base_url=dynamic_base,
+            search_url_template=f"{dynamic_base}/tim-kiem/?tukhoa={{query}}",
+            enabled=base_config.enabled
+        )
+        
+    # Smart matching for MeTruyenChu
+    if "metruyenchu" in url_lower:
+        base_config = SITES["metruyenchu"]
+        return SiteConfig(
+            name=base_config.name,
+            display_name=base_config.display_name,
+            base_url=dynamic_base,
+            search_url_template=f"{dynamic_base}/search?q={{query}}",
+            enabled=base_config.enabled
+        )
+        
     for site in SITES.values():
         if site.domain in url_lower:
             return site

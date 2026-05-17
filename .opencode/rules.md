@@ -22,7 +22,7 @@ Khi thực hiện các thay đổi quan trọng trong dự án, hãy cập nhậ
 Thêm vào cuối file CONTEXT.md hoặc cập nhật section tương ứng:
 
 ```markdown
-## [Ngày] - [Tên thay đổi]
+## [Ngày] [Giờ UTC+7] - [Tên thay đổi]
 
 **Vấn đề**: Mô tả vấn đề hoặc yêu cầu
 
@@ -36,10 +36,14 @@ Thêm vào cuối file CONTEXT.md hoặc cập nhật section tương ứng:
 **Lưu ý**: Các điểm cần chú ý cho tương lai
 ```
 
+### Quy tắc dọn dẹp (Cleanup Rule)
+
+Đối với những lỗi/vấn đề đã gặp phải và đã được giải quyết triệt để, không còn ảnh hưởng hay giá trị tham khảo cho tương lai (ví dụ: các lỗi build môi trường cũ đã bỏ qua), có thể xoá bỏ các mục đó trong `CONTEXT.md` để giữ cho nội dung file luôn tinh gọn và tập trung vào trạng thái hiện tại của dự án.
+
 ### Ví dụ
 
 ```markdown
-## 2026-05-14 - Test Scraping System
+## 2026-05-16 19:30 - Fix lỗi hiển thị danh sách chương
 
 **Vấn đề**: Cần verify các chức năng scraping hoạt động đúng theo spec
 

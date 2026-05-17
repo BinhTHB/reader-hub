@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Reader Hub</string>
+    <string name="title_activity_main">Reader Hub</string>
+    <string name="package_name">com.readerhub.app</string>
+    <string name="custom_url_scheme">com.readerhub.app</string>
+</resources>
