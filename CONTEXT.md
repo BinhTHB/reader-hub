@@ -1157,3 +1157,16 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 
 **Kết quả**:
 - ✅ Toàn bộ code đã được tích hợp ổn định, build thành công và đã được commit & push lên repo. Giao diện giờ đây vô cùng trực quan và mạnh mẽ!
+
+## 2026-05-18 22:28 - Biên dịch thành công tệp tin cài đặt ứng dụng Android (APK)
+
+**Yêu cầu**: Biên dịch dự án React + Capacitor thành tệp cài đặt `.apk` để chạy trên các thiết bị Android.
+
+**Quy trình biên dịch**:
+1. **Build Web Bundle**: `npm run build` trong thư mục [web_react](file:///e:/projects_window/reader-hub/web_react) (biên dịch mã nguồn React/TypeScript thành web assets tĩnh lưu tại `dist`).
+2. **Capacitor Sync**: `npx cap sync` để đồng bộ toàn bộ web assets tĩnh sang thư mục tài nguyên của Android Native (`android/app/src/main/assets/public`).
+3. **Compile Native APK**: Di chuyển vào thư mục [android](file:///e:/projects_window/reader-hub/web_react/android) và thực thi Gradle wrapper: `.\gradlew.bat assembleDebug`.
+
+**Kết quả**:
+- ✅ Biên dịch thành công không có bất kỳ lỗi nào (`BUILD SUCCESSFUL in 4s`).
+- ✅ Tệp tin cài đặt APK đã được tạo thành công tại: [app-debug.apk](file:///e:/projects_window/reader-hub/web_react/android/app/build/outputs/apk/debug/app-debug.apk) (Kích thước: 4.35 MB). Tệp này sẵn sàng để cài đặt trực tiếp lên mọi điện thoại Android để trải nghiệm và kiểm thử!
