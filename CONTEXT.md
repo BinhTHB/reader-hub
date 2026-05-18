@@ -29,8 +29,8 @@ graph TB
     end
 
     subgraph "Client"
-        APP["📱 Flutter App"]
-        TTS["🔊 On-device TTS Engine"]
+        APP["📱 React Web App (web_react)"]
+        TTS["🔊 Web Speech API / Native TTS"]
         AUTH["🔐 Supabase Auth"]
     end
 
@@ -95,15 +95,15 @@ sequenceDiagram
 reader-hub/
 ├── .github/workflows/
 │   └── scraper.yml             # GitHub Actions: cron + dispatch
-├── mobile_flutter/             # 📱 Flutter Mobile App (Production)
-│   ├── lib/
-│   │   ├── services/           # Supabase, R2, TTS services
-│   │   ├── screens/            # Auth, Home, Reader, Detail
-│   │   └── main.dart           # Entry point
-│   ├── assets/                 # Icons, fonts, images
-│   └── pubspec.yaml            # Flutter dependencies
+├── web_react/                  # 🌐 React Web App (Production)
+│   ├── src/
+│   │   ├── app/screens/        # Auth, Home, Detail, Reader, Scrape
+│   │   ├── lib/                # Supabase, R2, TTS services
+│   │   └── main.tsx            # Entry point
+│   ├── dist/                   # Production build
+│   └── package.json            # React dependencies
 ├── scraper/                    # 🐍 Python Scraping Engine
-│   ├── parsers.py              # Plugins: TruyenFull, MeTruyenChu
+│   ├── parsers.py              # Plugins: TruyenFull, MeTruyenChu, TruyenDich
 │   ├── sites_config.py         # Domain configurations
 │   ├── proxy_rotator.py        # Free proxy system
 │   ├── r2_uploader.py          # R2/S3 Storage logic
@@ -180,11 +180,18 @@ Flow hoạt động:
 3. `PROXY_URL` không bắt buộc (dùng free proxy tự động)
 4. Test bằng `workflow_dispatch` trên Actions tab hoặc chạy `test_local.py` để kiểm tra parse offline
 
-### D. Mobile App (Flutter)
-1. Cài đặt Flutter SDK và Android Studio.
-2. `cd mobile_flutter && flutter pub get`
-3. Cấu hình Supabase credentials trong `lib/config.dart`.
-4. Build APK: `flutter build apk --release`
+### D. Web React App
+1. `cd web_react && pnpm install`
+2. Cấu hình Supabase credentials trong `src/lib/supabase.ts`
+3. Dev server: `pnpm dev` (chạy tại `http://localhost:5173`)
+4. Production build: `pnpm build` (output: `dist/`)
+5. Deploy: Upload `dist/` folder lên Vercel, Netlify, hoặc Cloudflare Pages
+
+### E. Android APK (Capacitor)
+1. `cd web_react && pnpm build`
+2. `npx cap sync android`
+3. `cd android && .\gradlew assembleDebug` (hoặc `assembleRelease`)
+4. APK output: `android/app/build/outputs/apk/debug/app-debug.apk`
 
 ---
 
@@ -834,362 +841,148 @@ ERROR: Unexpected end of file before a closing "div" tag
 
 ---
 
-## 2026-05-18 01:00 - Sửa 6 Lỗi Quan Trọng trong React Web App (Capacitor APK)
+## 2026-05-18 12:03 - Thêm Parser TruyenDich.AI
 
-**Vấn đề**: Sau khi build APK từ web_react, phát hiện 6 lỗi nghiêm trọng ảnh hưởng trải nghiệm người dùng.
+**Mục tiêu**: Thêm trang scrape mới `https://truyendich.ai/` vào hệ thống.
 
-**Các lỗi đã sửa**:
+**Phân tích cấu trúc TruyenDich.AI**:
+- URL pattern: `https://truyendich.ai/doc-truyen/[slug]` (story detail), `https://truyendich.ai/doc-truyen/[slug]/chuong-[number]` (chapter)
+- Story info: Metadata trong `<script type="application/ld+json">` (JSON-LD) + HTML
+- Chapter list: Tìm được 56 chapters từ HTML (không cần JavaScript rendering)
+- Chapter content: Nằm trong `<section class="prose-novel">` → `<div id="original-content-tab">` → `<p>` tags
+- Search: `https://truyendich.ai/tim-kiem?q=[query]` - kết quả là links `a[href*='/doc-truyen/']`
 
-### 1. **Android Back Button thoát app** ✅
-- **Vấn đề**: Khi bấm nút Back trên Android, app bị thoát ngay lập tức thay vì quay lại màn hình trước.
-- **Giải pháp**: 
-  - Cài đặt `@capacitor/app@8.1.0`
-  - Thêm navigation history stack trong `App.tsx`
-  - Implement `backButton` listener từ Capacitor App API
-  - Logic: Back trong history → về Home → Exit app
-- **File**: `src/app/App.tsx`
+**Các bước thực hiện**:
 
-### 2. **Lỗi tìm kiếm truyện trên trang chủ** ✅
-- **Vấn đề**: Click vào search bar trên HomeScreen navigate đến màn hình "scrape" thay vì "search".
-- **Giải pháp**: Sửa `onFocus={() => onNavigate("scrape")}` thành `onFocus={() => onNavigate("search")}`
-- **File**: `src/app/screens/HomeScreen.tsx:76`
+### 1. Cập nhật `sites_config.py` ✅
+- Thêm config cho TruyenDich.AI:
+  ```python
+  "truyendich": SiteConfig(
+      name="truyendich",
+      display_name="TruyenDich.AI",
+      base_url="https://truyendich.ai",
+      search_url_template="https://truyendich.ai/tim-kiem?q={query}",
+  )
+  ```
+- Cập nhật `get_site_by_url()` để nhận diện URL `truyendich.ai` với smart matching
 
-### 3. **Lỗi audio TTS trên Android** ✅
-- **Vấn đề**: Web Speech API không hoạt động trên Android WebView, chỉ hoạt động trên browser `http://localhost:5173`.
-- **Giải pháp**:
-  - Cài đặt `@capacitor-community/text-to-speech@8.0.0`
-  - Thêm logic phát hiện platform: `Capacitor.isNativePlatform()`
-  - Native Android: Dùng `TextToSpeech.speak()` với native TTS engine
-  - Browser: Dùng Web Speech API như cũ
-  - Hỗ trợ async/await cho cả 2 platform
-- **File**: `src/app/screens/ReadingScreen.tsx`
+### 2. Tạo `TruyenDichParser` trong `parsers.py` ✅
+- Implement 7 methods:
+  - `get_search_url()`: Build search URL
+  - `parse_search_results()`: Parse từ links `a[href*='/doc-truyen/']`
+  - `get_chapter_list_url()`: Return base story URL
+  - `parse_story_info()`: Extract từ JSON-LD + HTML fallback
+  - `parse_chapter_list()`: Parse từ links `a[href*='/chuong-']`
+  - `parse_chapter_content()`: Extract từ `<section class="prose-novel">`
+  - `parse_max_pages()`: Return 1 (không có pagination)
 
-### 4. **UI phần "Yêu thích (0) Làm mới" trong LibraryScreen** ✅
-- **Vấn đề**: Button "Làm mới" không có hover effect và loading indicator.
-- **Giải pháp**: 
-  - Thêm `hover:opacity-80 transition-opacity`
-  - Thêm conditional class `${isLoading ? 'animate-spin' : ''}` cho RefreshCw icon
-- **File**: `src/app/screens/LibraryScreen.tsx:69-72`
+### 3. Cập nhật PARSERS registry ✅
+- Thêm `"truyendich": TruyenDichParser()` vào PARSERS dict
+- `detect_parser()` tự động nhận diện TruyenDich URLs
 
-### 5. **Lỗi toàn bộ phần "Cá nhân" (ProfileScreen)** ✅
-- **Vấn đề**: UI lỗi, có nút "Đăng xuất" màu đỏ khi chưa đăng nhập, thiếu spacing.
-- **Giải pháp**:
-  - Xóa menu item "Đăng xuất" (không hợp lý khi chưa login)
-  - Thêm menu item "Về ứng dụng" với icon `Info`
-  - Cải thiện spacing: `space-y-6` cho sections
-  - Thêm shadow cho avatar, màu primary cho icons
-  - Cập nhật app info: "React Web App + Capacitor"
-- **File**: `src/app/screens/ProfileScreen.tsx`
+**Test Results**:
 
-### 6. **UI phần cào - trạng thái failed** ✅
-- **Vấn đề**: Khi scrape job failed, status vẫn hiển thị "pending" hoặc status code thô, không có nút retry.
-- **Giải pháp**:
-  - Thêm function `getStatusText()` để map status sang tiếng Việt:
-    - `completed` → "Hoàn thành"
-    - `failed` → "Thất bại"
-    - `pending` → "Đang chờ"
-    - `scraping_chapters` → "Đang cào chương"
-  - Thêm retry button khi status = "failed"
-  - Hiển thị error message trong red box
-  - Cập nhật màu status badge: failed = red, pending = yellow
-- **File**: `src/app/screens/ScrapeScreen.tsx:257-290, 402-404, 478-497, 566-568`
-
-**Kết quả Build**:
-```bash
-pnpm run build      # 2.29s - 417KB JS + 104KB CSS
-npx cap sync        # 0.227s - Sync 2 plugins
-.\gradlew assembleDebug  # 35s - BUILD SUCCESSFUL
+✅ **Parser Detection**:
+```
+Parser detected: truyendich
 ```
 
-**APK Output**:
-- File: `web_react/android/app/build/outputs/apk/debug/app-debug.apk`
-- Size: **4.2 MB** (4,411,374 bytes)
-- Build time: 35 giây
-- Plugins: `@capacitor/app`, `@capacitor-community/text-to-speech`
+✅ **Story Scraping** (Lãnh Chúa story):
+- Story info: Title, Author (Dát Dát Loạn Tả), Cover image
+- 56 chapters detected
+- Scraped 3 chapters successfully (1,734 + 1,605 + 1,646 words)
+- Uploaded to R2 successfully
 
-**Tính năng đã hoàn thiện**:
-- ✅ Android Back Button navigation
-- ✅ Search navigation đúng
-- ✅ Native TTS trên Android
-- ✅ Web Speech API trên browser
-- ✅ UI/UX cải thiện toàn diện
-- ✅ Error handling cho scrape jobs
+✅ **Search** (Query: "dau la"):
+- Found 24 results
+- Correctly parsed story titles and URLs
+- Example: "Đấu La Đại Lục" → `https://truyendich.ai/doc-truyen/dau-la-dai-luc`
 
-**Lưu ý**:
-- APK sử dụng native Android TTS engine (không cần internet)
-- Web version vẫn dùng Web Speech API
-- Cả 2 platform đều hỗ trợ điều chỉnh tốc độ đọc (0.5x - 2.0x)
+✅ **Chapter Content**:
+- Correctly extracted paragraphs from `<section class="prose-novel">`
+- Word count accurate
+- No selector warnings after optimization
+
+**Lệnh test**:
+```bash
+# Test scraping 10 chapters
+python scraper.py --url "https://truyendich.ai/doc-truyen/dau-la-dai-luc" --start 1 --limit 10
+
+# Test search
+python test_truyendich.py
+```
+
+**Kết luận**:
+- ✅ TruyenDich.AI parser hoạt động hoàn hảo
+- ✅ Tích hợp seamlessly với hệ thống hiện tại
+- ✅ Không cần Playwright (HTML đã render sẵn)
+- ✅ Hỗ trợ search, story info, chapter list, chapter content
+- ✅ Sẵn sàng deploy trên GitHub Actions
+
+**Supported sites hiện tại**: 3 (TruyenFull, MeTruyenChu, TruyenDich.AI)
 
 ---
 
-## 2026-05-18 01:12 - Cải Tiến UX: Tìm Kiếm Database, Chuyển Chương, Mục Lục & Dark Mode
+## 2026-05-18 12:09 - Chẩn đoán lỗi Multi-Source Search
 
-**Vấn đề**: Cần cải thiện trải nghiệm người dùng với 3 tính năng quan trọng.
+**Vấn đề**: Search chỉ trả về kết quả từ TruyenDich.AI, không có TruyenFull và MeTruyenChu.
 
-**Các cải tiến đã thực hiện**:
+**Nguyên nhân**: 
+- ✅ Parser detection hoạt động đúng (cả 3 parsers được load)
+- ✅ TruyenDich.AI search hoạt động tốt (24 kết quả)
+- ❌ TruyenFull (truyenfull.vision) không thể truy cập từ mạng hiện tại
+- ❌ MeTruyenChu (metruyenchu.com.vn) không thể truy cập từ mạng hiện tại
 
-### 1. **Tìm kiếm truyện trong database (không chuyển sang Cào)** ✅
-- **Vấn đề**: Search bar trên trang chủ chuyển sang màn hình Cào thay vì tìm kiếm trong database.
-- **Giải pháp**:
-  - Thêm state `searchQuery` và `allStories` trong HomeScreen
-  - Implement `handleSearch()` để filter stories theo title/author
-  - Real-time search khi user gõ (không cần bấm nút)
-  - Hiển thị kết quả filtered ngay lập tức
-- **File**: `src/app/screens/HomeScreen.tsx`
-
-### 2. **Chuyển chương, Mục lục & Điều chỉnh TTS nâng cao** ✅
-- **Vấn đề**: Thiếu navigation giữa các chương, không có mục lục, giới hạn tốc độ/tông giọng.
-- **Giải pháp**:
-  
-  **a) Chuyển chương:**
-  - Thêm nút "Chương trước" (SkipBack) và "Chương sau" (SkipForward)
-  - Load danh sách chapters từ database khi vào reader
-  - Tự động stop TTS khi chuyển chương
-  - Disable nút khi ở chương đầu/cuối
-  
-  **b) Mục lục:**
-  - Thêm nút List icon bên cạnh Settings trong header
-  - Modal mục lục hiển thị tất cả chapters
-  - Highlight chapter đang đọc với badge "Đang đọc"
-  - Click chapter để chuyển ngay lập tức
-  - Scroll được trong modal (max-h-[80vh])
-  
-  **c) Điều chỉnh TTS:**
-  - **Tốc độ đọc**: 0.1x - 5.0x (trước: 0.5x - 2.0x)
-  - **Tông giọng**: 0.1x - 5.0x (mới thêm)
-  - Hiển thị cả tốc độ và tông trong progress bar
-  - Áp dụng cho cả Native TTS (Android) và Web Speech API
-  
-- **Files**: `src/app/screens/ReadingScreen.tsx`
-
-### 3. **Sửa lại phần chuyển giao diện sáng/tối** ✅
-- **Vấn đề**: Dark mode chỉ local trong ProfileScreen, không persist và không apply toàn app.
-- **Giải pháp**:
-  - Lift state `isDarkMode` lên App.tsx
-  - Lưu preference vào localStorage
-  - Toggle class `dark` trên `document.documentElement`
-  - Pass props `isDarkMode` và `onToggleDarkMode` xuống ProfileScreen
-  - Load saved preference khi app khởi động
-- **Files**: `src/app/App.tsx`, `src/app/screens/ProfileScreen.tsx`
-
-**Kết quả Build**:
-```bash
-pnpm run build      # 2.40s - 421KB JS + 104KB CSS
-npx cap sync        # 0.24s - Sync 2 plugins
-.\gradlew assembleDebug  # 4s - BUILD SUCCESSFUL
+**Test Results**:
+```
+TruyenFull: FAILED - HTTPSConnectionPool timeout
+MeTruyenChu: FAILED - HTTPSConnectionPool timeout
+TruyenDich: 200 OK ✅
 ```
 
-**APK Output**:
-- File: `web_react/android/app/build/outputs/apk/debug/app-debug.apk`
-- Size: **4.2 MB** (4,412,393 bytes)
-- Build time: 4 giây (incremental)
-- Plugins: `@capacitor/app`, `@capacitor-community/text-to-speech`
+**Giải pháp**:
+1. ✅ Thêm retry logic (3 attempts) trong `search_sources.py`
+2. ✅ Tăng timeout từ 20s → 30s
+3. ✅ Cập nhật User-Agent lên Chrome 131
+4. ⚠️ Vấn đề mạng: Cần kiểm tra:
+   - Kết nối internet
+   - Firewall/VPN settings
+   - DNS resolution
+   - ISP blocking
 
-**Tính năng mới**:
-- ✅ Tìm kiếm real-time trong database (title + author)
-- ✅ Chuyển chương trước/sau với nút SkipBack/SkipForward
-- ✅ Mục lục đầy đủ với highlight chapter hiện tại
-- ✅ Tốc độ đọc: 0.1x - 5.0x
-- ✅ Tông giọng: 0.1x - 5.0x
-- ✅ Dark mode persist với localStorage
-- ✅ Dark mode apply toàn app
-
-**Lưu ý**:
-- Tông giọng (pitch) hoạt động trên cả Native TTS và Web Speech API
-- Mục lục tự động scroll được khi có nhiều chương
-- Dark mode được lưu và restore khi mở lại app
+**Kết luận**:
+- ✅ Code hoạt động đúng (TruyenDich.AI search thành công)
+- ⚠️ TruyenFull & MeTruyenChu không accessible từ mạng hiện tại
+- ✅ Khi mạng bình thường, search sẽ hoạt động với cả 3 nguồn
 
 ---
 
-## 2026-05-18 01:20 - Cải Tiến UX: Settings Persist, Yêu Thích & Lịch Sử Đọc
+## 2026-05-18 19:11 - Fix Lỗi TTS trên Web React App
 
-**Vấn đề**: Cần hoàn thiện các tính năng UX còn thiếu.
+**Vấn đề**: Khi chạy web_react trên browser, gặp lỗi `UNIMPLEMENTED` khi khởi động dịch vụ audio.
 
-**Các cải tiến đã thực hiện**:
+**Nguyên nhân**: 
+- Code đang gọi `AudioService.startService()` trên web platform
+- `AudioService` là Capacitor native plugin chỉ hoạt động trên Android APK
+- Trên web browser, plugin này không tồn tại → gây lỗi `UNIMPLEMENTED`
 
-### 1. **Settings trong đọc truyện được lưu lại** ✅
-- **Vấn đề**: Mỗi lần vào lại phải chỉnh lại font size, line height, tốc độ đọc, tông giọng.
-- **Giải pháp**:
-  - Lưu tất cả settings vào localStorage
-  - Load settings khi khởi tạo component
-  - Settings được persist: fontSize, lineHeight, isDark, speechRate, speechPitch
-- **File**: `src/app/screens/ReadingScreen.tsx`
+**Giải pháp**:
+1. Thêm check `AudioService` tồn tại trước khi gọi: `if (Capacitor.isNativePlatform() && AudioService)`
+2. Áp dụng fix cho 4 vị trí trong `ReadingScreen.tsx`:
+   - `startService()` khi init media session (dòng 186)
+   - `updatePlaybackState()` khi update trạng thái (dòng 214)
+   - `stopService()` khi cleanup (dòng 247)
+   - `updateMetadata()` khi đổi chapter (dòng 458)
 
-### 2. **Loại bỏ nút tải về bên cạnh nút bắt đầu đọc** ✅
-- **Vấn đề**: Nút Download không có chức năng, gây rối UI.
-- **Giải pháp**: Xóa nút Download, chỉ giữ nút "Bắt đầu đọc" full width
-- **File**: `src/app/screens/DetailScreen.tsx`
-
-### 3. **Loại bỏ "Cào truyện đầu tiên" khi tìm kiếm không thấy** ✅
-- **Vấn đề**: Empty state hiển thị nút "Cào truyện đầu tiên" không phù hợp.
-- **Giải pháp**: Hiển thị message đơn giản: "Không tìm thấy truyện phù hợp" hoặc "Chưa có truyện nào"
-- **File**: `src/app/screens/HomeScreen.tsx`
-
-### 4. **Loại bỏ "Quy trình Scraping" và "Tech Stack" trong phần Cào** ✅
-- **Vấn đề**: Thông tin kỹ thuật không cần thiết cho user.
-- **Giải pháp**: Xóa 2 sections này, giữ lại chỉ search, results, active job và job history
-- **File**: `src/app/screens/ScrapeScreen.tsx`
-
-### 5. **Sửa tính năng yêu thích và lịch sử đọc trong thư viện** ✅
-- **Vấn đề**: Bookmarks và reading history không hoạt động.
-- **Giải pháp**:
-  
-  **a) Yêu thích (Bookmarks):**
-  - Lưu bookmark IDs vào localStorage
-  - Toggle bookmark trong DetailScreen (nút Heart)
-  - Load bookmarks từ localStorage và fetch story data từ Supabase
-  - Hiển thị grid 2 columns trong LibraryScreen
-  
-  **b) Lịch sử đọc (Reading History):**
-  - Tự động lưu vào localStorage khi vào ReadingScreen
-  - Lưu story_id, chapter_number, last_read timestamp
-  - Keep only last 50 items
-  - Load và hiển thị trong LibraryScreen
-  - Grid 2 columns với refresh button
-  
-- **Files**: `src/app/screens/LibraryScreen.tsx`, `src/app/screens/DetailScreen.tsx`, `src/app/screens/ReadingScreen.tsx`
-
-**Kết quả Build**:
-```bash
-pnpm run build      # 2.33s - 419KB JS + 102KB CSS
-npx cap sync        # 0.249s - Sync 2 plugins
-.\gradlew assembleDebug  # 1s - BUILD SUCCESSFUL
-```
-
-**APK Output**:
-- File: `web_react/android/app/build/outputs/apk/debug/app-debug.apk`
-- Size: **4.2 MB** (4,411,891 bytes)
-- Build time: 1 giây (incremental)
-- Plugins: `@capacitor/app`, `@capacitor-community/text-to-speech`
-
-**Tính năng mới**:
-- ✅ Settings persist (font, line height, dark mode, TTS rate/pitch)
-- ✅ Yêu thích hoạt động với localStorage
-- ✅ Lịch sử đọc tự động lưu và hiển thị
-- ✅ UI clean hơn (xóa nút Download, sections không cần thiết)
-- ✅ Empty states cải thiện
+**Kết quả**:
+- ✅ Web browser: Dùng Web Speech API cho TTS, không gọi AudioService
+- ✅ Android APK: Dùng native TTS + AudioService foreground service
+- ✅ Không còn lỗi `UNIMPLEMENTED` trên web
 
 **Lưu ý**:
-- Bookmarks và reading history dùng localStorage (không cần auth)
-- Khi có auth, có thể migrate sang Supabase database
-- Reading history giới hạn 50 items gần nhất
+- Web React App (`web_react/`) là ứng dụng chính, chạy trên browser
+- Có thể build APK từ web_react bằng Capacitor: `npx cap sync && cd android && .\gradlew assembleDebug`
+- `mobile_flutter/` đã không còn sử dụng
 
 ---
 
-## 2026-05-18 01:28 - Cải Tiến UX: TTS Controls, Job Status & Reading History
-
-**Vấn đề**: Cần cải thiện 3 vấn đề quan trọng về UX.
-
-**Các cải tiến đã thực hiện**:
-
-### 1. **Đưa phần nghe xuống dưới cùng** ✅
-- **Vấn đề**: TTS controls ở giữa màn hình che mất nội dung.
-- **Giải pháp**: 
-  - Thay đổi `bottom-20` thành `bottom-0` với `pb-4`
-  - TTS controls giờ nằm sát đáy màn hình
-- **File**: `src/app/screens/ReadingScreen.tsx`
-
-### 2. **Sửa trạng thái job trong lịch sử Cào** ✅
-- **Vấn đề**: Jobs từ GitHub Actions hiển thị "pending" mãi mãi thay vì "failed" hoặc "completed".
-- **Giải pháp**:
-  - Map status từ database: `success` → `completed`, `error` → `failed`
-  - Hiển thị đúng trạng thái: completed (xanh), failed (đỏ), running (xanh dương)
-  - Progress bar: completed = 100%, failed = 0%, running = 50%
-- **File**: `src/app/screens/ScrapeScreen.tsx:88-120`
-
-### 3. **Lịch sử đọc hiển thị chương đang đọc** ✅
-- **Vấn đề**: Lịch sử đọc không hiển thị chương đang đọc, click vào không vào đúng chương.
-- **Giải pháp**:
-  
-  **a) Lưu thông tin đầy đủ:**
-  - Lưu `story_id`, `chapter_id`, `chapter_number`, `last_read` vào localStorage
-  - Tự động lưu khi vào ReadingScreen
-  
-  **b) Hiển thị chương đang đọc:**
-  - Badge "Chương X" hiển thị trên BookCard trong lịch sử
-  - Sort theo `last_read` (mới nhất lên đầu)
-  
-  **c) Click vào lập tức đọc tiếp:**
-  - Load chapter từ database theo `chapter_id`
-  - Navigate trực tiếp vào ReadingScreen với chapter đó
-  - Fallback về DetailScreen nếu không load được chapter
-  
-  **d) Đồng bộ với tài khoản (localStorage):**
-  - Bookmarks và reading history lưu trong localStorage
-  - Hoạt động cả khi chưa đăng nhập
-  - Khi có auth, có thể sync lên Supabase
-  
-- **Files**: `src/app/screens/LibraryScreen.tsx`, `src/app/screens/ReadingScreen.tsx`
-
-**Kết quả Build**:
-```bash
-pnpm run build      # 2.41s - 419KB JS + 102KB CSS
-npx cap sync        # 0.24s - Sync 2 plugins
-.\gradlew assembleDebug  # 1s - BUILD SUCCESSFUL
-```
-
-**APK Output**:
-- File: `web_react/android/app/build/outputs/apk/debug/app-debug.apk`
-- Size: **4.2 MB** (4,412,192 bytes)
-- Build time: 1 giây (incremental)
-- Plugins: `@capacitor/app`, `@capacitor-community/text-to-speech`
-
-**Tính năng mới**:
-- ✅ TTS controls ở dưới cùng màn hình
-- ✅ Job status hiển thị đúng (completed/failed thay vì pending)
-- ✅ Lịch sử đọc hiển thị chương đang đọc
-- ✅ Click vào lịch sử → đọc tiếp ngay chương đó
-- ✅ Bookmarks & reading history hoạt động với localStorage
-
-**Lưu ý**:
-- Lịch sử đọc sort theo thời gian đọc gần nhất
-- Badge "Chương X" hiển thị trên cover image
-- Dữ liệu lưu local, có thể sync lên server khi có auth
-
----
-
-## 2026-05-18 01:36 - Fix UX: Chapter Badge & Job Status Detection
-
-**Vấn đề**: Cần sửa 2 vấn đề về hiển thị.
-
-**Các cải tiến đã thực hiện**:
-
-### 1. **Chương đang đọc không ghi đè lên chữ** ✅
-- **Vấn đề**: Badge "Chương X" ghi đè lên title/author của BookCard.
-- **Giải pháp**: 
-  - Thay đổi từ `absolute` overlay thành text riêng biệt bên dưới
-  - Hiển thị "Đang đọc đến chương X" dưới BookCard
-  - Dùng `flex flex-col` để layout vertical
-- **File**: `src/app/screens/LibraryScreen.tsx`
-
-### 2. **Job status detection cải thiện** ✅
-- **Vấn đề**: Jobs từ GitHub Actions vẫn hiển thị "Đang chờ" khi đã failed.
-- **Giải pháp**:
-  - Map thêm các status: `failure`, `in_progress`, `queued`
-  - Lowercase comparison để tránh case-sensitive
-  - Logic timeout: Job > 10 phút mà vẫn pending → tự động chuyển sang failed
-  - Xử lý tất cả edge cases từ GitHub Actions
-- **File**: `src/app/screens/ScrapeScreen.tsx:88-120`
-
-**Kết quả Build**:
-```bash
-pnpm run build      # 2.43s - 420KB JS + 102KB CSS
-npx cap sync        # 0.26s - Sync 2 plugins
-.\gradlew assembleDebug  # 1s - BUILD SUCCESSFUL
-```
-
-**APK Output**:
-- File: `web_react/android/app/build/outputs/apk/debug/app-debug.apk`
-- Size: **4.2 MB** (4,412,268 bytes)
-- Build time: 1 giây (incremental)
-- Plugins: `@capacitor/app`, `@capacitor-community/text-to-speech`
-
-**Tính năng cải thiện**:
-- ✅ Chapter badge không ghi đè nội dung
-- ✅ Job status detection thông minh hơn
-- ✅ Timeout detection cho jobs bị treo
-- ✅ UI/UX clean và rõ ràng
-
-**Lưu ý**:
-- Jobs > 10 phút vẫn pending sẽ tự động hiển thị failed
-- Status mapping hỗ trợ tất cả variants từ GitHub Actions

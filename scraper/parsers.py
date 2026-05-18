@@ -417,12 +417,178 @@ class MeTruyenChuParser(BaseSiteParser):
 
 
 # ═══════════════════════════════════════════════════════════
+# TruyenDich.AI Parser (truyendich.ai)
+# ═══════════════════════════════════════════════════════════
+
+class TruyenDichParser(BaseSiteParser):
+    name = "truyendich"
+
+    def get_search_url(self, query: str) -> str:
+        template = self.config.search_url_template if self.config else \
+            "https://truyendich.ai/tim-kiem?q={query}"
+        return template.replace("{query}", quote(query))
+
+    def parse_search_results(self, html: str) -> list[dict]:
+        soup = BeautifulSoup(html, "lxml")
+        results = []
+
+        for link in soup.select("a[href*='/doc-truyen/']"):
+            href = link.get("href", "")
+            if not href or "/chuong-" in href:
+                continue
+
+            title_text = self.clean_text(link.get_text())
+            if not title_text:
+                continue
+
+            title = title_text
+
+            author = None
+            cover_url = None
+
+            parent = link.find_parent(["div", "article"])
+            if parent:
+                author_el = parent.select_one(".author, [class*='author']")
+                if author_el:
+                    author = self.clean_text(author_el.get_text())
+
+                cover_el = parent.select_one("img")
+                if cover_el:
+                    cover_url = cover_el.get("src")
+
+            results.append({
+                "title": title,
+                "slug": self.slugify(title),
+                "author": author,
+                "cover_url": self.make_absolute(cover_url) if cover_url else None,
+                "source_url": self.make_absolute(href),
+                "source_name": self.name,
+                "source_display": self.config.display_name if self.config else "TruyenDich.AI",
+            })
+
+        return results
+
+    def get_chapter_list_url(self, story_url: str, page: int = 1) -> str:
+        base = story_url.split('#')[0].rstrip('/')
+        return f"{base}/"
+
+    def parse_story_info(self, html: str, url: str) -> dict:
+        soup = BeautifulSoup(html, "lxml")
+
+        json_ld = soup.select_one('script[type="application/ld+json"]')
+        if json_ld:
+            try:
+                import json
+                data = json.loads(json_ld.string)
+                if data.get("@type") == "Book":
+                    title = data.get("name", "Unknown")
+                    author = data.get("author", {}).get("name") if isinstance(data.get("author"), dict) else None
+                    description = data.get("description", "")
+                    cover_url = data.get("image", "")
+                    genres = [data.get("genre")] if data.get("genre") else []
+                    
+                    return {
+                        "title": title,
+                        "slug": self.slugify(title),
+                        "author": author,
+                        "description": description,
+                        "cover_img_url": self.make_absolute(cover_url) if cover_url else None,
+                        "genres": genres,
+                        "status": "ongoing",
+                        "source_url": url,
+                        "source_name": self.name,
+                    }
+            except:
+                pass
+
+        title_el = soup.select_one("h1, h1.title")
+        title = self.clean_text(title_el.get_text()) if title_el else "Unknown"
+
+        author_el = soup.select_one(".author, [class*='author']")
+        author = self.clean_text(author_el.get_text()) if author_el else None
+
+        desc_el = soup.select_one(".prose, .description, [class*='description']")
+        description = self.clean_text(desc_el.get_text()) if desc_el else None
+
+        cover_el = soup.select_one("img[alt*='bìa'], img[alt*='cover'], .cover img, img")
+        cover_url = cover_el.get("src") if cover_el else None
+
+        genre_els = soup.select("a[href*='/the-loai/']")
+        genres = [self.clean_text(g.get_text()) for g in genre_els]
+
+        return {
+            "title": title,
+            "slug": self.slugify(title),
+            "author": author,
+            "description": description,
+            "cover_img_url": self.make_absolute(cover_url) if cover_url else None,
+            "genres": genres,
+            "status": "ongoing",
+            "source_url": url,
+            "source_name": self.name,
+        }
+
+    def parse_chapter_list(self, html: str) -> list[dict]:
+        soup = BeautifulSoup(html, "lxml")
+        chapters = []
+
+        for link in soup.select("a[href*='/chuong-']"):
+            href = link.get("href", "")
+            text = self.clean_text(link.get_text())
+
+            match = re.search(r"/chuong-(\d+)", href)
+            if match:
+                num = int(match.group(1))
+                t_match = re.search(r"[Cc]hương\s+\d+\s*[:\-]\s*(.+)", text)
+                title = t_match.group(1).strip() if t_match else text
+                chapters.append({
+                    "chapter_number": num,
+                    "title": title,
+                    "source_url": self.make_absolute(href),
+                })
+
+        return chapters
+
+    def parse_max_pages(self, html: str) -> int:
+        return 1
+
+    def parse_chapter_content(self, html: str) -> dict:
+        soup = BeautifulSoup(html, "lxml")
+
+        title_el = soup.select_one("h1, h2, .chapter-title")
+        title = self.clean_text(title_el.get_text()) if title_el else ""
+
+        content_el = soup.select_one("section.prose-novel, .prose-novel, section[class*='prose'], .chapter-content, #chapter-content")
+        if not content_el:
+            return {"title": title, "paragraphs": [], "word_count": 0}
+
+        for tag in content_el.find_all(["script", "style", "ins", "iframe", "noscript"]):
+            tag.decompose()
+
+        paragraphs = []
+        p_tags = content_el.find_all("p")
+        if p_tags:
+            for p in p_tags:
+                text = self.clean_text(p.get_text())
+                if text and len(text) > 1:
+                    paragraphs.append(text)
+        else:
+            for line in content_el.get_text(separator="\n").split("\n"):
+                text = self.clean_text(line)
+                if text and len(text) > 1:
+                    paragraphs.append(text)
+
+        return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
+
+
+# ═══════════════════════════════════════════════════════════
 # Parser Registry
 # ═══════════════════════════════════════════════════════════
 
 PARSERS: dict[str, BaseSiteParser] = {
     "truyenfull": TruyenFullParser(),
     "metruyenchu": MeTruyenChuParser(),
+    "truyendich": TruyenDichParser(),
 }
 
 

@@ -41,6 +41,12 @@ SITES: dict[str, SiteConfig] = {
         base_url="https://metruyenchu.com.vn",
         search_url_template="https://metruyenchu.com.vn/search?q={query}",
     ),
+    "truyendich": SiteConfig(
+        name="truyendich",
+        display_name="TruyenDich.AI",
+        base_url="https://truyendich.ai",
+        search_url_template="https://truyendich.ai/tim-kiem?q={query}",
+    ),
 }
 
 
@@ -85,6 +91,17 @@ def get_site_by_url(url: str) -> SiteConfig | None:
             display_name=base_config.display_name,
             base_url=dynamic_base,
             search_url_template=f"{dynamic_base}/search?q={{query}}",
+            enabled=base_config.enabled
+        )
+    
+    # Smart matching for TruyenDich.AI
+    if "truyendich" in url_lower:
+        base_config = SITES["truyendich"]
+        return SiteConfig(
+            name=base_config.name,
+            display_name=base_config.display_name,
+            base_url=dynamic_base,
+            search_url_template=f"{dynamic_base}/tim-kiem?q={{query}}",
             enabled=base_config.enabled
         )
         
