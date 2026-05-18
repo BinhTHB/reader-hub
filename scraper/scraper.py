@@ -146,9 +146,8 @@ async def fetch_page(page: Page, url: str, retries: int = 3, wait_for_selector: 
     clean_url = url.split('#')[0]
     for attempt in range(retries):
         try:
-            # Switch back to 'domcontentloaded' for better stability on some sites
-            # and add a manual wait if needed
-            response = await page.goto(clean_url, wait_until="domcontentloaded", timeout=45000)
+            # Increase timeout to 60s for GitHub Actions
+            response = await page.goto(clean_url, wait_until="domcontentloaded", timeout=60000)
             
             if response and response.status == 200:
                 # Give a small extra time for JS to render if needed
@@ -165,17 +164,18 @@ async def fetch_page(page: Page, url: str, retries: int = 3, wait_for_selector: 
             
             elif response and response.status == 403:
                 print(f"  ⚠️ 403 Forbidden on attempt {attempt + 1}, retrying...")
-                await random_delay()
+                await asyncio.sleep(random.uniform(10, 15))
             elif response and response.status == 500:
                 print(f"  ⚠️ 500 Internal Server Error on attempt {attempt + 1}, possible bot detection. Retrying...")
-                await asyncio.sleep(10) # Longer delay on 500
+                await asyncio.sleep(15)
             else:
                 print(f"  ⚠️ HTTP {response.status if response else 'None'} on attempt {attempt + 1}")
-                await random_delay()
-        except Exception as e:
-            print(f"  ❌ Error on attempt {attempt + 1}: {e}")
-            if attempt < retries - 1:
                 await asyncio.sleep(random.uniform(5, 10))
+        except Exception as e:
+            print(f"  ❌ Error on attempt {attempt + 1}: {str(e)[:100]}")
+            if attempt < retries - 1:
+                print(f"  🔄 Retrying in 10-15 seconds...")
+                await asyncio.sleep(random.uniform(10, 15))
 
     raise RuntimeError(f"Failed to fetch {clean_url} after {retries} attempts")
 
