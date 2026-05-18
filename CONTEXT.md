@@ -1137,3 +1137,23 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 **Kết quả**:
 - ✅ Chạy thử local cào **Chương 51 (nằm ở Page 2)** thành công xuất sắc: Scraper tự động xác định Đấu La Đại Lục có `11` trang, tự chuyển sang Page 2 `/trang-2`, lấy thêm 50 chương tiếp theo, tìm thấy Chương 51 và tải/upload lên R2 mượt mà chỉ trong vài giây!
 - ✅ Đã commit và push code ổn định lên repository. Bạn có thể trigger cào toàn bộ Đấu La Đại Lục từ Dashboard hoặc Action mà không lo bị sót chương nữa!
+
+## 2026-05-18 22:25 - Hỗ trợ cào toàn bộ truyện và thêm nút "Cập nhật" thông minh ở Giao diện truyện
+
+**Yêu cầu**:
+1. Thay đổi cấu hình để khi bấm cào trên ứng dụng di động/web, hệ thống sẽ **cào toàn bộ truyện** (`chapter_limit: 0`) thay vì hardcode 50 chương.
+2. Thêm nút **Cập nhật (Scrape)** ngay bên cạnh nút **Bắt đầu đọc** tại màn hình chi tiết truyện (nếu truyện đã được tải ít nhất 1 chương). Khi bấm nút này, hệ thống sẽ tự động gửi yêu cầu cào tiếp tục **từ chương mới nhất** (chương tiếp theo sau chương lớn nhất hiện tại) để tránh mất thời gian cào lại các chương cũ.
+
+**Giải pháp**:
+1. **Thay đổi cấu hình cào toàn bộ truyện**:
+   - Cập nhật [ScrapeScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ScrapeScreen.tsx): Đổi `chapter_limit` khi gọi Edge Function từ `50` thành `0` để cào toàn bộ.
+   - Cập nhật Edge Function [trigger-scraper/index.ts](file:///e:/projects_window/reader-hub/supabase/functions/trigger-scraper/index.ts): Đổi giá trị fallback mặc định của `chapter_limit` từ `50` thành `0`.
+2. **Thêm nút Cập nhật ở Giao diện truyện**:
+   - Cập nhật [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx):
+     - Định nghĩa hàm `handleUpdateChapters`: Tính toán chương lớn nhất hiện có trong danh sách (`maxChapterNumber = Math.max(...chapters.map(ch => ch.chapter_number))`).
+     - Gọi Edge Function `trigger-scraper` cào từ chương `maxChapterNumber + 1` đến hết (`chapter_limit: 0`).
+     - Thiết kế giao diện nút **Cập nhật** theo phong cách outline trang nhã (border border-primary text-primary), đặt song song cực đẹp bên cạnh nút **Bắt đầu đọc**.
+     - Thêm banner thông báo kết quả/lỗi tự biến đổi màu sắc glassmorphism (xanh lá khi thành công, đỏ khi có lỗi).
+
+**Kết quả**:
+- ✅ Toàn bộ code đã được tích hợp ổn định, build thành công và đã được commit & push lên repo. Giao diện giờ đây vô cùng trực quan và mạnh mẽ!
