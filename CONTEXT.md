@@ -1097,3 +1097,24 @@ cd android
   - **Proxy Rotation hoạt động hoàn hảo trong thực tế**: Khi proxy đầu tiên (`190.61.118.114`) bị timeout 3 lần liên tiếp tại bước lấy thông tin truyện, scraper đã tự động kích hoạt xoay sang proxy mới (`218.108.131.186`) thành công.
   - Script tiếp tục chạy mượt mà, lấy được danh sách chương, khoanh vùng chính xác **Chương 3: 03【 Khảo Vấn 】**, cào thành công **80 paragraphs (1783 words)** và upload trực tiếp lên Cloudflare R2 từ Github Actions runner!
   - Link workflow thành công: https://github.com/BinhTHB/reader-hub/actions/runs/26040215753
+
+## 2026-05-18 21:51 - Sửa lỗi Shadowing Variable và cào toàn bộ Đấu La Đại Lục
+
+**Vấn đề**: Khi cào truyện dài như "Đấu La Đại Lục" và kích hoạt cơ chế Proxy Rotation, chương trình báo lỗi:
+```
+  File "scraper/scraper.py", line 105, in create_browser_context
+    browser = await playwright.chromium.launch(**launch_args)
+AttributeError: 'int' object has no attribute 'chromium'
+```
+
+**Nguyên nhân**:
+Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng lặp `p` đại diện cho số trang hiện tại (`p = 2`, `p += 1`) đã **ghi đè/shadow** biến `p` đại diện cho đối tượng `playwright` (`async with async_playwright() as p`). Dẫn tới khi gọi xoay proxy `rotate_proxy(playwright=p, ...)` ở các bước sau đó, biến `p` truyền vào là một số nguyên (`int`) thay vì đối tượng `Playwright` thực tế.
+
+**Giải pháp**:
+- Rename biến vòng lặp trang từ `p` thành `page_num` để hoàn toàn tách biệt với biến Playwright `p`.
+- Giữ nguyên đối số `playwright=p` của các lời gọi `fetch_with_rotation`.
+
+**Kết quả**:
+- ✅ Sửa lỗi thành công, script vượt qua biên dịch logic trơn tru.
+- ✅ Đã kích hoạt chạy lại cào toàn bộ 517 chương bộ truyện "Đấu La Đại Lục" từ đầu.
+- Link workflow đang chạy: https://github.com/BinhTHB/reader-hub/actions/runs/26041154593
