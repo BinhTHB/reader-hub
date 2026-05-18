@@ -45,8 +45,8 @@ from supabase_client import (
 def parse_args():
     parser = argparse.ArgumentParser(description="Reader Hub Scraper")
     parser.add_argument("--url", type=str, help="Story source URL to scrape")
-    parser.add_argument("--limit", type=int, default=0, help="Limit number of chapters to scrape (0 for all)")
-    parser.add_argument("--start", type=int, default=1, help="Chapter number to start from")
+    parser.add_argument("--limit", type=int, default=None, help="Limit number of chapters to scrape (0 for all)")
+    parser.add_argument("--start", type=int, default=None, help="Chapter number to start from")
     parser.add_argument("--job-id", type=str, help="Scrape job ID for tracking")
     return parser.parse_args()
 
@@ -57,8 +57,13 @@ args = parse_args()
 
 # Priority: Command line args > Environment variables
 STORY_SOURCE_URL = args.url or os.environ.get("STORY_SOURCE_URL", "")
-CHAPTER_START = args.start or int(os.environ.get("CHAPTER_START", "1"))
-CHAPTER_LIMIT = args.limit or int(os.environ.get("CHAPTER_LIMIT", "0"))
+
+_start_env = os.environ.get("CHAPTER_START", "1")
+CHAPTER_START = args.start if args.start is not None else (int(_start_env) if _start_env else 1)
+
+_limit_env = os.environ.get("CHAPTER_LIMIT", "0")
+CHAPTER_LIMIT = args.limit if args.limit is not None else (int(_limit_env) if _limit_env else 0)
+
 PROXY_URL = os.environ.get("PROXY_URL", "")
 JOB_ID = args.job_id or os.environ.get("JOB_ID", "")
 USE_FREE_PROXY = os.environ.get("USE_FREE_PROXY", "false").lower() == "true" # Default to false for local stability
