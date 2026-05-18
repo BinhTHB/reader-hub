@@ -1209,7 +1209,14 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
     4. Reset bộ đếm lô cào và tiếp tục cào lô 15 chương tiếp theo.
 - **Tối ưu hóa ghi log thời gian thực**: Cập nhật lệnh chạy Python trong workflow GitHub Actions [.github/workflows/scraper.yml](file:///e:/projects_window/reader-hub/.github/workflows/scraper.yml) thành `python -u scraper.py` (Unbuffered mode) để đảm bảo mọi dòng log in ra được hiển thị ngay lập tức lên console, tránh cảm giác bị "treo".
 
+- **Cơ chế ngắt Job sớm khi bị chặn liên tục trong [scraper.py](file:///e:/projects_window/reader-hub/scraper/scraper.py#L450-L515)**:
+  - Tích hợp bộ đếm `consecutive_failures` để theo dõi các chương bị lỗi tải liên tiếp.
+  - Khi có **3 chương liên tiếp bị lỗi tải** (thường do IP/Proxy pool đã bị Cloudflare chặn cứng hoặc cạn kiệt proxy), hệ thống sẽ **lập tức ném lỗi chủ động ngắt (Abort) toàn bộ tiến trình cào**.
+  - **Mục đích**: Giúp bảo vệ tài nguyên máy chủ, tránh lãng phí thời gian chạy vô ích của GitHub Actions và cập nhật trạng thái lỗi chính xác lên Supabase.
+  - Reset bộ đếm này về `0` ngay khi có một chương tải thành công.
+
 **Kết quả**:
 - ✅ Vượt tường lửa Cloudflare tuyệt đối mà không cần chia nhỏ job phức tạp ở mức YAML Actions.
+- ✅ Ngắt tiến trình thông minh nếu bị chặn cứng để tiết kiệm thời gian chạy (GitHub Actions minutes).
 - ✅ Tiết kiệm 95% thời gian setup máy ảo, chạy liên tục tự động và cực kỳ an toàn.
 - ✅ Toàn bộ code đã được commit & push ổn định lên repository chính thức!
