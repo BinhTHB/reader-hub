@@ -33,6 +33,34 @@ export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [isLoadingChapters, setIsLoadingChapters] = useState(false);
   const [story, setStory] = useState<any>(null);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+
+  const handleUpdateChapters = async () => {
+    if (!bookData.source_url) return;
+    setIsUpdating(true);
+    setUpdateMessage(null);
+    try {
+      const maxChapterNumber = chapters.length > 0 ? Math.max(...chapters.map(ch => ch.chapter_number)) : 0;
+      
+      const { data, error } = await supabase.functions.invoke('trigger-scraper', {
+        body: {
+          story_id: bookData.id,
+          source_url: bookData.source_url,
+          chapter_start: maxChapterNumber + 1,
+          chapter_limit: 0
+        }
+      });
+
+      if (error) throw error;
+      setUpdateMessage("Đã gửi yêu cầu cập nhật thành công! Hệ thống đang tải các chương mới từ chương " + (maxChapterNumber + 1) + ".");
+    } catch (err: any) {
+      console.error('Failed to trigger update:', err);
+      setUpdateMessage(`Lỗi: ${err.message || 'Không thể gửi yêu cầu cập nhật'}`);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
 
   useEffect(() => {
     if (book?.id) {
@@ -192,7 +220,7 @@ export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps
         </div>
 
         {/* Action Buttons */}
-        <div className="mb-6">
+        <div className="mb-6 flex gap-3">
           <button
             onClick={() => {
               if (chapters.length > 0) {
@@ -201,12 +229,30 @@ export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps
               }
             }}
             disabled={chapters.length === 0}
-            className="w-full py-3 bg-primary text-white rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-primary text-white rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
           >
             <BookOpen className="w-5 h-5" />
             {chapters.length > 0 ? 'Bắt đầu đọc' : 'Chưa có chương'}
           </button>
+
+          {chapters.length > 0 && bookData.source_url && (
+            <button
+              onClick={handleUpdateChapters}
+              disabled={isUpdating}
+              className="px-5 py-3 border border-primary text-primary bg-transparent rounded-full font-medium hover:bg-primary/5 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+            >
+              <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
+              {isUpdating ? 'Đang gửi...' : 'Cập nhật'}
+            </button>
+          )}
         </div>
+
+        {/* Feedback Banner */}
+        {updateMessage && (
+          <div className={`mb-6 p-3 rounded-xl border text-sm ${updateMessage.startsWith('Lỗi') ? 'bg-red-500/10 border-red-500/20 text-red-500' : 'bg-green-500/10 border-green-500/20 text-green-500'}`}>
+            {updateMessage}
+          </div>
+        )}
 
         {/* Description */}
         {bookData.description && (

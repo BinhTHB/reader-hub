@@ -46,7 +46,7 @@ serve(async (req: Request) => {
 
     // Parse request
     const body: ScrapeRequest = await req.json();
-    const { story_id, source_url, chapter_start = 1, chapter_limit = 50 } = body;
+    const { story_id, source_url, chapter_start = 1, chapter_limit = 0 } = body;
 
     if (!source_url) {
       return new Response(

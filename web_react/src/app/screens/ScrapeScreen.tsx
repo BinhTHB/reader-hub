@@ -208,7 +208,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
         body: {
           source_url: result.url,
           chapter_start: 1,
-          chapter_limit: 50
+          chapter_limit: 0
         }
       });
 
