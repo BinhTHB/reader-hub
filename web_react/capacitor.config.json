@@ -1,5 +1,10 @@
 {
   "appId": "com.readerhub.app",
   "appName": "Reader Hub",
-  "webDir": "dist"
+  "webDir": "dist",
+  "plugins": {
+    "AudioService": {
+      "someProperty": "value"
+    }
+  }
 }

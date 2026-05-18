@@ -17,6 +17,8 @@ import {
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor } from '@capacitor/core';
 import { R2_PUBLIC_DOMAIN, supabase } from "../../lib/supabase";
+import { mediaService } from "../../lib/mediaService";
+import AudioService from "../../lib/audioService";
 
 interface ReadingScreenProps {
   chapter?: any;
@@ -66,14 +68,20 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
   const [chapter, setChapter] = useState(initialChapter);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+  const [story, setStory] = useState<any>(null);
   const [enableTapToSeek, setEnableTapToSeek] = useState(() => {
     const saved = localStorage.getItem('reader_enableTapToSeek');
     return saved === 'true';
+  });
+  const [enableAutoScroll, setEnableAutoScroll] = useState(() => {
+    const saved = localStorage.getItem('reader_enableAutoScroll');
+    return saved !== 'false'; // Default true
   });
   const [shouldAutoResume, setShouldAutoResume] = useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const isPlayingRef = React.useRef(isPlaying);
 
   // Minimum swipe distance (in px)
   const minSwipeDistance = 50;
@@ -106,13 +114,13 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
 
   // Auto-scroll to current paragraph
   useEffect(() => {
-    if (isPlaying && contentRef.current) {
+    if (isPlaying && enableAutoScroll && contentRef.current) {
       const paragraphElement = contentRef.current.querySelector(`[data-paragraph-index="${currentParagraphIndex}"]`);
       if (paragraphElement) {
         paragraphElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }
     }
-  }, [currentParagraphIndex, isPlaying]);
+  }, [currentParagraphIndex, isPlaying, enableAutoScroll]);
 
   // Save settings to localStorage
   useEffect(() => {
@@ -140,10 +148,92 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
   }, [enableTapToSeek]);
 
   useEffect(() => {
+    localStorage.setItem('reader_enableAutoScroll', enableAutoScroll.toString());
+  }, [enableAutoScroll]);
+
+  // Keep isPlayingRef in sync with isPlaying state
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+  }, [isPlaying]);
+
+  useEffect(() => {
     if (chapter?.story_id) {
       loadChapters();
     }
   }, [chapter?.story_id]);
+
+  // Initialize Media Session and set up handlers
+  useEffect(() => {
+    if (chapter && story) {
+      const coverUrl = story.cover_url?.startsWith('http') 
+        ? story.cover_url 
+        : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`;
+      
+      mediaService.initMediaSession(chapter, story.title, coverUrl);
+      
+      mediaService.setMediaSessionHandlers({
+        play: handlePlayPause,
+        pause: handlePlayPause,
+        nexttrack: goToNextChapter,
+        previoustrack: goToPreviousChapter,
+      });
+
+      // Start foreground service on Android
+      if (Capacitor.isNativePlatform()) {
+        AudioService.startService({
+          title: chapter?.title || `Chương ${chapter?.chapter_number}`,
+          artist: story.title,
+          coverUrl: coverUrl,
+        }).catch(err => console.error('Failed to start audio service:', err));
+      }
+    }
+  }, [chapter, story]);
+
+  // Update playback state and manage Wake Lock
+  useEffect(() => {
+    if (content) {
+      mediaService.updatePlaybackState(isPlaying, currentParagraphIndex, content.paragraphs.length);
+      mediaService.ensureWakeLock(isPlaying);
+
+      // Update foreground service on Android
+      if (Capacitor.isNativePlatform()) {
+        AudioService.updatePlaybackState({
+          isPlaying: isPlaying,
+        }).catch(err => console.error('Failed to update playback state:', err));
+      }
+    }
+  }, [isPlaying, currentParagraphIndex, content]);
+
+  // Load story details for Media Session
+  useEffect(() => {
+    if (chapter?.story_id) {
+      const loadStory = async () => {
+        try {
+          const { data, error } = await supabase
+            .from('stories')
+            .select('id, title, cover_url')
+            .eq('id', chapter.story_id)
+            .single();
+
+          if (error) throw error;
+          setStory(data);
+        } catch (err) {
+          console.error('Failed to load story:', err);
+        }
+      };
+      loadStory();
+    }
+  }, [chapter?.story_id]);
+
+  // Cleanup: Release Wake Lock and stop service on unmount
+  useEffect(() => {
+    return () => {
+      mediaService.releaseWakeLock();
+      if (Capacitor.isNativePlatform()) {
+        AudioService.stopService().catch(err => console.error('Failed to stop audio service:', err));
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (chapter?.text_r2_url) {
@@ -342,6 +432,21 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
     const newIndex = chapters.findIndex(ch => ch.id === newChapter.id);
     setCurrentChapterIndex(newIndex);
     setShowChapterList(false);
+
+    // Update metadata for new chapter
+    if (story) {
+      const newTitle = newChapter.title || `Chương ${newChapter.chapter_number}`;
+      mediaService.initMediaSession(newChapter, story.title, 
+        story.cover_url?.startsWith('http') ? story.cover_url : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`
+      );
+
+      if (Capacitor.isNativePlatform()) {
+        AudioService.updateMetadata({
+          title: newTitle,
+          artist: story.title,
+        }).catch(err => console.error('Failed to update metadata:', err));
+      }
+    }
     
     // Return whether audio was playing (for auto-resume)
     return wasPlaying;
@@ -380,7 +485,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
       // Finished all paragraphs, auto-advance to next chapter if available
       if (currentChapterIndex < chapters.length - 1) {
         const nextChapter = chapters[currentChapterIndex + 1];
-        await changeChapter(nextChapter);
+        await changeChapter(nextChapter, true);
         // Keep playing state, auto-resume will happen via useEffect
       } else {
         // Last chapter, stop playing
@@ -404,21 +509,23 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
           category: 'ambient',
         });
 
-        // Check if still playing before advancing
-        if (!isPlaying) return;
+        // Check if still playing using ref (more reliable than state)
+        if (!isPlayingRef.current) return;
 
         // Auto-advance to next paragraph
         if (index < content.paragraphs.length - 1) {
           setCurrentParagraphIndex(index + 1);
           // Use setTimeout to ensure state update before next speak
           setTimeout(() => {
-            speakParagraph(index + 1);
-          }, 100);
+            if (isPlayingRef.current) {
+              speakParagraph(index + 1);
+            }
+          }, 50);
         } else {
           // Finished chapter, auto-advance
           if (currentChapterIndex < chapters.length - 1) {
             const nextChapter = chapters[currentChapterIndex + 1];
-            await changeChapter(nextChapter);
+            await changeChapter(nextChapter, true);
           } else {
             setIsPlaying(false);
             setCurrentParagraphIndex(0);
@@ -437,14 +544,22 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
         utterance.lang = 'vi-VN';
         
         utterance.onend = async () => {
+          // Check if still playing using ref
+          if (!isPlayingRef.current) return;
+
           if (index < content.paragraphs.length - 1) {
             setCurrentParagraphIndex(index + 1);
-            speakParagraph(index + 1);
+            // Small delay to ensure smooth transition
+            setTimeout(() => {
+              if (isPlayingRef.current) {
+                speakParagraph(index + 1);
+              }
+            }, 50);
           } else {
             // Finished chapter, auto-advance
             if (currentChapterIndex < chapters.length - 1) {
               const nextChapter = chapters[currentChapterIndex + 1];
-              await changeChapter(nextChapter);
+              await changeChapter(nextChapter, true);
             } else {
               setIsPlaying(false);
               setCurrentParagraphIndex(0);
@@ -807,6 +922,24 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
                 <div
                   className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform ${
                     enableTapToSeek ? "translate-x-6" : ""
+                  }`}
+                >
+                </div>
+              </button>
+            </div>
+
+            {/* Auto Scroll */}
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Tự động cuộn theo audio</label>
+              <button
+                onClick={() => setEnableAutoScroll(!enableAutoScroll)}
+                className={`relative w-14 h-8 rounded-full transition-colors ${
+                  enableAutoScroll ? "bg-primary" : "bg-muted"
+                }`}
+              >
+                <div
+                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform ${
+                    enableAutoScroll ? "translate-x-6" : ""
                   }`}
                 >
                 </div>
