@@ -169,6 +169,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
         ? story.cover_url 
         : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`;
       
+      console.log('[ReadingScreen] Initializing media session for:', chapter.title);
       mediaService.initMediaSession(chapter, story.title, coverUrl);
       
       mediaService.setMediaSessionHandlers({
@@ -180,11 +181,17 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
 
       // Start foreground service on Android
       if (Capacitor.isNativePlatform()) {
+        console.log('[ReadingScreen] Starting audio service...');
         AudioService.startService({
           title: chapter?.title || `Chương ${chapter?.chapter_number}`,
           artist: story.title,
           coverUrl: coverUrl,
-        }).catch(err => console.error('Failed to start audio service:', err));
+        }).then(() => {
+          console.log('[ReadingScreen] Audio service started successfully');
+        }).catch(err => {
+          console.error('[ReadingScreen] Failed to start audio service:', err);
+          alert('Lỗi: Không thể khởi động dịch vụ audio. ' + err);
+        });
       }
     }
   }, [chapter, story]);
