@@ -1118,3 +1118,22 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Sửa lỗi thành công, script vượt qua biên dịch logic trơn tru.
 - ✅ Đã kích hoạt chạy lại cào toàn bộ 517 chương bộ truyện "Đấu La Đại Lục" từ đầu.
 - Link workflow đang chạy: https://github.com/BinhTHB/reader-hub/actions/runs/26041154593
+
+## 2026-05-18 22:02 - Khắc phục lỗi cào thiếu chương cho TruyenDich.AI (Chỉ cào được Page 1)
+
+**Vấn đề**: Khi chạy cào Đấu La Đại Lục (517 chương), chương trình báo hoàn thành rất nhanh nhưng chỉ cào được **56 chương** ở Page 1 (gồm 6 chương mới nhất và chương 1-50). Các chương từ 51 trở đi bị bỏ qua hoàn toàn.
+
+**Nguyên nhân**:
+1. **Parser chưa hỗ trợ phân trang**: Class `TruyenDichParser` trong `parsers.py` có hàm `parse_max_pages` đang hardcode trả về `1` và `get_chapter_list_url` luôn trả về URL trang chủ truyện không có hậu tố `/trang-X`.
+2. **Logic Early-Stop bị đánh lừa**: Trong `scraper.py`, biến `current_max_ch` được tính bằng số chương lớn nhất tìm thấy ở Page 1. Vì `truyendich.ai` luôn ghim các chương mới nhất lên đầu trang (ví dụ: chương `517`), `current_max_ch` luôn có giá trị `517`. Điều này làm cho điều kiện dừng sớm `current_max_ch >= CHAPTER_START + CHAPTER_LIMIT` luôn là `True`, dẫn tới chương trình lập tức ngắt vòng lặp phân trang mà không thèm cào Page 2 trở đi.
+
+**Giải pháp**:
+1. **Cập nhật TruyenDichParser**:
+   - Viết lại `get_chapter_list_url` để tự động ghép thêm `/trang-{page}` nếu `page > 1`.
+   - Viết lại `parse_max_pages` thông minh: trích xuất số chương lớn nhất từ các tab phân khoảng chương (như `1 - 200`, `201 - 400`, `401 - 517`) hoặc tìm nhãn văn bản có dạng `XXX chương` trên trang chủ truyện. Từ đó tính ra tổng số trang chính xác `(max_chapter + 49) // 50` (Đấu La Đại Lục được tính chính xác là `11` trang).
+2. **Tối ưu hóa Stop Condition trong Scraper**:
+   - Thay thế cơ chế kiểm tra `current_max_ch` cũ bằng kiểm tra tập hợp tập con `issubset` chính xác: Vòng lặp chỉ dừng sớm khi **tất cả** các số chương nằm trong khoảng yêu cầu `[CHAPTER_START, CHAPTER_START + CHAPTER_LIMIT]` đã được gom đủ trong danh sách. Nếu `CHAPTER_LIMIT == 0` (cào tất cả), scraper sẽ quét toàn bộ số trang `max_pages` một cách trơn tru.
+
+**Kết quả**:
+- ✅ Chạy thử local cào **Chương 51 (nằm ở Page 2)** thành công xuất sắc: Scraper tự động xác định Đấu La Đại Lục có `11` trang, tự chuyển sang Page 2 `/trang-2`, lấy thêm 50 chương tiếp theo, tìm thấy Chương 51 và tải/upload lên R2 mượt mà chỉ trong vài giây!
+- ✅ Đã commit và push code ổn định lên repository. Bạn có thể trigger cào toàn bộ Đấu La Đại Lục từ Dashboard hoặc Action mà không lo bị sót chương nữa!
