@@ -1061,3 +1061,31 @@ cd android
 
 ---
 
+
+## 2026-05-18 20:53 - Fix Scraper Lỗi 403 trên Github Actions và Cấu Hình Limit Mới
+
+**Vấn đề 1**: Scraper báo lỗi `403 Forbidden` sau 3 attempts khi chạy trên Github Actions, dù local vẫn chạy được.
+**Vấn đề 2**: Có giới hạn `Limit: 50` chương khi chạy actions, user muốn scrape đến chương mới nhất khi chạy action nhưng vẫn muốn test 1-5 chương khi chạy thử (manual `workflow_dispatch`).
+
+**Nguyên nhân 1**:
+- IP của Github Actions (Azure Datacenter) dễ dàng bị Cloudflare chặn nên trả về 403.
+- Trong `scraper.py`, proxy rotation logic mới chỉ được implement ở bước cào nội dung chương (Step 3), nhưng không có ở bước cào thông tin truyện (Step 1) và danh sách chương (Step 2). Vì vậy code lỗi ngay từ bước đầu tiên khi bị 403.
+
+**Nguyên nhân 2**:
+- Limit 50 được set làm giá trị `default` hardcode trong `scraper.yml`.
+
+**Giải pháp**:
+
+### 1. Fix Proxy Rotation Logic
+- Viết thêm hàm helper `fetch_with_rotation` trong `scraper/scraper.py`.
+- Bao bọc toàn bộ các lời gọi `fetch_page` của Step 1, Step 2 và Step 3 vào trong hàm `fetch_with_rotation` để nếu `403` hoặc lỗi khác xảy ra thì script sẽ tự động chuyển sang IP proxy khác trong free proxy pool và retry thay vì bị sập ngay lập tức.
+- Chỉnh tham số `USE_FREE_PROXY` từ `'false'` thành `'true'` trong `scraper.yml` để cho phép scraper tạo pool chứa proxy miễn phí khi chạy ở mode Github Action.
+
+### 2. Cập nhật Chapter Limit trong Actions
+- Trong `scraper.yml`, thay đổi giá trị default của `chapter_limit` trong event `workflow_dispatch` thành `'5'`. (Để cho phép test thủ công giới hạn 5 chương).
+- Đổi fallback của `CHAPTER_LIMIT` env trong `env` section từ `'50'` thành `'0'` (tương đương với việc không có giới hạn, cào đến trang cuối cùng) trong trường hợp job được trigger tự động/schedule (khi `chapter_limit` không được truyền vào).
+
+**Kết quả**:
+- ✅ Code đã vượt qua phần check lỗi logic syntax (Dry-run bằng Python qua lại 0 lỗi).
+- ✅ Proxy rotation nay bao trọn mọi bước fetch HTML.
+- ✅ Cấu hình đã đáp ứng yêu cầu: `Limit: 0` (vô tận) với hệ thống tự động, và mặc định `Limit: 5` khi bấm test trên Github UI.

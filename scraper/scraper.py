@@ -212,6 +212,22 @@ async def download_image(page: Page, img_url: str) -> bytes | None:
     return None
 
 
+async def fetch_with_rotation(playwright, browser: Browser, page: Page, url: str, wait_for_selector: str | None = None, max_rotations: int = 5) -> tuple[str, Browser, Page]:
+    """Fetch a page, rotating proxy if it fails."""
+    global proxy_pool
+    for rotation in range(max_rotations):
+        try:
+            html = await fetch_page(page, url, wait_for_selector=wait_for_selector)
+            return html, browser, page
+        except RuntimeError:
+            if proxy_pool and proxy_pool.size > 0:
+                print(f"  🔄 Proxy failed for {url}, rotating... ({rotation + 1}/{max_rotations})")
+                browser, _, page = await rotate_proxy(playwright, browser)
+            else:
+                raise
+    raise RuntimeError(f"Failed to fetch {url} after {max_rotations} proxy rotations")
+
+
 async def run_scraper():
     """Main scraping pipeline."""
     global proxy_pool, current_proxy
@@ -251,7 +267,7 @@ async def run_scraper():
         try:
             # ─── Step 1: Scrape story info ─────────────────
             print("\n📚 Scraping story info...")
-            html = await fetch_page(page, STORY_SOURCE_URL)
+            html, browser, page = await fetch_with_rotation(p, browser, page, STORY_SOURCE_URL)
             story_info = parser.parse_story_info(html, STORY_SOURCE_URL)
             print(f"  Title: {story_info['title']}")
             print(f"  Author: {story_info.get('author', 'N/A')}")
@@ -285,7 +301,7 @@ async def run_scraper():
             # ─── Step 2: Scrape chapter list (with pagination) ─────
             print("\n📋 Scraping chapter list...")
             first_page_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=1)
-            first_page_html = await fetch_page(page, first_page_url)
+            first_page_html, browser, page = await fetch_with_rotation(p, browser, page, first_page_url)
             
             all_chapters = parser.parse_chapter_list(first_page_html)
             max_pages = parser.parse_max_pages(first_page_html)
@@ -325,7 +341,7 @@ async def run_scraper():
                 else:
                     # URL-based pagination (TruyenFull)
                     p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=p)
-                    p_html = await fetch_page(page, p_url)
+                    p_html, browser, page = await fetch_with_rotation(playwright=p, browser=browser, page=page, url=p_url)
                 
                 p_chapters = parser.parse_chapter_list(p_html)
                 
@@ -379,21 +395,20 @@ async def run_scraper():
                 # Fetch chapter page with proxy rotation on failure
                 ch_html = None
                 # Define selector to wait for based on site
-                content_selector = ".truyen, .chapter-c, #chapter-c, .content, #article"
+                content_selector = ".truyen, .chapter-c, #chapter-c, .content, #article, .prose-novel, #original-content-tab"
                 
-                for rotation in range(max_proxy_rotations):
-                    try:
-                        ch_html = await fetch_page(page, ch_info["source_url"], wait_for_selector=content_selector)
-                        break
-                    except RuntimeError:
-                        if proxy_pool and proxy_pool.size > 0:
-                            print(f"  🔄 Proxy failed, rotating... ({rotation + 1}/{max_proxy_rotations})")
-                            browser, context, page = await rotate_proxy(p, browser)
-                        else:
-                            raise
+                try:
+                    ch_html, browser, page = await fetch_with_rotation(
+                        p, browser, page, ch_info["source_url"], 
+                        wait_for_selector=content_selector,
+                        max_rotations=max_proxy_rotations
+                    )
+                except RuntimeError as e:
+                    print(f"  ❌ Failed to fetch chapter {ch_num} after all retries: {e}")
+                    continue
 
                 if not ch_html:
-                    print(f"  ❌ Failed to fetch chapter {ch_num} after all retries")
+                    print(f"  ❌ Failed to fetch chapter {ch_num} after all retries (no HTML)")
                     continue
 
                 content = parser.parse_chapter_content(ch_html)
