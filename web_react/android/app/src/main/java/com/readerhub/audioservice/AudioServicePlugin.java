@@ -38,37 +38,37 @@ public class AudioServicePlugin extends Plugin {
         String artist = call.getString("artist", "Unknown Artist");
         String coverUrl = call.getString("coverUrl", "");
 
-        getActivity().runOnUiThread(() -> {
-            try {
-                Intent serviceIntent = new Intent(getContext(), AudioForegroundService.class);
-                serviceIntent.putExtra("title", title);
-                serviceIntent.putExtra("artist", artist);
-                serviceIntent.putExtra("coverUrl", coverUrl);
-                
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                    getContext().startForegroundService(serviceIntent);
-                } else {
-                    getContext().startService(serviceIntent);
-                }
-                
-                call.resolve();
-            } catch (Exception e) {
-                call.reject("Failed to start service: " + e.getMessage());
+        try {
+            Intent serviceIntent = new Intent(getContext(), AudioForegroundService.class);
+            serviceIntent.putExtra("title", title);
+            serviceIntent.putExtra("artist", artist);
+            serviceIntent.putExtra("coverUrl", coverUrl);
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getContext().startForegroundService(serviceIntent);
+            } else {
+                getContext().startService(serviceIntent);
             }
-        });
+            
+            android.util.Log.d("AudioService", "Service started: " + title);
+            call.resolve();
+        } catch (Exception e) {
+            android.util.Log.e("AudioService", "Failed to start service", e);
+            call.reject("Failed to start service: " + e.getMessage());
+        }
     }
 
     @PluginMethod
     public void stopService(PluginCall call) {
-        getActivity().runOnUiThread(() -> {
-            try {
-                Intent serviceIntent = new Intent(getContext(), AudioForegroundService.class);
-                getContext().stopService(serviceIntent);
-                call.resolve();
-            } catch (Exception e) {
-                call.reject("Failed to stop service: " + e.getMessage());
-            }
-        });
+        try {
+            Intent serviceIntent = new Intent(getContext(), AudioForegroundService.class);
+            getContext().stopService(serviceIntent);
+            android.util.Log.d("AudioService", "Service stopped");
+            call.resolve();
+        } catch (Exception e) {
+            android.util.Log.e("AudioService", "Failed to stop service", e);
+            call.reject("Failed to stop service: " + e.getMessage());
+        }
     }
 
     @PluginMethod
@@ -76,35 +76,47 @@ public class AudioServicePlugin extends Plugin {
         String title = call.getString("title", "Unknown Title");
         String artist = call.getString("artist", "Unknown Artist");
 
-        getActivity().runOnUiThread(() -> {
-            try {
-                Intent intent = new Intent(getContext(), AudioForegroundService.class);
-                intent.setAction("UPDATE_METADATA");
-                intent.putExtra("title", title);
-                intent.putExtra("artist", artist);
+        try {
+            Intent intent = new Intent(getContext(), AudioForegroundService.class);
+            intent.setAction("UPDATE_METADATA");
+            intent.putExtra("title", title);
+            intent.putExtra("artist", artist);
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getContext().startForegroundService(intent);
+            } else {
                 getContext().startService(intent);
-                call.resolve();
-            } catch (Exception e) {
-                call.reject("Failed to update metadata: " + e.getMessage());
             }
-        });
+            
+            android.util.Log.d("AudioService", "Metadata updated: " + title);
+            call.resolve();
+        } catch (Exception e) {
+            android.util.Log.e("AudioService", "Failed to update metadata", e);
+            call.reject("Failed to update metadata: " + e.getMessage());
+        }
     }
 
     @PluginMethod
     public void updatePlaybackState(PluginCall call) {
         boolean isPlaying = call.getBoolean("isPlaying", false);
 
-        getActivity().runOnUiThread(() -> {
-            try {
-                Intent intent = new Intent(getContext(), AudioForegroundService.class);
-                intent.setAction("UPDATE_PLAYBACK_STATE");
-                intent.putExtra("isPlaying", isPlaying);
+        try {
+            Intent intent = new Intent(getContext(), AudioForegroundService.class);
+            intent.setAction("UPDATE_PLAYBACK_STATE");
+            intent.putExtra("isPlaying", isPlaying);
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getContext().startForegroundService(intent);
+            } else {
                 getContext().startService(intent);
-                call.resolve();
-            } catch (Exception e) {
-                call.reject("Failed to update playback state: " + e.getMessage());
             }
-        });
+            
+            android.util.Log.d("AudioService", "Playback state updated: " + isPlaying);
+            call.resolve();
+        } catch (Exception e) {
+            android.util.Log.e("AudioService", "Failed to update playback state", e);
+            call.reject("Failed to update playback state: " + e.getMessage());
+        }
     }
 
     private void createNotificationChannel() {
@@ -120,6 +132,7 @@ public class AudioServicePlugin extends Plugin {
             notificationManager = getContext().getSystemService(NotificationManager.class);
             if (notificationManager != null) {
                 notificationManager.createNotificationChannel(channel);
+                android.util.Log.d("AudioService", "Notification channel created");
             }
         }
     }

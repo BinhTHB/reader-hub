@@ -29,10 +29,13 @@ public class AudioForegroundService extends Service {
     public void onCreate() {
         super.onCreate();
         notificationManager = getSystemService(NotificationManager.class);
+        android.util.Log.d("AudioForegroundService", "Service created");
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        android.util.Log.d("AudioForegroundService", "onStartCommand called");
+        
         if (intent != null) {
             String action = intent.getAction();
             
@@ -42,17 +45,25 @@ public class AudioForegroundService extends Service {
                 currentArtist = intent.getStringExtra("artist");
                 currentCoverUrl = intent.getStringExtra("coverUrl");
                 isPlaying = true;
+                android.util.Log.d("AudioForegroundService", "Starting with: " + currentTitle);
             } else if ("UPDATE_METADATA".equals(action)) {
                 currentTitle = intent.getStringExtra("title");
                 currentArtist = intent.getStringExtra("artist");
+                android.util.Log.d("AudioForegroundService", "Metadata updated: " + currentTitle);
             } else if ("UPDATE_PLAYBACK_STATE".equals(action)) {
                 isPlaying = intent.getBooleanExtra("isPlaying", false);
+                android.util.Log.d("AudioForegroundService", "Playback state: " + isPlaying);
             }
         }
 
         // Create and show notification
-        Notification notification = createNotification();
-        startForeground(NOTIFICATION_ID, notification);
+        try {
+            Notification notification = createNotification();
+            startForeground(NOTIFICATION_ID, notification);
+            android.util.Log.d("AudioForegroundService", "Notification shown");
+        } catch (Exception e) {
+            android.util.Log.e("AudioForegroundService", "Failed to show notification", e);
+        }
 
         return START_STICKY;
     }
@@ -61,6 +72,10 @@ public class AudioForegroundService extends Service {
         // Get app icon
         int iconResId = getApplicationContext().getResources()
             .getIdentifier("ic_launcher", "mipmap", getPackageName());
+        
+        if (iconResId == 0) {
+            iconResId = android.R.drawable.ic_media_play;
+        }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle(currentTitle)
@@ -69,9 +84,10 @@ public class AudioForegroundService extends Service {
             .setStyle(new androidx.media.app.NotificationCompat.MediaStyle()
                 .setShowActionsInCompactView(0, 1, 2))
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true);
+            .setOngoing(true)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC);
 
-        // Load cover image
+        // Load cover image in background
         if (currentCoverUrl != null && !currentCoverUrl.isEmpty()) {
             try {
                 Bitmap bitmap = loadBitmapFromUrl(currentCoverUrl);
@@ -79,7 +95,7 @@ public class AudioForegroundService extends Service {
                     builder.setLargeIcon(bitmap);
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                android.util.Log.e("AudioForegroundService", "Failed to load cover", e);
             }
         }
 
@@ -117,11 +133,13 @@ public class AudioForegroundService extends Service {
             URL url = new URL(urlString);
             HttpURLConnection connection = (HttpURLConnection) url.openConnection();
             connection.setDoInput(true);
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
             connection.connect();
             InputStream input = connection.getInputStream();
             return BitmapFactory.decodeStream(input);
         } catch (Exception e) {
-            e.printStackTrace();
+            android.util.Log.e("AudioForegroundService", "Failed to load bitmap", e);
             return null;
         }
     }
@@ -130,6 +148,7 @@ public class AudioForegroundService extends Service {
     public void onDestroy() {
         super.onDestroy();
         stopForeground(true);
+        android.util.Log.d("AudioForegroundService", "Service destroyed");
     }
 
     @Override
