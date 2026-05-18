@@ -12,6 +12,12 @@ import json
 import os
 import sys
 
+# Force UTF-8 encoding for Windows
+if sys.platform == 'win32':
+    import codecs
+    sys.stdout = codecs.getwriter('utf-8')(sys.stdout.buffer, 'strict')
+    sys.stderr = codecs.getwriter('utf-8')(sys.stderr.buffer, 'strict')
+
 from playwright.async_api import async_playwright
 from playwright_stealth import stealth_async
 
