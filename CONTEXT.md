@@ -1215,13 +1215,13 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
   - **Mục đích**: Giúp bảo vệ tài nguyên máy chủ, tránh lãng phí thời gian chạy vô ích của GitHub Actions và cập nhật trạng thái lỗi chính xác lên Supabase.
   - Reset bộ đếm này về `0` ngay khi có một chương tải thành công.
 
-- **Nâng cấp Bể chứa Proxy (Proxy Pool) lớn hơn**:
-  - Nâng số lượng proxy hoạt động tối đa từ `20` lên **`50`** (`max_proxies=50`).
-  - Đồng thời tăng số lượng luồng kiểm tra song song từ `30` lên **`60`** (`test_concurrency=60`) để đảm bảo quá trình kiểm thử tìm ra 50 proxy diễn ra cực nhanh mà không làm chậm thời gian khởi động Job.
-  - **Mục đích**: Tăng dung lượng dự phòng của bể chứa proxy lên gấp 2.5 lần, giúp Job có đủ proxy xoay vòng để tải nhiều chương hơn (đặc biệt phù hợp cho các đợt cào dài từ 100 - 200 chương).
+- **Siêu nâng cấp Bể chứa Proxy (Proxy Pool) cho quy mô cực đại**:
+  - Nâng số lượng proxy hoạt động tối đa lên **`200`** (`max_proxies=200`).
+  - Đồng thời tăng số lượng luồng kiểm tra song song lên **`150`** (`test_concurrency=150`) để lọc ra 200 proxy sống siêu tốc cực kỳ nhanh chóng (~1.5 phút).
+  - **Mục đích**: Chuẩn bị đầy đủ "đạn dược" dự phòng gấp 10 lần so với ban đầu, giúp 1 Job duy nhất chạy trơn tru, bền bỉ và đủ khả năng cào sạch **500 chương liên tục** mà không lo cạn kiệt proxy trên môi trường GitHub Actions miễn phí (Public Repo).
 
 **Kết quả**:
-- ✅ Bể chứa proxy lớn gấp 2.5 lần (50 proxy) giúp kéo dài độ bền bỉ khi cào truyện dài.
+- ✅ Siêu bể chứa proxy quy mô cực đại (200 proxy) sẵn sàng cho các chiến dịch cào 500+ chương.
 - ✅ Vượt tường lửa Cloudflare tuyệt đối mà không cần chia nhỏ job phức tạp ở mức YAML Actions.
 - ✅ Ngắt tiến trình thông minh nếu bị chặn cứng để tiết kiệm thời gian chạy (GitHub Actions minutes).
 - ✅ Tiết kiệm 95% thời gian setup máy ảo, chạy liên tục tự động và cực kỳ an toàn.
