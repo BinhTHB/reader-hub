@@ -453,6 +453,7 @@ async def run_scraper():
             # Keep track of active downloads in this run to batch them
             active_scrapes_in_batch = 0
             BATCH_SIZE = 15  # Number of chapters per batch before rotating session & proxy
+            consecutive_failures = 0  # Track consecutive failures to abort on permanent blocks
 
             for i, ch_info in enumerate(target_chapters):
                 ch_num = ch_info["chapter_number"]
@@ -493,12 +494,24 @@ async def run_scraper():
                         wait_for_selector=content_selector,
                         max_rotations=max_proxy_rotations
                     )
+                    consecutive_failures = 0  # Reset consecutive failures on successful fetch
                 except RuntimeError as e:
                     print(f"  ❌ Failed to fetch chapter {ch_num} after all retries: {e}")
+                    consecutive_failures += 1
+                    if consecutive_failures >= 3:
+                        raise RuntimeError(
+                            f"Aborting job: {consecutive_failures} consecutive chapter failures detected. "
+                            f"The IP or Proxy pool is likely permanently blocked by Cloudflare."
+                        )
                     continue
 
                 if not ch_html:
                     print(f"  ❌ Failed to fetch chapter {ch_num} after all retries (no HTML)")
+                    consecutive_failures += 1
+                    if consecutive_failures >= 3:
+                        raise RuntimeError(
+                            f"Aborting job: {consecutive_failures} consecutive chapter failures detected (no HTML)."
+                        )
                     continue
 
                 content = parser.parse_chapter_content(ch_html)
