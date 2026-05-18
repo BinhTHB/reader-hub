@@ -64,7 +64,7 @@ jobs:
 
       - name: Run scraper
         working-directory: scraper
-        run: python scraper.py
+        run: python -u scraper.py
         env:
           STORY_SOURCE_URL: ${{ github.event.client_payload.source_url || github.event.inputs.source_url || '' }}
           CHAPTER_START: ${{ github.event.client_payload.chapter_start || github.event.inputs.chapter_start || '1' }}
@@ -105,6 +105,6 @@ jobs:
 
       - name: Run multi-source search
         working-directory: scraper
-        run: python search_sources.py "${{ github.event.client_payload.query || github.event.inputs.search_query }}"
+        run: python -u search_sources.py "${{ github.event.client_payload.query || github.event.inputs.search_query }}"
         env:
           USE_FREE_PROXY: 'true'
