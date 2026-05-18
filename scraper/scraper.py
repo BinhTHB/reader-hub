@@ -325,33 +325,33 @@ async def run_scraper():
             current_max_ch = max([ch["chapter_number"] for ch in all_chapters]) if all_chapters else 0
             should_fetch_all = CHAPTER_LIMIT == 0
             
-            p = 2
-            while p <= max_pages:
+            page_num = 2
+            while page_num <= max_pages:
                 # Stop early if we have enough chapters (unless fetching all)
                 if not should_fetch_all and current_max_ch >= CHAPTER_START + CHAPTER_LIMIT:
                     break
                 
-                print(f"  📑 Fetching chapter list page {p}/{max_pages}...")
+                print(f"  📑 Fetching chapter list page {page_num}/{max_pages}...")
                 await random_delay()
                 
                 if is_metruyenchu and site_internal_id:
                     # Use JavaScript to load next page
                     try:
-                        await page.evaluate(f"page({site_internal_id}, {p})")
+                        await page.evaluate(f"page({site_internal_id}, {page_num})")
                         await page.wait_for_timeout(1000)  # Wait for content to load
                         p_html = await page.content()
                     except Exception as e:
-                        print(f"  ⚠️ Failed to load page {p} via JavaScript: {e}")
+                        print(f"  ⚠️ Failed to load page {page_num} via JavaScript: {e}")
                         break
                 else:
                     # URL-based pagination (TruyenFull)
-                    p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=p)
+                    p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=page_num)
                     p_html, browser, page = await fetch_with_rotation(playwright=p, browser=browser, page=page, url=p_url)
                 
                 p_chapters = parser.parse_chapter_list(p_html)
                 
                 if not p_chapters:
-                    print(f"  ⚠️ No chapters found on page {p}, stopping")
+                    print(f"  ⚠️ No chapters found on page {page_num}, stopping")
                     break
                 
                 # Deduplicate chapters by chapter_number
@@ -359,13 +359,13 @@ async def run_scraper():
                 new_chapters = [ch for ch in p_chapters if ch["chapter_number"] not in existing_nums]
                 
                 if not new_chapters:
-                    print(f"  ⚠️ No new chapters on page {p}, stopping")
+                    print(f"  ⚠️ No new chapters on page {page_num}, stopping")
                     break
                     
                 all_chapters.extend(new_chapters)
                 current_max_ch = max([ch["chapter_number"] for ch in all_chapters])
                 print(f"  Added {len(new_chapters)} new chapters (total: {len(all_chapters)})")
-                p += 1
+                page_num += 1
 
             # Filter to requested range
             # Filter to requested range
