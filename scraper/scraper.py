@@ -261,7 +261,7 @@ async def run_scraper():
     # ─── Build proxy pool ──────────────────────────────
     if not PROXY_URL and USE_FREE_PROXY:
         print("\n🌐 Building free proxy pool...")
-        proxy_pool = await build_proxy_pool(max_proxies=50, test_concurrency=60)
+        proxy_pool = await build_proxy_pool(max_proxies=200, test_concurrency=150)
         if proxy_pool.size == 0:
             print("  ⚠️ No working free proxies found, will connect directly")
             current_proxy = None
