@@ -450,6 +450,10 @@ async def run_scraper():
             existing_ch_nums = get_existing_chapters(story_info["slug"])
             print(f"  Found {len(existing_ch_nums)} chapters already in R2.")
 
+            # Keep track of active downloads in this run to batch them
+            active_scrapes_in_batch = 0
+            BATCH_SIZE = 15  # Number of chapters per batch before rotating session & proxy
+
             for i, ch_info in enumerate(target_chapters):
                 ch_num = ch_info["chapter_number"]
                 print(f"\n📖 [{i+1}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
@@ -459,6 +463,24 @@ async def run_scraper():
                     print("  ⏭️ Already exists in R2, skipping")
                     chapters_scraped += 1
                     continue
+
+                # Batch cool-down & session refresh
+                if active_scrapes_in_batch > 0 and active_scrapes_in_batch % BATCH_SIZE == 0:
+                    cooldown = random.randint(90, 150)  # 1.5 - 2.5 minutes cool-down
+                    print(f"\n⏰ Reached batch size of {BATCH_SIZE} chapters. Initiating cool-down to bypass Cloudflare...")
+                    print(f"   - Closing active browser session and proxy.")
+                    try:
+                        await page.close()
+                        await browser.close()
+                    except Exception as e:
+                        print(f"  ⚠️ Error closing browser: {e}")
+                    
+                    print(f"   - Sleeping for {cooldown} seconds...")
+                    await asyncio.sleep(cooldown)
+                    
+                    print(f"   - Opening fresh browser session with a new rotated proxy...")
+                    browser, _, page = await rotate_proxy(p, None)
+                    active_scrapes_in_batch = 0
 
                 # Fetch chapter page with proxy rotation on failure
                 ch_html = None
@@ -508,6 +530,7 @@ async def run_scraper():
                 )
 
                 chapters_scraped += 1
+                active_scrapes_in_batch += 1
 
                 # Update progress periodically
                 if chapters_scraped % 5 == 0:
