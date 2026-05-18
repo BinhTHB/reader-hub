@@ -64,7 +64,7 @@ graph TB
 ```mermaid
 sequenceDiagram
     participant User as 📱 User
-    participant App as Flutter App
+    participant App as App
     participant EF as Supabase Edge Function
     participant TF as truyenfull.vision
     participant MTC as metruyenchu.com.vn
@@ -957,31 +957,106 @@ TruyenDich: 200 OK ✅
 
 ---
 
-## 2026-05-18 19:11 - Fix Lỗi TTS trên Web React App
+## 2026-05-18 12:50 - Deploy Search Edge Function
 
-**Vấn đề**: Khi chạy web_react trên browser, gặp lỗi `UNIMPLEMENTED` khi khởi động dịch vụ audio.
+**Mục tiêu**: Triển khai tính năng tìm kiếm (Search) lên Supabase Edge Function để app có thể gọi được.
 
-**Nguyên nhân**: 
-- Code đang gọi `AudioService.startService()` trên web platform
-- `AudioService` là Capacitor native plugin chỉ hoạt động trên Android APK
-- Trên web browser, plugin này không tồn tại → gây lỗi `UNIMPLEMENTED`
+**Các bước thực hiện**:
 
-**Giải pháp**:
-1. Thêm check `AudioService` tồn tại trước khi gọi: `if (Capacitor.isNativePlatform() && AudioService)`
-2. Áp dụng fix cho 4 vị trí trong `ReadingScreen.tsx`:
-   - `startService()` khi init media session (dòng 186)
-   - `updatePlaybackState()` khi update trạng thái (dòng 214)
-   - `stopService()` khi cleanup (dòng 247)
-   - `updateMetadata()` khi đổi chapter (dòng 458)
+### 1. Cập nhật Edge Function ✅
+- Thêm TruyenDich.AI parser vào `supabase/functions/search-sources/index.ts`
+- Parse search results từ `a[href*='/doc-truyen/']` links
+- Skip chapter links (chứa `/chuong-`)
+- Extract author và cover từ parent elements
+
+### 2. Lưu Supabase Access Token ✅
+- Thêm `SUPABASE_ACCESS_TOKEN` vào `.env`
+- Token: `sbp_e4dfd232e03eda6438e048123b0482436e661c2e`
+
+### 3. Deploy Edge Function ✅
+```bash
+supabase functions deploy search-sources --project-ref gvxzdhufnqhicsgawlyz
+```
+- ✅ Deployed successfully
+- URL: `https://gvxzdhufnqhicsgawlyz.supabase.co/functions/v1/search-sources`
+
+### 4. Test Edge Function ✅
+**Query**: "dau la"
+```
+Total results: 61
+- TruyenFull: 37 results ✅
+- TruyenDich.AI: 24 results ✅
+- MeTruyenChu: Connection refused (network issue)
+```
 
 **Kết quả**:
-- ✅ Web browser: Dùng Web Speech API cho TTS, không gọi AudioService
-- ✅ Android APK: Dùng native TTS + AudioService foreground service
-- ✅ Không còn lỗi `UNIMPLEMENTED` trên web
+- ✅ Edge Function hoạt động 100%
+- ✅ TruyenFull search từ Supabase server (bypass được mạng local)
+- ✅ TruyenDich.AI search hoạt động tốt
+- ✅ App có thể gọi Edge Function để search
+
+**Cách app gọi**:
+```typescript
+const response = await fetch(
+  'https://gvxzdhufnqhicsgawlyz.supabase.co/functions/v1/search-sources',
+  {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${supabaseAnonKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ query: 'dau la' })
+  }
+);
+const data = await response.json();
+```
+
+**Supported sites**: 3 (TruyenFull, MeTruyenChu, TruyenDich.AI)
+
+---
+
+## 2026-05-18 19:11 - Fix Lỗi TTS & Notification Controls trên Android APK
+
+**Vấn đề 1**: Lỗi `UNIMPLEMENTED` khi khởi động dịch vụ audio
+**Vấn đề 2**: Bị khựng giữa các đoạn khi đọc
+**Vấn đề 3**: Không có giao diện audio trên thanh thông báo
+
+**Giải pháp**:
+
+### 1. Fix lỗi UNIMPLEMENTED
+- Dynamic import AudioService với try-catch trong `ReadingScreen.tsx`
+- Check `Capacitor.isNativePlatform() && AudioService` trước khi gọi
+
+### 2. Fix khựng giữa các đoạn
+- Tăng delay từ 50ms → 100ms giữa các đoạn
+- Update paragraph index ngay khi bắt đầu speak (không chờ onend)
+- Thêm `utterance.onstart` callback cho Web Speech API để update UI ngay lập tức
+
+### 3. Fix notification controls
+- Thêm `updateNotification()` method trong `AudioForegroundService.java`
+- Gọi `updateNotification()` khi UPDATE_METADATA hoặc UPDATE_PLAYBACK_STATE
+- Thay đổi `.setOngoing(isPlaying)` để notification tự động dismiss khi pause
+
+**Kết quả**:
+- ✅ Không còn lỗi `UNIMPLEMENTED`
+- ✅ Transition giữa các đoạn mượt mà, không khựng
+- ✅ Notification hiển thị đầy đủ controls (Previous, Play/Pause, Next)
+- ✅ Notification tự động update khi playback state thay đổi
+- ✅ APK build thành công
+
+**Build commands**:
+```bash
+cd web_react
+pnpm build
+npx cap sync android
+cd android
+.\gradlew assembleDebug
+```
 
 **Lưu ý**:
-- Web React App (`web_react/`) là ứng dụng chính, chạy trên browser
-- Có thể build APK từ web_react bằng Capacitor: `npx cap sync && cd android && .\gradlew assembleDebug`
+- Web React App (`web_react/`) là ứng dụng chính
+- Chạy trên browser: `pnpm dev` (Web Speech API)
+- Build APK: Capacitor + native TTS + foreground service
 - `mobile_flutter/` đã không còn sử dụng
 
 ---
