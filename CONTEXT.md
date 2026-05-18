@@ -1089,3 +1089,11 @@ cd android
 - ✅ Code đã vượt qua phần check lỗi logic syntax (Dry-run bằng Python qua lại 0 lỗi).
 - ✅ Proxy rotation nay bao trọn mọi bước fetch HTML.
 - ✅ Cấu hình đã đáp ứng yêu cầu: `Limit: 0` (vô tận) với hệ thống tự động, và mặc định `Limit: 5` khi bấm test trên Github UI.
+- ✅ **Phát hiện & Sửa lỗi Argparse Defaults**: 
+  - *Vấn đề*: Tham số `default=1` của `chapter_start` và `default=0` của `chapter_limit` trong `argparse` làm cho giá trị CLI luôn truthy, dẫn đến việc bỏ qua các biến môi trường cấu hình từ Github Action (như `CHAPTER_START=3`).
+  - *Giải pháp*: Cập nhật default thành `None` trong `scraper.py` và áp dụng fallback logic kiểm tra `is not None` để ưu tiên đúng thứ tự `CLI Argument` > `Environment Variables`.
+- ✅ **Đã kiểm chứng thực tế toàn bộ**:
+  - Chạy Github Action chỉ định cào riêng **Chương 3** (`chapter_start: 3`, `chapter_limit: 1`).
+  - **Proxy Rotation hoạt động hoàn hảo trong thực tế**: Khi proxy đầu tiên (`190.61.118.114`) bị timeout 3 lần liên tiếp tại bước lấy thông tin truyện, scraper đã tự động kích hoạt xoay sang proxy mới (`218.108.131.186`) thành công.
+  - Script tiếp tục chạy mượt mà, lấy được danh sách chương, khoanh vùng chính xác **Chương 3: 03【 Khảo Vấn 】**, cào thành công **80 paragraphs (1783 words)** và upload trực tiếp lên Cloudflare R2 từ Github Actions runner!
+  - Link workflow thành công: https://github.com/BinhTHB/reader-hub/actions/runs/26040215753
