@@ -124,3 +124,29 @@ def check_chapter_exists(story_slug: str, chapter_number: int) -> bool:
         return True
     except client.exceptions.ClientError:
         return False
+
+
+def get_existing_chapters(story_slug: str) -> set[int]:
+    """Get all existing chapter numbers for a story in R2 using a single list request."""
+    client = get_r2_client()
+    bucket = os.environ.get("R2_BUCKET_NAME", "reader-hub-data")
+    prefix = f"stories/{story_slug}/chapters/"
+    
+    existing = set()
+    try:
+        paginator = client.get_paginator('list_objects_v2')
+        for page in paginator.paginate(Bucket=bucket, Prefix=prefix):
+            if 'Contents' in page:
+                for obj in page['Contents']:
+                    key = obj['Key']
+                    filename = key.split('/')[-1]
+                    if filename.endswith('.json'):
+                        try:
+                            ch_num = int(filename.split('.')[0])
+                            existing.add(ch_num)
+                        except ValueError:
+                            pass
+    except Exception as e:
+        print(f"  ⚠️ Error listing existing chapters from R2: {e}")
+        
+    return existing

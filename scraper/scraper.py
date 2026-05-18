@@ -31,7 +31,7 @@ from playwright_stealth import stealth_async
 
 from parsers import detect_parser
 from proxy_rotator import build_proxy_pool, ProxyPool, ProxyInfo, get_playwright_proxy_config
-from r2_uploader import upload_chapter, upload_cover, check_chapter_exists
+from r2_uploader import upload_chapter, upload_cover, check_chapter_exists, get_existing_chapters
 from supabase_client import (
     upsert_story,
     upsert_chapter,
@@ -170,10 +170,14 @@ async def rotate_proxy(playwright, browser: Browser) -> tuple[Browser, BrowserCo
 async def fetch_page(page: Page, url: str, retries: int = 3, wait_for_selector: str | None = None) -> str:
     """Navigate to URL and return HTML, with retries."""
     clean_url = url.split('#')[0]
-    for attempt in range(retries):
+    
+    # Optimize for free proxies: fail-fast to rotate to another proxy sooner
+    actual_retries = 2 if USE_FREE_PROXY else retries
+    timeout = 25000 if USE_FREE_PROXY else 60000
+    
+    for attempt in range(actual_retries):
         try:
-            # Increase timeout to 60s for GitHub Actions
-            response = await page.goto(clean_url, wait_until="domcontentloaded", timeout=60000)
+            response = await page.goto(clean_url, wait_until="domcontentloaded", timeout=timeout)
             
             if response and response.status == 200:
                 # Give a small extra time for JS to render if needed
@@ -190,20 +194,24 @@ async def fetch_page(page: Page, url: str, retries: int = 3, wait_for_selector: 
             
             elif response and response.status == 403:
                 print(f"  ⚠️ 403 Forbidden on attempt {attempt + 1}, retrying...")
-                await asyncio.sleep(random.uniform(10, 15))
+                sleep_time = random.uniform(3, 5) if USE_FREE_PROXY else random.uniform(10, 15)
+                await asyncio.sleep(sleep_time)
             elif response and response.status == 500:
                 print(f"  ⚠️ 500 Internal Server Error on attempt {attempt + 1}, possible bot detection. Retrying...")
-                await asyncio.sleep(15)
+                sleep_time = 5 if USE_FREE_PROXY else 15
+                await asyncio.sleep(sleep_time)
             else:
                 print(f"  ⚠️ HTTP {response.status if response else 'None'} on attempt {attempt + 1}")
-                await asyncio.sleep(random.uniform(5, 10))
+                sleep_time = random.uniform(2, 5) if USE_FREE_PROXY else random.uniform(5, 10)
+                await asyncio.sleep(sleep_time)
         except Exception as e:
             print(f"  ❌ Error on attempt {attempt + 1}: {str(e)[:100]}")
-            if attempt < retries - 1:
-                print(f"  🔄 Retrying in 10-15 seconds...")
-                await asyncio.sleep(random.uniform(10, 15))
+            if attempt < actual_retries - 1:
+                sleep_time = random.uniform(2, 5) if USE_FREE_PROXY else random.uniform(10, 15)
+                print(f"  🔄 Retrying in {sleep_time:.1f} seconds...")
+                await asyncio.sleep(sleep_time)
 
-    raise RuntimeError(f"Failed to fetch {clean_url} after {retries} attempts")
+    raise RuntimeError(f"Failed to fetch {clean_url} after {actual_retries} attempts")
 
 
 async def download_image(page: Page, img_url: str) -> bytes | None:
@@ -438,12 +446,16 @@ async def run_scraper():
             await random_delay()
 
             # ─── Step 3: Scrape each chapter ───────────────
+            print("\n🔍 Checking R2 for existing chapters to optimize scraping...")
+            existing_ch_nums = get_existing_chapters(story_info["slug"])
+            print(f"  Found {len(existing_ch_nums)} chapters already in R2.")
+
             for i, ch_info in enumerate(target_chapters):
                 ch_num = ch_info["chapter_number"]
                 print(f"\n📖 [{i+1}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
 
                 # Skip if already scraped
-                if check_chapter_exists(story_info["slug"], ch_num):
+                if ch_num in existing_ch_nums:
                     print("  ⏭️ Already exists in R2, skipping")
                     chapters_scraped += 1
                     continue
