@@ -122,6 +122,60 @@ const SITES: SiteConfig[] = [
       return results;
     },
   },
+  {
+    name: "truyendich",
+    displayName: "TruyenDich.AI",
+    searchUrl: (q: string) =>
+      `https://truyendich.ai/tim-kiem?q=${encodeURIComponent(q)}`,
+    parseResults: (html: string, _baseUrl: string): SearchResult[] => {
+      const doc = new DOMParser().parseFromString(html, "text/html");
+      if (!doc) return [];
+
+      const results: SearchResult[] = [];
+      const links = doc.querySelectorAll("a[href*='/doc-truyen/']");
+
+      for (const link of links) {
+        const href = link.getAttribute("href") || "";
+        
+        // Skip chapter links
+        if (href.includes("/chuong-")) continue;
+        
+        const title = link.textContent?.trim() || "";
+        if (!title) continue;
+
+        // Try to find author and cover from parent
+        let author: string | null = null;
+        let coverUrl: string | null = null;
+        
+        const parent = link.parentElement?.parentElement;
+        if (parent) {
+          const authorEl = parent.querySelector(".author, [class*='author']");
+          if (authorEl) author = authorEl.textContent?.trim() || null;
+          
+          const imgEl = parent.querySelector("img");
+          if (imgEl) {
+            const src = imgEl.getAttribute("src") || "";
+            coverUrl = src.startsWith("http") ? src : `https://truyendich.ai${src}`;
+          }
+        }
+
+        const sourceUrl = href.startsWith("http")
+          ? href
+          : `https://truyendich.ai${href}`;
+
+        results.push({
+          title,
+          author,
+          coverUrl,
+          sourceUrl,
+          sourceName: "truyendich",
+          sourceDisplay: "TruyenDich.AI",
+        });
+      }
+      
+      return results;
+    },
+  },
 ];
 
 // ─── Main Handler ─────────────────────────────────────────
