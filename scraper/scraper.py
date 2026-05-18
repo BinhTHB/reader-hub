@@ -308,9 +308,59 @@ async def run_scraper():
             first_page_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=1)
             first_page_html, browser, page = await fetch_with_rotation(p, browser, page, first_page_url)
             
-            all_chapters = parser.parse_chapter_list(first_page_html)
-            max_pages = parser.parse_max_pages(first_page_html)
-            print(f"  Found {len(all_chapters)} chapters on page 1 (Total pages: {max_pages})")
+            # Optimization for TruyenDich: Programmatic URL generation based on latest chapter
+            if parser.name == "truyendich":
+                from bs4 import BeautifulSoup
+                import re
+                
+                max_chapter = 50
+                soup = BeautifulSoup(first_page_html, "lxml")
+                
+                # 1. Search for range buttons (e.g. "1 - 200", "201 - 400", "401 - 517")
+                buttons = soup.find_all("button")
+                for btn in buttons:
+                    text = parser.clean_text(btn.get_text())
+                    match = re.search(r"(\d+)\s*-\s*(\d+)", text)
+                    if match:
+                        max_chapter = max(max_chapter, int(match.group(2)))
+                
+                # 2. Search for "XXX chương" text
+                string_targets = []
+                try:
+                    string_targets.extend(soup.find_all(string=re.compile(r"\d+\s*chương", re.IGNORECASE)))
+                except:
+                    pass
+                try:
+                    string_targets.extend(soup.find_all(text=re.compile(r"\d+\s*chương", re.IGNORECASE)))
+                except:
+                    pass
+                for t in string_targets:
+                    match = re.search(r"(\d+)\s*chương", str(t), re.IGNORECASE)
+                    if match:
+                        max_chapter = max(max_chapter, int(match.group(1)))
+                
+                # Fallback to chapters listed on page 1 if not found
+                if max_chapter == 50:
+                    page_1_ch = parser.parse_chapter_list(first_page_html)
+                    if page_1_ch:
+                        max_chapter = max(ch["chapter_number"] for ch in page_1_ch)
+                
+                print(f"  ⚡ TruyenDich detected: latest chapter is {max_chapter}. Generating chapters list programmatically!")
+                
+                all_chapters = []
+                base_url = STORY_SOURCE_URL.rstrip('/')
+                for ch_num in range(1, max_chapter + 1):
+                    all_chapters.append({
+                        "chapter_number": ch_num,
+                        "title": f"Chương {ch_num}",
+                        "source_url": f"{base_url}/chuong-{ch_num}"
+                    })
+                max_pages = 1
+            else:
+                all_chapters = parser.parse_chapter_list(first_page_html)
+                max_pages = parser.parse_max_pages(first_page_html)
+                
+            print(f"  Found {len(all_chapters)} chapters (Total pages: {max_pages})")
 
             # Check if this is MeTruyenChu (JavaScript pagination)
             is_metruyenchu = parser.name == "metruyenchu"
