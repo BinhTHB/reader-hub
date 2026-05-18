@@ -4,19 +4,18 @@ import type { AudioServicePlugin } from './audioService';
 
 export class AudioServiceWeb extends WebPlugin implements AudioServicePlugin {
   async startService(options: { title: string; artist: string; coverUrl: string }): Promise<void> {
-    console.log('Audio Service started (Web):', options);
-    // Web doesn't need foreground service, Media Session handles it
+    console.log('[AudioServiceWeb] startService called with:', options);
   }
 
   async stopService(): Promise<void> {
-    console.log('Audio Service stopped (Web)');
+    console.log('[AudioServiceWeb] stopService called');
   }
 
   async updateMetadata(options: { title: string; artist: string }): Promise<void> {
-    console.log('Audio Service metadata updated (Web):', options);
+    console.log('[AudioServiceWeb] updateMetadata called with:', options);
   }
 
   async updatePlaybackState(options: { isPlaying: boolean }): Promise<void> {
-    console.log('Audio Service playback state updated (Web):', options);
+    console.log('[AudioServiceWeb] updatePlaybackState called with:', options);
   }
 }

@@ -170,6 +170,9 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
         : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`;
       
       console.log('[ReadingScreen] Initializing media session for:', chapter.title);
+      console.log('[ReadingScreen] Capacitor platform:', Capacitor.getPlatform());
+      console.log('[ReadingScreen] Is native:', Capacitor.isNativePlatform());
+      
       mediaService.initMediaSession(chapter, story.title, coverUrl);
       
       mediaService.setMediaSessionHandlers({
@@ -182,6 +185,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
       // Start foreground service on Android
       if (Capacitor.isNativePlatform()) {
         console.log('[ReadingScreen] Starting audio service...');
+        console.log('[ReadingScreen] AudioService object:', AudioService);
+        
         AudioService.startService({
           title: chapter?.title || `Chương ${chapter?.chapter_number}`,
           artist: story.title,
@@ -190,8 +195,11 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
           console.log('[ReadingScreen] Audio service started successfully');
         }).catch(err => {
           console.error('[ReadingScreen] Failed to start audio service:', err);
-          alert('Lỗi: Không thể khởi động dịch vụ audio. ' + err);
+          console.error('[ReadingScreen] Error details:', JSON.stringify(err));
+          alert('Lỗi: Không thể khởi động dịch vụ audio.\n' + JSON.stringify(err));
         });
+      } else {
+        console.log('[ReadingScreen] Skipping audio service (not native platform)');
       }
     }
   }, [chapter, story]);
