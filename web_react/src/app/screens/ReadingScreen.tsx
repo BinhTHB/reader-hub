@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ChevronLeft,
   Settings,
@@ -66,6 +66,53 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
   const [chapter, setChapter] = useState(initialChapter);
   const [chapters, setChapters] = useState<Chapter[]>([]);
   const [currentChapterIndex, setCurrentChapterIndex] = useState(0);
+  const [enableTapToSeek, setEnableTapToSeek] = useState(() => {
+    const saved = localStorage.getItem('reader_enableTapToSeek');
+    return saved === 'true';
+  });
+  const [shouldAutoResume, setShouldAutoResume] = useState(false);
+  const contentRef = React.useRef<HTMLDivElement>(null);
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
+  // Minimum swipe distance (in px)
+  const minSwipeDistance = 50;
+
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const onTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe && currentChapterIndex < chapters.length - 1) {
+      // Swipe left -> next chapter
+      goToNextChapter();
+    }
+    if (isRightSwipe && currentChapterIndex > 0) {
+      // Swipe right -> previous chapter
+      goToPreviousChapter();
+    }
+  };
+
+  // Auto-scroll to current paragraph
+  useEffect(() => {
+    if (isPlaying && contentRef.current) {
+      const paragraphElement = contentRef.current.querySelector(`[data-paragraph-index="${currentParagraphIndex}"]`);
+      if (paragraphElement) {
+        paragraphElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }
+  }, [currentParagraphIndex, isPlaying]);
 
   // Save settings to localStorage
   useEffect(() => {
@@ -89,6 +136,10 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
   }, [speechPitch]);
 
   useEffect(() => {
+    localStorage.setItem('reader_enableTapToSeek', enableTapToSeek.toString());
+  }, [enableTapToSeek]);
+
+  useEffect(() => {
     if (chapter?.story_id) {
       loadChapters();
     }
@@ -100,6 +151,73 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
       saveReadingHistory();
     }
   }, [chapter?.text_r2_url]);
+
+  // Save reading position periodically and on unmount
+  useEffect(() => {
+    const saveInterval = setInterval(() => {
+      if (chapter?.id) {
+        const positions = localStorage.getItem('reading_positions') || '{}';
+        const positionsMap = JSON.parse(positions);
+
+        positionsMap[chapter.id] = {
+          paragraphIndex: currentParagraphIndex,
+          isPlaying: isPlaying,
+          timestamp: new Date().toISOString(),
+        };
+
+        console.log('Auto-saving position for chapter', chapter.id, ':', positionsMap[chapter.id]);
+        localStorage.setItem('reading_positions', JSON.stringify(positionsMap));
+      }
+    }, 2000); // Save every 2 seconds
+
+    return () => {
+      clearInterval(saveInterval);
+      // Final save on unmount
+      if (chapter?.id) {
+        const positions = localStorage.getItem('reading_positions') || '{}';
+        const positionsMap = JSON.parse(positions);
+
+        positionsMap[chapter.id] = {
+          paragraphIndex: currentParagraphIndex,
+          isPlaying: isPlaying,
+          timestamp: new Date().toISOString(),
+        };
+
+        console.log('Cleanup: Final save for chapter', chapter.id, ':', positionsMap[chapter.id]);
+        localStorage.setItem('reading_positions', JSON.stringify(positionsMap));
+      }
+    };
+  }, [chapter?.id, currentParagraphIndex, isPlaying]);
+
+  // Restore reading position when content loads
+  useEffect(() => {
+    if (content && content.paragraphs.length > 0) {
+      const restored = restoreReadingPosition();
+      
+      if (restored) {
+        console.log('Position restored, paragraphIndex:', restored.paragraphIndex, 'isPlaying:', restored.isPlaying);
+        // Always restore position if found
+        if (shouldAutoResume || restored.isPlaying) {
+          // Auto-resume if was playing or explicitly requested
+          console.log('Auto-resuming from paragraph', restored.paragraphIndex);
+          setShouldAutoResume(false);
+          setIsPlaying(true);
+          // Use setTimeout to ensure state is updated before speaking
+          setTimeout(() => {
+            speakParagraph(restored.paragraphIndex);
+          }, 50);
+        }
+      } else if (shouldAutoResume) {
+        // No saved position, but auto-resume requested (chapter change)
+        console.log('No saved position, starting from 0');
+        setShouldAutoResume(false);
+        setIsPlaying(true);
+        setTimeout(() => {
+          speakParagraph(0);
+        }, 50);
+      }
+    }
+  }, [content]);
 
   const saveReadingHistory = () => {
     if (!chapter?.story_id || !chapter?.chapter_number || !chapter?.id) return;
@@ -122,6 +240,23 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
     const trimmed = filtered.slice(0, 50);
 
     localStorage.setItem('reading_history', JSON.stringify(trimmed));
+  };
+
+  const restoreReadingPosition = () => {
+    if (!chapter?.id) return null;
+
+    const positions = localStorage.getItem('reading_positions') || '{}';
+    const positionsMap = JSON.parse(positions);
+    const position = positionsMap[chapter.id];
+
+    console.log('Restoring position for chapter', chapter.id, ':', position);
+
+    if (position && position.paragraphIndex >= 0) {
+      setCurrentParagraphIndex(position.paragraphIndex);
+      return position;
+    }
+
+    return null;
   };
 
   const loadChapters = async () => {
@@ -161,7 +296,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
 
       const data = await response.json();
       setContent(data);
-      setCurrentParagraphIndex(0);
+      
+      // Don't reset paragraph index here, let restoreReadingPosition handle it
     } catch (err: any) {
       console.error('Failed to load chapter content:', err);
       setError(err.message);
@@ -170,25 +306,56 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
     }
   };
 
-  const changeChapter = (newChapter: Chapter) => {
+  const handleParagraphClick = async (index: number) => {
+    if (!enableTapToSeek) return;
+    
+    setCurrentParagraphIndex(index);
     if (isPlaying) {
-      handlePlayPause();
+      if (Capacitor.isNativePlatform()) {
+        await TextToSpeech.stop();
+      } else if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+      await speakParagraph(index);
     }
+  };
+
+  const changeChapter = async (newChapter: Chapter, autoResume: boolean = false) => {
+    // Stop current playback immediately
+    const wasPlaying = isPlaying;
+    if (isPlaying) {
+      setIsPlaying(false);
+      if (Capacitor.isNativePlatform()) {
+        await TextToSpeech.stop();
+      } else if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+    
+    // Reset paragraph index and content before changing chapter
+    setCurrentParagraphIndex(0);
+    setContent(null);
+    setShouldAutoResume(autoResume || wasPlaying);
+    
+    // Change chapter
     setChapter(newChapter);
     const newIndex = chapters.findIndex(ch => ch.id === newChapter.id);
     setCurrentChapterIndex(newIndex);
     setShowChapterList(false);
+    
+    // Return whether audio was playing (for auto-resume)
+    return wasPlaying;
   };
 
-  const goToNextChapter = () => {
+  const goToNextChapter = async () => {
     if (currentChapterIndex < chapters.length - 1) {
-      changeChapter(chapters[currentChapterIndex + 1]);
+      await changeChapter(chapters[currentChapterIndex + 1], true);
     }
   };
 
-  const goToPreviousChapter = () => {
+  const goToPreviousChapter = async () => {
     if (currentChapterIndex > 0) {
-      changeChapter(chapters[currentChapterIndex - 1]);
+      await changeChapter(chapters[currentChapterIndex - 1], true);
     }
   };
 
@@ -210,7 +377,16 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
 
   const speakParagraph = async (index: number) => {
     if (!content || index >= content.paragraphs.length) {
-      setIsPlaying(false);
+      // Finished all paragraphs, auto-advance to next chapter if available
+      if (currentChapterIndex < chapters.length - 1) {
+        const nextChapter = chapters[currentChapterIndex + 1];
+        await changeChapter(nextChapter);
+        // Keep playing state, auto-resume will happen via useEffect
+      } else {
+        // Last chapter, stop playing
+        setIsPlaying(false);
+        setCurrentParagraphIndex(0);
+      }
       return;
     }
 
@@ -228,13 +404,25 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
           category: 'ambient',
         });
 
+        // Check if still playing before advancing
+        if (!isPlaying) return;
+
         // Auto-advance to next paragraph
-        if (index < content.paragraphs.length - 1 && isPlaying) {
+        if (index < content.paragraphs.length - 1) {
           setCurrentParagraphIndex(index + 1);
-          await speakParagraph(index + 1);
+          // Use setTimeout to ensure state update before next speak
+          setTimeout(() => {
+            speakParagraph(index + 1);
+          }, 100);
         } else {
-          setIsPlaying(false);
-          setCurrentParagraphIndex(0);
+          // Finished chapter, auto-advance
+          if (currentChapterIndex < chapters.length - 1) {
+            const nextChapter = chapters[currentChapterIndex + 1];
+            await changeChapter(nextChapter);
+          } else {
+            setIsPlaying(false);
+            setCurrentParagraphIndex(0);
+          }
         }
       } catch (error) {
         console.error('TTS error:', error);
@@ -248,13 +436,19 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
         utterance.pitch = speechPitch;
         utterance.lang = 'vi-VN';
         
-        utterance.onend = () => {
+        utterance.onend = async () => {
           if (index < content.paragraphs.length - 1) {
             setCurrentParagraphIndex(index + 1);
             speakParagraph(index + 1);
           } else {
-            setIsPlaying(false);
-            setCurrentParagraphIndex(0);
+            // Finished chapter, auto-advance
+            if (currentChapterIndex < chapters.length - 1) {
+              const nextChapter = chapters[currentChapterIndex + 1];
+              await changeChapter(nextChapter);
+            } else {
+              setIsPlaying(false);
+              setCurrentParagraphIndex(0);
+            }
           }
         };
 
@@ -334,8 +528,12 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
       {!isLoading && !error && content && (
         <>
           <div 
+            ref={contentRef}
             className="max-w-2xl mx-auto px-6 py-8 pb-48 overflow-y-auto"
             onScroll={handleScroll}
+            onTouchStart={onTouchStart}
+            onTouchMove={onTouchMove}
+            onTouchEnd={onTouchEnd}
             style={{ maxHeight: 'calc(100vh - 200px)' }}
           >
             <div
@@ -353,11 +551,13 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
               {content.paragraphs.map((paragraph, index) => (
                 <p
                   key={index}
+                  data-paragraph-index={index}
+                  onClick={() => handleParagraphClick(index)}
                   className={`mb-4 text-justify transition-all ${
                     index === currentParagraphIndex && isPlaying
-                      ? "bg-primary/20 px-2 py-1 rounded-lg"
+                      ? "bg-orange-200 dark:bg-orange-900/40 px-2 py-1 rounded-lg"
                       : ""
-                  }`}
+                  } ${enableTapToSeek ? "cursor-pointer hover:bg-muted/50" : ""}`}
                 >
                   {paragraph}
                 </p>
@@ -595,6 +795,24 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
               </div>
             </div>
 
+            {/* Tap to Seek */}
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium">Bấm để tua</label>
+              <button
+                onClick={() => setEnableTapToSeek(!enableTapToSeek)}
+                className={`relative w-14 h-8 rounded-full transition-colors ${
+                  enableTapToSeek ? "bg-primary" : "bg-muted"
+                }`}
+              >
+                <div
+                  className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full flex items-center justify-center transition-transform ${
+                    enableTapToSeek ? "translate-x-6" : ""
+                  }`}
+                >
+                </div>
+              </button>
+            </div>
+
             <button
               onClick={() => setShowSettings(false)}
               className="w-full py-3 bg-primary text-white rounded-full font-medium hover:opacity-90 transition-opacity"
@@ -622,7 +840,17 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
               {chapters.map((ch, index) => (
                 <button
                   key={ch.id}
-                  onClick={() => changeChapter(ch)}
+                  ref={(el) => {
+                    if (ch.id === chapter?.id && el) {
+                      setTimeout(() => {
+                        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                      }, 100);
+                    }
+                  }}
+                  onClick={() => {
+                    changeChapter(ch);
+                    setShowChapterList(false);
+                  }}
                   className={`w-full text-left p-3 rounded-lg transition-colors ${
                     ch.id === chapter?.id
                       ? 'bg-primary text-white'

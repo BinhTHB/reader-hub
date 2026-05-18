@@ -42,6 +42,19 @@ export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps
     }
   }, [book?.id]);
 
+  const getLastReadChapter = () => {
+    const saved = localStorage.getItem('reading_history');
+    if (!saved) return null;
+    
+    const history = JSON.parse(saved);
+    const lastRead = history.find((h: any) => h.story_id === book?.id);
+    
+    if (lastRead) {
+      return chapters.find(ch => ch.id === lastRead.chapter_id);
+    }
+    return null;
+  };
+
   const checkIfFavorite = () => {
     const saved = localStorage.getItem('bookmarks');
     if (saved) {
@@ -181,7 +194,12 @@ export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps
         {/* Action Buttons */}
         <div className="mb-6">
           <button
-            onClick={() => chapters.length > 0 && onStartReading(chapters[0])}
+            onClick={() => {
+              if (chapters.length > 0) {
+                const lastRead = getLastReadChapter();
+                onStartReading(lastRead || chapters[0]);
+              }
+            }}
             disabled={chapters.length === 0}
             className="w-full py-3 bg-primary text-white rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
           >

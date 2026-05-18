@@ -44,7 +44,9 @@ export default function App() {
     });
 
     return () => {
-      backButtonListener.remove();
+      if (backButtonListener && typeof backButtonListener.remove === 'function') {
+        backButtonListener.remove();
+      }
     };
   }, [currentScreen, navigationHistory]);
 
