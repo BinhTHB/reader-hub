@@ -322,14 +322,16 @@ async def run_scraper():
 
             # Fetch remaining pages
             # Fetch all pages only if limit is 0
-            current_max_ch = max([ch["chapter_number"] for ch in all_chapters]) if all_chapters else 0
             should_fetch_all = CHAPTER_LIMIT == 0
             
             page_num = 2
             while page_num <= max_pages:
-                # Stop early if we have enough chapters (unless fetching all)
-                if not should_fetch_all and current_max_ch >= CHAPTER_START + CHAPTER_LIMIT:
-                    break
+                # Stop early if we have already found all chapters in the target range
+                if not should_fetch_all:
+                    target_range = set(range(CHAPTER_START, CHAPTER_START + CHAPTER_LIMIT))
+                    found_nums = {ch["chapter_number"] for ch in all_chapters}
+                    if target_range.issubset(found_nums):
+                        break
                 
                 print(f"  📑 Fetching chapter list page {page_num}/{max_pages}...")
                 await random_delay()
@@ -363,7 +365,6 @@ async def run_scraper():
                     break
                     
                 all_chapters.extend(new_chapters)
-                current_max_ch = max([ch["chapter_number"] for ch in all_chapters])
                 print(f"  Added {len(new_chapters)} new chapters (total: {len(all_chapters)})")
                 page_num += 1
 

@@ -469,7 +469,9 @@ class TruyenDichParser(BaseSiteParser):
         return results
 
     def get_chapter_list_url(self, story_url: str, page: int = 1) -> str:
-        base = story_url.split('#')[0].rstrip('/')
+        base = re.sub(r'/trang-\d+/?$', '', story_url.split('#')[0]).rstrip('/')
+        if page > 1:
+            return f"{base}/trang-{page}"
         return f"{base}/"
 
     def parse_story_info(self, html: str, url: str) -> dict:
@@ -550,6 +552,47 @@ class TruyenDichParser(BaseSiteParser):
         return chapters
 
     def parse_max_pages(self, html: str) -> int:
+        soup = BeautifulSoup(html, "lxml")
+        max_chapter = 50
+        found_range = False
+        
+        # 1. Search for range buttons (e.g. "1 - 200", "201 - 400", "401 - 517")
+        buttons = soup.find_all("button")
+        for btn in buttons:
+            text = self.clean_text(btn.get_text())
+            match = re.search(r"(\d+)\s*-\s*(\d+)", text)
+            if match:
+                end_ch = int(match.group(2))
+                max_chapter = max(max_chapter, end_ch)
+                found_range = True
+                
+        # 2. Search for "XXX chương" text in any element
+        string_targets = []
+        try:
+            string_targets.extend(soup.find_all(string=re.compile(r"\d+\s*chương", re.IGNORECASE)))
+        except:
+            pass
+        try:
+            # Fallback for older BeautifulSoup versions
+            string_targets.extend(soup.find_all(text=re.compile(r"\d+\s*chương", re.IGNORECASE)))
+        except:
+            pass
+            
+        for t in string_targets:
+            match = re.search(r"(\d+)\s*chương", str(t), re.IGNORECASE)
+            if match:
+                max_chapter = max(max_chapter, int(match.group(1)))
+                found_range = True
+                
+        if found_range:
+            return (max_chapter + 49) // 50
+            
+        # 3. Fallback: Parse from existing chapters on page 1
+        chapters = self.parse_chapter_list(html)
+        if chapters:
+            max_ch_num = max(ch["chapter_number"] for ch in chapters)
+            return (max_ch_num + 49) // 50
+            
         return 1
 
     def parse_chapter_content(self, html: str) -> dict:
