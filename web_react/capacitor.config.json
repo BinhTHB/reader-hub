@@ -6,5 +6,8 @@
     "AudioService": {
       "someProperty": "value"
     }
+  },
+  "android": {
+    "allowMixedContent": true
   }
 }
