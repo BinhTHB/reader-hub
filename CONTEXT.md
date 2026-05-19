@@ -1445,7 +1445,9 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 **Kết quả**:
 - ✅ Sửa triệt để lỗi crash do trang chuyển hướng ở các site nhạy cảm như `truyendich.ai`.
 - ✅ Test local với `test_local.py` cho `truyendich.ai` thành công lấy đủ thông tin truyện, danh sách chương và nội dung chương.
-- ✅ Cấu hình CI linh hoạt, chuyển đổi biến `SCRAPER_DIR` qua lại hoàn toàn an toàn và không gây lỗi.
+- ✅ Cấu hình CI linh hoạt, chuyển đổi biến `SCRAPER_DIR` qua lại hoàn toàn an sau khi sửa tệp workflow.
+- ✅ Tạo tệp `scrapling/README.md` chính thức ghi nhận bản quyền và hướng dẫn sử dụng thư viện Scrapling gốc tại `https://github.com/D4Vinci/Scrapling`.
+
 
 
 
