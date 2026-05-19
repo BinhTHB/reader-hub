@@ -1532,3 +1532,19 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Đảm bảo tính toàn vẹn dữ liệu truyện, tự động vá (fill) các chương bị thiếu ở giữa khi người dùng nhấn cập nhật.
 
 
+
+
+---
+
+## 2026-05-19 21:05 - Build lại App React APK (Capacitor Debug Build)
+
+**Yêu cầu**: Build lại tệp cài đặt APK cho ứng dụng React Web (được bọc bởi Capacitor).
+
+**Các bước đã thực hiện**:
+1. **Build mã nguồn React**: Chạy lệnh `pnpm run build` trong thư mục `web_react` để biên dịch ứng dụng sang thư mục `dist`.
+2. **Đồng bộ với dự án Android (Sync Assets)**: Chạy lệnh `npx cap sync android` trong `web_react` để sao chép mã nguồn đã build và đồng bộ các plugin vào dự án Android Native.
+3. **Biên dịch APK**: Di chuyển vào thư mục `web_react/android` và chạy lệnh Gradle `.\gradlew.bat assembleDebug`.
+4. **Di chuyển tệp đầu ra**: Sao chép tệp debug APK vừa build thành công từ `web_react/android/app/build/outputs/apk/debug/app-debug.apk` ra thư mục gốc của dự án với tên thân thiện: `reader-hub.apk`.
+
+**Kết quả**:
+- ✅ Build thành công tệp [reader-hub.apk](file:///e:/projects_window/reader-hub/reader-hub.apk) dung lượng khoảng 4.3 MB tại thư mục gốc của dự án.
