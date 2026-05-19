@@ -25,7 +25,40 @@ if sys.platform == "win32":
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
     sys.stderr = io.TextIOWrapper(sys.stderr.buffer, encoding='utf-8')
 
-from scrapling.fetchers import StealthySession
+from scrapling import PlayWrightFetcher
+
+# Monkeypatch js_bypass_path in scrapling to load from our local repository's bypasses folder
+import scrapling.engines.pw
+import scrapling.engines.toolbelt.navigation
+
+def custom_js_bypass_path(filename):
+    repo_bypasses_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'bypasses')
+    return os.path.join(repo_bypasses_dir, filename)
+
+scrapling.engines.pw.js_bypass_path = custom_js_bypass_path
+scrapling.engines.toolbelt.navigation.js_bypass_path = custom_js_bypass_path
+
+
+class StealthySession:
+    """Wrapper around PlayWrightFetcher to act as a session context manager."""
+    def __init__(self, **kwargs):
+        self.fetcher = PlayWrightFetcher()
+        self.kwargs = kwargs
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        pass
+
+    def fetch(self, url: str):
+        return self.fetcher.fetch(
+            url,
+            headless=self.kwargs.get("headless", True),
+            disable_resources=self.kwargs.get("disable_resources", True),
+            proxy=self.kwargs.get("proxy"),
+            stealth=True
+        )
 
 from parsers import detect_parser
 from r2_uploader import upload_chapter, upload_cover, get_existing_chapters
@@ -168,7 +201,7 @@ def run_scraper():
             if response.status != 200:
                 raise RuntimeError(f"Failed to fetch story details: HTTP {response.status}")
 
-            story_info = parser.parse_story_info(response.text, STORY_SOURCE_URL)
+            story_info = parser.parse_story_info(response.body, STORY_SOURCE_URL)
             print(f"  Title: {story_info['title']}")
             print(f"  Author: {story_info.get('author', 'N/A')}")
             print(f"  Slug: {story_info['slug']}")
@@ -207,7 +240,7 @@ def run_scraper():
                 import re
                 
                 max_chapter = 50
-                soup = BeautifulSoup(response.text, "lxml")
+                soup = BeautifulSoup(response.body, "lxml")
                 
                 buttons = soup.find_all("button")
                 for btn in buttons:
@@ -228,7 +261,7 @@ def run_scraper():
                         max_chapter = max(max_chapter, int(match.group(1)))
                 
                 if max_chapter == 50:
-                    page_1_ch = parser.parse_chapter_list(response.text)
+                    page_1_ch = parser.parse_chapter_list(response.body)
                     if page_1_ch:
                         max_chapter = max(ch["chapter_number"] for ch in page_1_ch)
                 
@@ -248,8 +281,8 @@ def run_scraper():
                 if first_page_resp.status != 200:
                     raise RuntimeError(f"Failed to fetch chapter list page 1: HTTP {first_page_resp.status}")
 
-                all_chapters = parser.parse_chapter_list(first_page_resp.text)
-                max_pages = parser.parse_max_pages(first_page_resp.text)
+                all_chapters = parser.parse_chapter_list(first_page_resp.body)
+                max_pages = parser.parse_max_pages(first_page_resp.body)
                 
             print(f"  Found {len(all_chapters)} chapters (Total pages: {max_pages})")
 
@@ -272,7 +305,7 @@ def run_scraper():
                     print(f"  ⚠️ Failed to fetch page {page_num}: HTTP {p_resp.status}")
                     break
                 
-                p_chapters = parser.parse_chapter_list(p_resp.text)
+                p_chapters = parser.parse_chapter_list(p_resp.body)
                 if not p_chapters:
                     print(f"  ⚠️ No chapters found on page {page_num}, stopping")
                     break
@@ -343,7 +376,7 @@ def run_scraper():
                         )
                     continue
 
-                content = parser.parse_chapter_content(ch_resp.text)
+                content = parser.parse_chapter_content(ch_resp.body)
                 if not content["paragraphs"]:
                     print("  ⚠️ No content found, skipping")
                     continue

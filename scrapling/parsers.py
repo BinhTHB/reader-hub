@@ -24,6 +24,26 @@ TextHandlers.getall = lambda self: list(self)
 from sites_config import SITES, SiteConfig, get_site_by_url
 
 
+def get_text(el) -> str:
+    """Get full text content from a Scrapling Adaptor or Adaptors element.
+
+    Uses lxml's text_content() which concatenates all descendant text nodes,
+    unlike css('::text').get() which only returns the first direct text node.
+    Works reliably with Scrapling's __slots__-based Adaptor class.
+    """
+    if el is None:
+        return ""
+    # Adaptors (list of elements) - get text from first element
+    if isinstance(el, Adaptors):
+        if not el:
+            return ""
+        return el[0]._root.text_content() or ""
+    # Single Adaptor element
+    if hasattr(el, '_root'):
+        return el._root.text_content() or ""
+    return str(el)
+
+
 class BaseSiteParser(ABC):
     """Base class for site-specific parsers."""
 
@@ -129,11 +149,11 @@ class TruyenFullParser(BaseSiteParser):
             if not title_el:
                 continue
 
-            title = self.clean_text(title_el.css("::text").get() or "")
+            title = self.clean_text(get_text(title_el) or "")
             href = title_el.attrib.get("href", "")
 
             author_el = row.css(".author")
-            author = self.clean_text(author_el.css("::text").get() or "") if author_el else None
+            author = self.clean_text(get_text(author_el) or "") if author_el else None
 
             cover_el = row.css("img")
             cover_url = cover_el.attrib.get("src") if cover_el else None
@@ -160,21 +180,21 @@ class TruyenFullParser(BaseSiteParser):
         page = Selector(html)
 
         title_el = page.css("h3.title")
-        title = self.clean_text(title_el.css("::text").get() or "Unknown")
+        title = self.clean_text(get_text(title_el) or "Unknown")
 
         author_el = page.css('a[itemprop="author"], .info a[itemprop="author"]')
-        author = self.clean_text(author_el.css("::text").get() or "") if author_el else None
+        author = self.clean_text(get_text(author_el) or "") if author_el else None
 
         desc_el = page.css('.desc-text, div[itemprop="description"]')
-        description = self.clean_text(desc_el.css("::text").get() or "") if desc_el else None
+        description = self.clean_text(get_text(desc_el) or "") if desc_el else None
 
         cover_el = page.css('div.book img, .info-holder img')
         cover_url = cover_el.attrib.get("src") if cover_el else None
 
-        genres = [self.clean_text(g or "") for g in page.css('a[itemprop="genre"]::text, .info a[itemprop="genre"]::text').getall()]
+        genres = [self.clean_text(get_text(g) or "") for g in page.css('a[itemprop="genre"], .info a[itemprop="genre"]')]
 
         info_el = page.css("span.text-success, span.text-primary, .info span.label")
-        status_text = self.clean_text(info_el.css("::text").get() or "") if info_el else ""
+        status_text = self.clean_text(get_text(info_el) or "") if info_el else ""
         status = "completed" if "Hoàn" in status_text else "ongoing"
 
         return {
@@ -186,14 +206,18 @@ class TruyenFullParser(BaseSiteParser):
     def parse_chapter_list(self, html: str) -> list[dict]:
         page = Selector(html)
         chapters = []
+        seen = set()
 
         for link in page.css("#list-chapter a, ul.list-chapter li a"):
             href = link.attrib.get("href", "")
-            text = self.clean_text(link.css("::text").get() or "")
+            text = self.clean_text(get_text(link) or "")
 
             match = re.search(r"[Cc]hương\s+(\d+)", text)
             if match:
                 num = int(match.group(1))
+                if num in seen:
+                    continue
+                seen.add(num)
                 t_match = re.search(r"[Cc]hương\s+\d+\s*[:\-]\s*(.+)", text)
                 title = t_match.group(1).strip() if t_match else text
                 chapters.append({
@@ -213,7 +237,7 @@ class TruyenFullParser(BaseSiteParser):
         links = pagination.css("li a")
         max_page = 1
         for link in links:
-            text = (link.css("::text").get() or "").strip()
+            text = (get_text(link) or "").strip()
             if text.isdigit():
                 max_page = max(max_page, int(text))
             elif "Cuối" in text or "Last" in text:
@@ -228,7 +252,7 @@ class TruyenFullParser(BaseSiteParser):
         page = Selector(html)
 
         title_el = page.css("a.chapter-title, h2 span.chapter-text, .chapter-title")
-        title = self.clean_text(title_el.css("::text").get() or "")
+        title = self.clean_text(get_text(title_el) or "")
 
         # For content manipulation, BeautifulSoup remains easier and safer
         soup = BeautifulSoup(html, "lxml")
@@ -277,17 +301,17 @@ class MeTruyenChuParser(BaseSiteParser):
             if not title_el:
                 continue
 
-            title = self.clean_text(title_el.css("::text").get() or "")
+            title = self.clean_text(get_text(title_el) or "")
             href = title_el.attrib.get("href", "")
 
             author_el = row.css("a[href*='/tac-gia/'], .author a, .author, span.author")
-            author = self.clean_text(author_el.css("::text").get() or "") if author_el else None
+            author = self.clean_text(get_text(author_el) or "") if author_el else None
 
             cover_el = row.css("img, a.cover img")
             cover_url = cover_el.attrib.get("src") if cover_el else None
 
             genre_els = row.css(".genre a, .tag a, a[href*='/the-loai/']")
-            genres = [self.clean_text(g or "") for g in genre_els.css("::text").getall()]
+            genres = [self.clean_text(get_text(g) or "") for g in genre_els]
 
             results.append({
                 "title": title,
@@ -310,18 +334,18 @@ class MeTruyenChuParser(BaseSiteParser):
         page = Selector(html)
 
         title_el = page.css("h1.title, h1, h3.title")
-        title = self.clean_text(title_el.css("::text").get() or "Unknown")
+        title = self.clean_text(get_text(title_el) or "Unknown")
 
         author_el = page.css("a[href*='/tac-gia/'], .author a")
-        author = self.clean_text(author_el.css("::text").get() or "") if author_el else None
+        author = self.clean_text(get_text(author_el) or "") if author_el else None
 
         desc_el = page.css("#gioithieu, .intro, .scrolltext, .desc, .desc-text, .content")
-        description = self.clean_text(desc_el.css("::text").get() or "") if desc_el else None
+        description = self.clean_text(get_text(desc_el) or "") if desc_el else None
 
         cover_el = page.css(".book-info-pic img, img[itemprop='image'], .media img, .book img, img.cover")
         cover_url = self.make_absolute(cover_el.attrib.get("src")) if cover_el and cover_el.attrib.get("src") else None
 
-        genres = [self.clean_text(g or "") for g in page.css("a.category::text, .genre a::text, a[href*='/the-loai/']::text").getall()]
+        genres = [self.clean_text(get_text(g) or "") for g in page.css("a.category, .genre a, a[href*='/the-loai/']")]
 
         return {
             "title": title, "slug": self.slugify(title), "author": author,
@@ -334,7 +358,7 @@ class MeTruyenChuParser(BaseSiteParser):
         chapters = []
 
         for link in page.css("#chapter-list a, .list-chapter a, ul.list-chapters a, .chapters a"):
-            text = self.clean_text(link.css("::text").get() or "")
+            text = self.clean_text(get_text(link) or "")
             href = link.attrib.get("href", "")
 
             match = re.search(r"[Cc]hương\s+(\d+)", text)
@@ -354,7 +378,7 @@ class MeTruyenChuParser(BaseSiteParser):
         page = Selector(html)
 
         title_el = page.css("h2.current-chapter, .chapter-title h2, h2, .chapter-title, h1, .title-chapter")
-        title = self.clean_text(title_el.css("::text").get() or "")
+        title = self.clean_text(get_text(title_el) or "")
 
         soup = BeautifulSoup(html, "lxml")
         content_el = soup.select_one(".truyen, #chapter-c, .chapter-c, .chapter-content, #article, .content, .content-inner")
@@ -392,7 +416,7 @@ class MeTruyenChuParser(BaseSiteParser):
         links = pagination.css("a")
         max_page = 1
         for link in links:
-            text = (link.css("::text").get() or "").strip()
+            text = (get_text(link) or "").strip()
             if text.isdigit():
                 max_page = max(max_page, int(text))
             
@@ -439,7 +463,7 @@ class TruyenDichParser(BaseSiteParser):
             if not href or "/chuong-" in href:
                 continue
 
-            title_text = self.clean_text(link.css("::text").get() or "")
+            title_text = self.clean_text(get_text(link) or "")
             if not title_text:
                 continue
 
@@ -487,7 +511,7 @@ class TruyenDichParser(BaseSiteParser):
         if json_ld:
             try:
                 import json
-                data = json.loads(json_ld.css("::text").get() or "")
+                data = json.loads(get_text(json_ld) or "")
                 if data.get("@type") == "Book":
                     title = data.get("name", "Unknown")
                     author = data.get("author", {}).get("name") if isinstance(data.get("author"), dict) else None
@@ -510,18 +534,18 @@ class TruyenDichParser(BaseSiteParser):
                 pass
 
         title_el = page.css("h1, h1.title")
-        title = self.clean_text(title_el.css("::text").get() or "Unknown")
+        title = self.clean_text(get_text(title_el) or "Unknown")
 
         author_el = page.css(".author, [class*='author']")
-        author = self.clean_text(author_el.css("::text").get() or "") if author_el else None
+        author = self.clean_text(get_text(author_el) or "") if author_el else None
 
         desc_el = page.css(".prose, .description, [class*='description']")
-        description = self.clean_text(desc_el.css("::text").get() or "") if desc_el else None
+        description = self.clean_text(get_text(desc_el) or "") if desc_el else None
 
         cover_el = page.css("img[alt*='bìa'], img[alt*='cover'], .cover img, img")
         cover_url = cover_el.attrib.get("src") if cover_el else None
 
-        genres = [self.clean_text(g or "") for g in page.css("a[href*='/the-loai/']::text").getall()]
+        genres = [self.clean_text(get_text(g) or "") for g in page.css("a[href*='/the-loai/']")]
 
         return {
             "title": title,
@@ -541,7 +565,7 @@ class TruyenDichParser(BaseSiteParser):
 
         for link in page.css("a[href*='/chuong-']"):
             href = link.attrib.get("href", "")
-            text = self.clean_text(link.css("::text").get() or "")
+            text = self.clean_text(get_text(link) or "")
 
             match = re.search(r"/chuong-(\d+)", href)
             if match:
@@ -563,7 +587,7 @@ class TruyenDichParser(BaseSiteParser):
         
         # 1. Search for range buttons (e.g. "1 - 200", "201 - 400", "401 - 517")
         for btn in page.css("button"):
-            text = self.clean_text(btn.css("::text").get() or "")
+            text = self.clean_text(get_text(btn) or "")
             match = re.search(r"(\d+)\s*-\s*(\d+)", text)
             if match:
                 end_ch = int(match.group(2))
@@ -603,7 +627,7 @@ class TruyenDichParser(BaseSiteParser):
         page = Selector(html)
 
         title_el = page.css("h1, h2, .chapter-title")
-        title = self.clean_text(title_el.css("::text").get() or "")
+        title = self.clean_text(get_text(title_el) or "")
 
         soup = BeautifulSoup(html, "lxml")
         content_el = soup.select_one("section.prose-novel, .prose-novel, section[class*='prose'], .chapter-content, #chapter-content")
@@ -649,11 +673,11 @@ class UUKanShuParser(BaseSiteParser):
             if not title_el:
                 continue
 
-            title = self.clean_text(title_el.css("::text").get() or "")
+            title = self.clean_text(get_text(title_el) or "")
             href = title_el.attrib.get("href", "")
 
             author_el = book.css(".author, span.author, a[href*='/author/']")
-            author = self.clean_text(author_el.css("::text").get() or "") if author_el else "Unknown"
+            author = self.clean_text(get_text(author_el) or "") if author_el else "Unknown"
 
             cover_el = book.css("img")
             cover_url = cover_el.attrib.get("src") if cover_el else None
@@ -678,13 +702,13 @@ class UUKanShuParser(BaseSiteParser):
         page = Selector(html)
 
         title_el = page.css("div.bookinfo h1.booktitle, h1")
-        title = self.clean_text(title_el.css("::text").get() or "Unknown")
+        title = self.clean_text(get_text(title_el) or "Unknown")
 
         author_el = page.css("div.bookinfo p.booktag a.red, .bookinfo a.red")
-        author = self.clean_text(author_el.css("::text").get() or "Unknown") if author_el else "Unknown"
+        author = self.clean_text(get_text(author_el) or "Unknown") if author_el else "Unknown"
 
         desc_el = page.css("div.bookinfo p.bookintro, .bookintro")
-        description = self.clean_text(desc_el.css("::text").get() or "") if desc_el else ""
+        description = self.clean_text(get_text(desc_el) or "") if desc_el else ""
 
         cover_el = page.css("div.bookcover img, .bookcover img")
         cover_url = self.make_absolute(cover_el.attrib.get("src")) if cover_el and cover_el.attrib.get("src") else None
@@ -692,7 +716,7 @@ class UUKanShuParser(BaseSiteParser):
         genres = []
         genre_el = page.css("div.bookinfo p.booktag span.blue, .bookinfo span.blue")
         if genre_el:
-            genres.append(self.clean_text(genre_el.css("::text").get() or ""))
+            genres.append(self.clean_text(get_text(genre_el) or ""))
 
         return {
             "title": title,
@@ -712,7 +736,7 @@ class UUKanShuParser(BaseSiteParser):
 
         for index, link in enumerate(page.css("div#list-chapterAll dd a, #list-chapterAll dd a")):
             href = link.attrib.get("href", "")
-            text = self.clean_text(link.css("::text").get() or "")
+            text = self.clean_text(get_text(link) or "")
 
             # Match chapter numbers in Chinese or English
             # e.g., 第123章, 第 123 章, 123. Title, Chương 123
@@ -740,7 +764,7 @@ class UUKanShuParser(BaseSiteParser):
         page = Selector(html)
 
         title_el = page.css("h1.readTitle, h1, h2")
-        title = self.clean_text(title_el.css("::text").get() or "")
+        title = self.clean_text(get_text(title_el) or "")
 
         soup = BeautifulSoup(html, "lxml")
         content_el = soup.select_one("div.readcotent, .readcotent")
