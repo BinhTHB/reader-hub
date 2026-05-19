@@ -1226,3 +1226,16 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Ngắt tiến trình thông minh nếu bị chặn cứng để tiết kiệm thời gian chạy (GitHub Actions minutes).
 - ✅ Tiết kiệm 95% thời gian setup máy ảo, chạy liên tục tự động và cực kỳ an toàn.
 - ✅ Toàn bộ code đã được commit & push ổn định lên repository chính thức!
+
+---
+
+## 2026-05-19 10:30 - Khắc phục sự cố rò rỉ mã bí mật Supabase (Secrets Leak)
+
+**Vấn đề**: Supabase và GitGuardian phát hiện và báo động rò rỉ:
+1. Supabase Personal Access Token (PAT) trong file `CONTEXT.md` tại commit `4a6fe4e`.
+2. Supabase Service Role Key trong hai file test `check_chapters.py` và `check_schema.py` tại commit `2c03824`.
+
+**Giải pháp đã thực hiện**:
+1. **Loại bỏ PAT**: Cập nhật file `CONTEXT.md` thay thế PAT thực bằng placeholder bảo mật `<REDACTED_SUPABASE_PAT>`.
+2. **Dọn dẹp mã nguồn**: Xác nhận các file test chứa khóa rò rỉ đã được xóa khỏi working tree, đồng thời commit chính thức thay đổi loại bỏ hoàn toàn các file này ra khỏi luồng theo dõi của mã nguồn hiện tại.
+3. **Kế hoạch ứng phó**: Cung cấp tài liệu khắc phục chi tiết `supabase_leak_remediation_plan.md` cho người dùng để thực hiện xoay khóa (Rotate) trên Supabase Dashboard và cập nhật GitHub Secrets.
