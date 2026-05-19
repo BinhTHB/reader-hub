@@ -1439,10 +1439,12 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
    - Đổi `playwright install chromium` → `python -m rebrowser_playwright install chromium` trong workflow.
    - Monkeypatch `PlaywrightEngine.fetch` để set `chromium_sandbox=False` khi detect môi trường CI (`CI` hoặc `GITHUB_ACTIONS` env var).
    - Thêm thư mục `scrapling/bypasses/` (7 file JS stealth bypass) vào git tracking.
+   - Cải tiến tệp `scraper.yml` để tự động kiểm tra xem gói `rebrowser_playwright` hay `playwright` chuẩn được cài đặt và thực hiện lệnh cài đặt trình duyệt Chromium tương ứng (`python -m rebrowser_playwright install` hoặc `playwright install`), đảm bảo workflow không bị lỗi khi chuyển đổi qua lại giữa `scraper` và `scrapling`.
 
 **Kết quả**:
 - ✅ GitHub Actions workflow pass thành công (run #26095155961).
 - ✅ Scrape đúng title "Đấu La Đại Lục", author "Đường Gia Tam Thiếu", 50 chapters/page (không trùng lặp).
 - ✅ 5 chapters targeted đúng, skip những chapter đã tồn tại trong R2.
+- ✅ Cấu hình CI linh hoạt, chuyển đổi biến `SCRAPER_DIR` qua lại hoàn toàn an toàn và không gây lỗi.
 
 
