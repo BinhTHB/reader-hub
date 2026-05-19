@@ -1241,6 +1241,9 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 3. **Giải thích bảo mật**: Phân biệt và làm rõ cho người dùng giữa khóa `service_role` (phải xoay ngay lập tức) và khóa `anon` (an toàn, chỉ cần ẩn cảnh báo trong dashboard GitGuardian).
 4. **Kế hoạch ứng phó**: Cập nhật tài liệu khắc phục chi tiết `supabase_leak_remediation_plan.md` làm cẩm nang hướng dẫn người dùng chuyển đổi sang API Keys thế hệ mới (`sb_publishable_` và `sb_secret_`), vô hiệu hóa khóa Legacy JWT-based API keys trên Supabase Dashboard và thu hồi thành công khóa Legacy HS256 cũ bị lộ.
 5. **Cấu hình API Keys mới**: Cập nhật thành công khóa Publishable mới (`sb_publishable_npk9c...`) vào cấu hình di động `mobile_flutter/lib/config.dart`, ứng dụng React `web_react/.env` và khóa Secret mới (`sb_secret_dKMyF...`) vào file `.env` ở thư mục gốc để hoàn tất quá trình chuyển đổi.
+6. **Cấu hình Edge Functions**: Tạo file cấu hình `supabase/config.toml` để tắt tính năng xác thực JWT cấp nền tảng (`verify_jwt = false`), giúp các Edge Functions có thể nhận cuộc gọi từ các khóa mới mà không bị lỗi.
+7. **Nâng cấp Python Client cho Scraper**: Nâng cấp package `supabase` từ `2.10.0` lên `2.24.0` trong `scraper/requirements.txt` để hỗ trợ xác thực các khóa asymmetric mới khi chạy Scraper trên GitHub Actions.
+
 
 
 
