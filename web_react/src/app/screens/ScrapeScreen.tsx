@@ -32,7 +32,7 @@ interface SearchResult {
 interface ScrapeJob {
   id: string;
   url: string;
-  status: "pending" | "detecting_parser" | "scraping_metadata" | "uploading_cover" | "scraping_chapters" | "completed" | "failed";
+  status: "pending" | "detecting_parser" | "scraping_metadata" | "uploading_cover" | "scraping_chapters" | "completed" | "failed" | "canceled";
   progress: number;
   currentStep: string;
   parser?: string;
@@ -146,6 +146,8 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               mappedStatus = "completed";
             } else if (rawStatus === 'failed' || rawStatus === 'error' || rawStatus === 'failure') {
               mappedStatus = "failed";
+            } else if (rawStatus === 'canceled' || rawStatus === 'cancelled') {
+              mappedStatus = "canceled";
             } else if (rawStatus === 'running' || rawStatus === 'scraping_chapters' || rawStatus === 'in_progress') {
               mappedStatus = "scraping_chapters";
             } else if (rawStatus === 'pending' || rawStatus === 'queued') {
@@ -172,7 +174,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                   : (job.chapter_start && job.chapter_end && job.chapter_end >= job.chapter_start)
                     ? Math.min(99, Math.round(((job.chapters_scraped || 0) / (job.chapter_end - job.chapter_start + 1)) * 100))
                     : 10,
-              currentStep: mappedStatus === 'completed' ? 'Hoàn tất!' : mappedStatus === 'failed' ? 'Thất bại' : mappedStatus === 'pending' ? 'Đang chờ...' : 'Đang chạy...',
+              currentStep: mappedStatus === 'completed' ? 'Hoàn tất!' : mappedStatus === 'failed' ? 'Thất bại' : mappedStatus === 'canceled' ? 'Đã hủy' : mappedStatus === 'pending' ? 'Đang chờ...' : 'Đang chạy...',
               parser: job.stories?.source_name || '',
               metadata: job.stories ? {
                 title: job.stories.title,
@@ -304,24 +306,35 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
             },
             (payload) => {
               const updatedJob = payload.new as any;
+              const rawStatus = (updatedJob.status || '').toLowerCase();
+              let mappedStatus: ScrapeJob["status"] = "pending";
+              if (rawStatus === 'completed' || rawStatus === 'success') {
+                mappedStatus = "completed";
+              } else if (rawStatus === 'failed' || rawStatus === 'error' || rawStatus === 'failure') {
+                mappedStatus = "failed";
+              } else if (rawStatus === 'canceled' || rawStatus === 'cancelled') {
+                mappedStatus = "canceled";
+              } else if (rawStatus === 'running' || rawStatus === 'scraping_chapters' || rawStatus === 'in_progress') {
+                mappedStatus = "scraping_chapters";
+              }
               
               const job: ScrapeJob = {
                 id: updatedJob.id.toString(),
                 url: result.url,
-                status: updatedJob.status,
-                progress: updatedJob.status === 'completed'
+                status: mappedStatus,
+                progress: mappedStatus === 'completed'
                   ? 100
-                  : updatedJob.status === 'failed'
+                  : mappedStatus === 'failed'
                     ? 0
                     : (updatedJob.chapter_start && updatedJob.chapter_end && updatedJob.chapter_end >= updatedJob.chapter_start)
                       ? Math.min(99, Math.round(((updatedJob.chapters_scraped || 0) / (updatedJob.chapter_end - updatedJob.chapter_start + 1)) * 100))
                       : 10,
-                currentStep: updatedJob.status === 'completed' ? 'Hoàn tất!' : updatedJob.status === 'running' ? 'Đang cào...' : 'Đang chờ...',
+                currentStep: mappedStatus === 'completed' ? 'Hoàn tất!' : mappedStatus === 'failed' ? 'Thất bại' : mappedStatus === 'canceled' ? 'Đã hủy' : 'Đang cào...',
                 chapters_scraped: updatedJob.chapters_scraped || 0,
                 total_chapters: updatedJob.chapter_end || 50,
                 chapter_start: updatedJob.chapter_start || 1,
                 chapter_end: updatedJob.chapter_end || 0,
-                logs: [`[${new Date().toLocaleTimeString()}] Status: ${updatedJob.status}`],
+                logs: [`[${new Date().toLocaleTimeString()}] Status: ${mappedStatus}`],
                 created_at: updatedJob.created_at,
                 completed_at: updatedJob.completed_at,
                 error: updatedJob.error_message,
@@ -329,7 +342,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               
               setActiveJob(job);
               
-              if (updatedJob.status === 'completed' || updatedJob.status === 'failed') {
+              if (mappedStatus === 'completed' || mappedStatus === 'failed' || mappedStatus === 'canceled') {
                 setJobHistory(prev => [job, ...prev]);
                 channel.unsubscribe();
               }
@@ -350,6 +363,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
     switch (status) {
       case "completed": return "text-green-600 bg-green-50 border-green-200";
       case "failed": return "text-red-600 bg-red-50 border-red-200";
+      case "canceled": return "text-orange-600 bg-orange-50 border-orange-200";
       case "pending": return "text-yellow-600 bg-yellow-50 border-yellow-200";
       default: return "text-blue-600 bg-blue-50 border-blue-200";
     }
@@ -359,6 +373,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
     switch (status) {
       case "completed": return <CheckCircle className="w-4 h-4" />;
       case "failed": return <AlertCircle className="w-4 h-4" />;
+      case "canceled": return <AlertCircle className="w-4 h-4 text-orange-500" />;
       case "pending": return <Clock className="w-4 h-4" />;
       default: return <Loader className="w-4 h-4 animate-spin" />;
     }
@@ -368,6 +383,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
     switch (status) {
       case "completed": return "Hoàn thành";
       case "failed": return "Thất bại";
+      case "canceled": return "Bị hủy";
       case "pending": return "Đang chờ";
       case "detecting_parser": return "Đang phát hiện parser";
       case "scraping_metadata": return "Đang cào metadata";
@@ -599,13 +615,17 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               </div>
             )}
 
-            {/* Retry Button for Failed Jobs */}
-            {activeJob.status === "failed" && (
+            {/* Retry Button for Failed or Canceled Jobs */}
+            {(activeJob.status === "failed" || activeJob.status === "canceled") && (
               <div className="mt-4 space-y-3">
                 {activeJob.error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <p className="text-sm text-red-600">
-                      <strong>Lỗi:</strong> {activeJob.error}
+                  <div className={`p-3 rounded-lg border text-sm ${
+                    activeJob.status === "canceled"
+                      ? "bg-orange-50/50 dark:bg-orange-950/10 border-orange-200 dark:border-orange-900 text-orange-800 dark:text-orange-400"
+                      : "bg-red-50/50 dark:bg-red-950/10 border-red-200 dark:border-red-900 text-red-600 dark:text-red-400"
+                  }`}>
+                    <p>
+                      <strong>{activeJob.status === "canceled" ? "Thông tin:" : "Lỗi:"}</strong> {activeJob.error}
                     </p>
                   </div>
                 )}
@@ -614,10 +634,12 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                     setActiveJob(null);
                     setError("");
                   }}
-                  className="w-full px-4 py-3 bg-red-600 text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                  className={`w-full px-4 py-3 text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2 ${
+                    activeJob.status === "canceled" ? "bg-orange-600" : "bg-red-600"
+                  }`}
                 >
                   <RefreshCw className="w-5 h-5" />
-                  Thử lại
+                  {activeJob.status === "canceled" ? "Quay lại" : "Thử lại"}
                 </button>
               </div>
             )}
@@ -671,9 +693,11 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                     <div className={`mt-3 p-2.5 rounded-lg border text-xs ${
                       job.status === "completed" 
                         ? "bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900 text-emerald-800 dark:text-emerald-400"
-                        : "bg-red-50/50 dark:bg-red-950/10 border-red-100 dark:border-red-900 text-red-800 dark:text-red-400"
+                        : job.status === "canceled"
+                          ? "bg-orange-50/50 dark:bg-orange-950/10 border-orange-100 dark:border-orange-900 text-orange-800 dark:text-orange-400"
+                          : "bg-red-50/50 dark:bg-red-950/10 border-red-100 dark:border-red-900 text-red-800 dark:text-red-400"
                     }`}>
-                      <strong>{job.status === "completed" ? "Kết quả:" : "Chi tiết lỗi:"}</strong> {job.error}
+                      <strong>{job.status === "completed" ? "Kết quả:" : job.status === "canceled" ? "Thông tin:" : "Chi tiết lỗi:"}</strong> {job.error}
                     </div>
                   )}
 

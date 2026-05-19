@@ -98,8 +98,8 @@ def handle_signal(sig, frame):
         count = scrape_progress["count"]
         scraped_log = f"Scraped chapters from {start} to {end}" if start else "No chapters scraped"
         try:
-            update_scrape_job(int(JOB_ID), status="completed", error_message=scraped_log, chapters_scraped=count)
-            print("  ✅ Gracefully marked job as completed in Supabase.")
+            update_scrape_job(int(JOB_ID), status="canceled", error_message=f"Canceled by signal | {scraped_log}", chapters_scraped=count)
+            print("  ✅ Gracefully marked job as canceled in Supabase.")
         except Exception as e:
             print(f"  ❌ Failed to update job status on signal: {e}")
     sys.exit(0)

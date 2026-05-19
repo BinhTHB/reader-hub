@@ -1308,3 +1308,59 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Hiển thị chương đích và thanh tiến độ động theo thời gian thực (real-time 100% khớp).
 - ✅ UI React App build thành công hoàn hảo (`vite build` hoàn tất không lỗi lints/tsc).
 - ✅ Toàn bộ code đã được cập nhật ổn định và sẵn sàng hoạt động ở cấp độ cao nhất!
+
+---
+
+## 2026-05-19 14:05 - Loại bỏ cử chỉ Vuốt & Hoàn thiện tính năng Đăng nhập trên App React
+
+**Hạng mục 1: Loại bỏ cử chỉ vuốt chuyển chương**
+- Cập nhật [ReadingScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ReadingScreen.tsx):
+  * Loại bỏ các state `touchStart`, `touchEnd` và hằng số `minSwipeDistance`.
+  * Xóa bỏ các handlers `onTouchStart`, `onTouchMove` và `onTouchEnd` chịu trách nhiệm bắt sự kiện vuốt ngang.
+  * Gỡ bỏ các thuộc tính touch events khỏi wrapper thẻ `div` chứa nội dung đọc.
+
+**Hạng mục 2: Sửa và hoàn thiện tính năng Đăng nhập Supabase Auth & Đồng bộ dữ liệu**
+1. **Màn hình Đăng nhập/Đăng ký mới (`AuthScreen.tsx`)**:
+   - Tạo file [AuthScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/AuthScreen.tsx) với giao diện đăng nhập/đăng ký hiện đại, hỗ trợ ẩn/hiện mật khẩu, hiển thị lỗi thân thiện và trạng thái loading trực quan.
+   - Kết nối trực tiếp với Supabase Auth (`signInWithPassword`, `signUp`).
+2. **Cập nhật Giao diện & Quản lý trạng thái (`App.tsx`, `ProfileScreen.tsx`)**:
+   - Thêm trạng thái `user` trong [App.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/App.tsx) và lắng nghe sự kiện thay đổi phiên đăng nhập qua `onAuthStateChange`.
+   - Cập nhật [ProfileScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ProfileScreen.tsx) để hiển thị tên người dùng, email, ảnh đại diện (avatar) nếu đã đăng nhập và thêm nút "Đăng xuất" (Logout). Nếu chưa đăng nhập, hiển thị nút "Đăng nhập / Đăng ký" để mở `AuthScreen`.
+3. **Đồng bộ hóa đám mây (Cloud Syncing) cho Bookmarks & Lịch sử đọc**:
+   - **Tự động đồng bộ khi đăng nhập**: Trong [App.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/App.tsx), khi có sự kiện `SIGNED_IN`, hệ thống sẽ lấy danh sách Bookmarks và Lịch sử đọc tạm thời từ `localStorage` để đồng bộ (upsert) lên bảng `bookmarks` và `reading_history` của database Supabase, sau đó dọn dẹp bộ nhớ tạm.
+   - **Quản lý Thư viện (`LibraryScreen.tsx`)**: Đọc/ghi dữ liệu động từ Supabase nếu người dùng đã đăng nhập; ngược lại tự động fallback về `localStorage`.
+   - **Màn hình Chi tiết truyện (`DetailScreen.tsx`)**: Hỗ trợ toggle yêu thích (bookmark) lên DB hoặc LocalStorage, đồng thời tìm kiếm chương đọc gần nhất từ DB (`reading_history`) để khôi phục chính xác trạng thái đọc của tài khoản.
+   - **Màn hình Đọc truyện (`ReadingScreen.tsx`)**: Định kỳ đồng bộ vị trí đọc hiện tại (`scroll_position`) và tiến trình đọc khi thoát màn hình (unmount) lên bảng `reading_history` của Supabase.
+
+**Kết quả**:
+- ✅ Cả 2 tính năng hoạt động ổn định và khớp hoàn toàn cấu trúc DB của dự án.
+- ✅ Giao diện App React biên dịch thành công hoàn hảo (`vite build` không lỗi).
+- ✅ File ghi chú [ghichu.txt](file:///e:/projects_window/reader-hub/ghichu.txt) đã được cập nhật đánh dấu hoàn thành `- [x]`.
+
+---
+
+## 2026-05-19 14:10 - Hỗ trợ Trạng thái Hủy Job (Canceled Status) từ Scraper đến Frontend
+
+**Vấn đề**:
+1. Khi job cào truyện bị hủy (do người dùng hủy thủ công hoặc workflow bị hủy/quá thời gian trên GitHub Actions), scraper nhận tín hiệu và cố gắng đánh dấu job là `completed` trong Supabase. Điều này gây nhầm lẫn trên UI vì job bị ngắt giữa chừng thực tế không hoàn thành trọn vẹn, cần một trạng thái riêng biệt là `canceled`.
+2. Trạng thái `canceled` chưa được hỗ trợ trong DB status constraint check của bảng `scrape_jobs` và chưa được xử lý trên UI của ứng dụng React Web.
+
+**Giải pháp đã thực hiện**:
+1. **Nâng cấp Database Schema & Constraints**:
+   - Cập nhật constraint check status của bảng `scrape_jobs` trong database Supabase, mở rộng danh sách trạng thái hợp lệ gồm: `('pending', 'running', 'completed', 'failed', 'canceled')`.
+   - Cập nhật tệp cấu hình migration [001_initial_schema.sql](file:///e:/projects_window/reader-hub/supabase/migrations/001_initial_schema.sql#L119) để đồng bộ cấu trúc cơ sở dữ liệu cho các lần triển khai sau.
+2. **Cập nhật Signal Handler của Scraper**:
+   - Chỉnh sửa hàm `handle_signal` trong [scraper.py](file:///e:/projects_window/reader-hub/scraper/scraper.py#L98-L105) để khi nhận tín hiệu hủy `SIGINT` / `SIGTERM` từ hệ thống, nó sẽ lưu cập nhật trạng thái job thành `"canceled"` thay vì `"completed"`, đồng thời lưu kèm thông báo chi tiết: `Canceled by signal | Scraped chapters from X to Y`.
+3. **Đồng bộ hóa Frontend React (`web_react`)**:
+   - Thêm trạng thái `"canceled"` vào kiểu dữ liệu `ScrapeJob["status"]` trong [ScrapeScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ScrapeScreen.tsx#L35).
+   - Cập nhật bộ chuyển đổi dữ liệu (mapper) trong `loadJobHistory` và listener sự kiện Postgres `postgres_changes` thời gian thực để map các trạng thái `canceled`/`cancelled` từ database sang trạng thái ứng dụng.
+   - Thêm styling cho trạng thái `"canceled"` thành màu cam nổi bật trong các helper:
+     - `getStatusColor` trả về `"text-orange-600 bg-orange-50 border-orange-200"`.
+     - `getStatusIcon` hiển thị icon `AlertCircle` màu cam.
+     - `getStatusText` trả về `"Bị hủy"`.
+     - `currentStep` hiển thị `"Đã hủy"`.
+   - Thiết lập UI hiển thị thông tin log chi tiết và nút "Quay lại" thân thiện khi Job đang chạy bị hủy, tương tự như giao diện khi Job bị lỗi.
+
+**Kết quả**:
+- ✅ Trạng thái hủy Job được ghi nhận và hiển thị một cách tường minh và đẹp mắt trên toàn hệ thống từ database, backend scraper cho tới frontend client.
+

@@ -16,6 +16,7 @@ interface DetailScreenProps {
   book?: any;
   onBack: () => void;
   onStartReading: (chapter: any) => void;
+  user?: any;
 }
 
 interface Chapter {
@@ -26,7 +27,7 @@ interface Chapter {
   created_at: string;
 }
 
-export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps) {
+export function DetailScreen({ book, onBack, onStartReading, user }: DetailScreenProps) {
   const [isFavorite, setIsFavorite] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState(true);
@@ -35,6 +36,7 @@ export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps
   const [story, setStory] = useState<any>(null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
+  const [lastReadChapterId, setLastReadChapterId] = useState<number | null>(null);
 
   const handleUpdateChapters = async () => {
     if (!bookData.source_url) return;
@@ -68,9 +70,40 @@ export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps
       loadChapters();
       checkIfFavorite();
     }
-  }, [book?.id]);
+  }, [book?.id, user]);
+
+  useEffect(() => {
+    if (book?.id && chapters.length > 0) {
+      loadLastReadChapter();
+    }
+  }, [book?.id, chapters, user]);
+
+  const loadLastReadChapter = async () => {
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from('reading_history')
+          .select('last_chapter_number')
+          .eq('user_id', user.id)
+          .eq('story_id', book.id)
+          .maybeSingle();
+
+        if (error) throw error;
+        if (data) {
+          const ch = chapters.find(c => c.chapter_number === data.last_chapter_number);
+          if (ch) setLastReadChapterId(ch.id);
+        }
+      } catch (err) {
+        console.error('Failed to load last read chapter from DB:', err);
+      }
+    }
+  };
 
   const getLastReadChapter = () => {
+    if (user && lastReadChapterId) {
+      return chapters.find(ch => ch.id === lastReadChapterId) || null;
+    }
+
     const saved = localStorage.getItem('reading_history');
     if (!saved) return null;
     
@@ -78,33 +111,74 @@ export function DetailScreen({ book, onBack, onStartReading }: DetailScreenProps
     const lastRead = history.find((h: any) => h.story_id === book?.id);
     
     if (lastRead) {
-      return chapters.find(ch => ch.id === lastRead.chapter_id);
+      return chapters.find(ch => ch.id === lastRead.chapter_id) || null;
     }
     return null;
   };
 
-  const checkIfFavorite = () => {
-    const saved = localStorage.getItem('bookmarks');
-    if (saved) {
-      const bookmarkIds = JSON.parse(saved);
-      setIsFavorite(bookmarkIds.includes(book.id));
+  const checkIfFavorite = async () => {
+    if (user) {
+      try {
+        const { data, error } = await supabase
+          .from('bookmarks')
+          .select('id')
+          .eq('user_id', user.id)
+          .eq('story_id', book.id)
+          .maybeSingle();
+
+        if (error) throw error;
+        setIsFavorite(!!data);
+      } catch (err) {
+        console.error('Failed to check database bookmark:', err);
+      }
+    } else {
+      const saved = localStorage.getItem('bookmarks');
+      if (saved) {
+        const bookmarkIds = JSON.parse(saved);
+        setIsFavorite(bookmarkIds.includes(book.id));
+      }
     }
   };
 
-  const toggleFavorite = () => {
-    const saved = localStorage.getItem('bookmarks');
-    const bookmarkIds = saved ? JSON.parse(saved) : [];
-    
-    if (bookmarkIds.includes(book.id)) {
-      // Remove bookmark
-      const newBookmarks = bookmarkIds.filter((id: number) => id !== book.id);
-      localStorage.setItem('bookmarks', JSON.stringify(newBookmarks));
-      setIsFavorite(false);
+  const toggleFavorite = async () => {
+    if (user) {
+      try {
+        if (isFavorite) {
+          const { error } = await supabase
+            .from('bookmarks')
+            .delete()
+            .eq('user_id', user.id)
+            .eq('story_id', book.id);
+          if (error) throw error;
+          setIsFavorite(false);
+        } else {
+          const { error } = await supabase
+            .from('bookmarks')
+            .insert({
+              user_id: user.id,
+              story_id: book.id,
+            });
+          if (error) throw error;
+          setIsFavorite(true);
+        }
+      } catch (err) {
+        console.error('Failed to toggle database bookmark:', err);
+      }
     } else {
-      // Add bookmark
-      bookmarkIds.push(book.id);
-      localStorage.setItem('bookmarks', JSON.stringify(bookmarkIds));
-      setIsFavorite(true);
+      const saved = localStorage.getItem('bookmarks');
+      const bookmarkIds = saved ? JSON.parse(saved) : [];
+      
+      if (bookmarkIds.includes(book.id)) {
+        // Remove bookmark
+        const newBookmarks = bookmarkIds.filter((id: number) => id !== book.id);
+        localStorage.setItem('bookmarks', JSON.stringify(newBookmarks));
+        setIsFavorite(false);
+      } else {
+        // Add bookmark
+        bookmarkIds.push(book.id);
+        localStorage.setItem('bookmarks', JSON.stringify(bookmarkIds));
+        setIsFavorite(true);
+      }
     }
   };
 

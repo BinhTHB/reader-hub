@@ -6,9 +6,10 @@ import { supabase, R2_PUBLIC_DOMAIN } from "../../lib/supabase";
 
 interface LibraryScreenProps {
   onNavigate: (screen: string, data?: any) => void;
+  user?: any;
 }
 
-export function LibraryScreen({ onNavigate }: LibraryScreenProps) {
+export function LibraryScreen({ onNavigate, user }: LibraryScreenProps) {
   const [bookmarks, setBookmarks] = useState<any[]>([]);
   const [readingHistory, setReadingHistory] = useState<any[]>([]);
   const [isLoadingBookmarks, setIsLoadingBookmarks] = useState(true);
@@ -17,30 +18,40 @@ export function LibraryScreen({ onNavigate }: LibraryScreenProps) {
   useEffect(() => {
     loadBookmarks();
     loadReadingHistory();
-  }, []);
+  }, [user]);
 
   const loadBookmarks = async () => {
     setIsLoadingBookmarks(true);
     try {
-      // Get bookmarks from localStorage (since we don't have auth yet)
-      const saved = localStorage.getItem('bookmarks');
-      if (saved) {
-        const bookmarkIds = JSON.parse(saved);
-        
-        if (bookmarkIds.length > 0) {
-          const { data, error } = await supabase
-            .from('stories')
-            .select('*')
-            .in('id', bookmarkIds)
-            .order('updated_at', { ascending: false });
+      if (user) {
+        const { data, error } = await supabase
+          .from('bookmarks')
+          .select('story_id, stories(*)')
+          .eq('user_id', user.id);
 
-          if (error) throw error;
-          setBookmarks(data || []);
+        if (error) throw error;
+        const stories = data?.map((b: any) => b.stories).filter(Boolean) || [];
+        setBookmarks(stories);
+      } else {
+        const saved = localStorage.getItem('bookmarks');
+        if (saved) {
+          const bookmarkIds = JSON.parse(saved);
+          
+          if (bookmarkIds.length > 0) {
+            const { data, error } = await supabase
+              .from('stories')
+              .select('*')
+              .in('id', bookmarkIds)
+              .order('updated_at', { ascending: false });
+
+            if (error) throw error;
+            setBookmarks(data || []);
+          } else {
+            setBookmarks([]);
+          }
         } else {
           setBookmarks([]);
         }
-      } else {
-        setBookmarks([]);
       }
     } catch (err) {
       console.error('Failed to load bookmarks:', err);
@@ -52,44 +63,62 @@ export function LibraryScreen({ onNavigate }: LibraryScreenProps) {
   const loadReadingHistory = async () => {
     setIsLoadingHistory(true);
     try {
-      // Get reading history from localStorage
-      const saved = localStorage.getItem('reading_history');
-      if (saved) {
-        const history = JSON.parse(saved);
-        
-        // Get unique story IDs
-        const storyIds = [...new Set(history.map((h: any) => h.story_id))];
-        
-        if (storyIds.length > 0) {
-          const { data, error } = await supabase
-            .from('stories')
-            .select('*')
-            .in('id', storyIds);
+      if (user) {
+        const { data, error } = await supabase
+          .from('reading_history')
+          .select('story_id, last_chapter_number, last_read_at, stories(*)')
+          .eq('user_id', user.id)
+          .order('last_read_at', { ascending: false });
 
-          if (error) throw error;
+        if (error) throw error;
+        
+        const historyWithStories = data?.map((h: any) => {
+          const story = h.stories;
+          if (!story) return null;
+          return {
+            ...story,
+            last_read: h.last_read_at,
+            chapter_number: h.last_chapter_number,
+          };
+        }).filter(Boolean) || [];
+        
+        setReadingHistory(historyWithStories);
+      } else {
+        const saved = localStorage.getItem('reading_history');
+        if (saved) {
+          const history = JSON.parse(saved);
+          const storyIds = [...new Set(history.map((h: any) => h.story_id))];
           
-          // Merge with history data and sort by last_read
-          const historyWithStories = history
-            .map((historyItem: any) => {
-              const story = data?.find(s => s.id === historyItem.story_id);
-              if (!story) return null;
-              
-              return {
-                ...story,
-                last_read: historyItem.last_read,
-                chapter_number: historyItem.chapter_number,
-                chapter_id: historyItem.chapter_id,
-              };
-            })
-            .filter((item: any) => item !== null)
-            .sort((a: any, b: any) => new Date(b.last_read).getTime() - new Date(a.last_read).getTime());
-          
-          setReadingHistory(historyWithStories);
+          if (storyIds.length > 0) {
+            const { data, error } = await supabase
+              .from('stories')
+              .select('*')
+              .in('id', storyIds);
+
+            if (error) throw error;
+            
+            const historyWithStories = history
+              .map((historyItem: any) => {
+                const story = data?.find(s => s.id === historyItem.story_id);
+                if (!story) return null;
+                
+                return {
+                  ...story,
+                  last_read: historyItem.last_read,
+                  chapter_number: historyItem.chapter_number,
+                  chapter_id: historyItem.chapter_id,
+                };
+              })
+              .filter((item: any) => item !== null)
+              .sort((a: any, b: any) => new Date(b.last_read).getTime() - new Date(a.last_read).getTime());
+            
+            setReadingHistory(historyWithStories);
+          } else {
+            setReadingHistory([]);
+          }
         } else {
           setReadingHistory([]);
         }
-      } else {
-        setReadingHistory([]);
       }
     } catch (err) {
       console.error('Failed to load reading history:', err);
@@ -100,12 +129,27 @@ export function LibraryScreen({ onNavigate }: LibraryScreenProps) {
 
   const handleHistoryClick = async (historyItem: any) => {
     try {
-      // Load the specific chapter
-      const { data, error } = await supabase
-        .from('chapters')
-        .select('*')
-        .eq('id', historyItem.chapter_id)
-        .single();
+      let data = null;
+      let error = null;
+      
+      if (historyItem.chapter_id) {
+        const res = await supabase
+          .from('chapters')
+          .select('*')
+          .eq('id', historyItem.chapter_id)
+          .single();
+        data = res.data;
+        error = res.error;
+      } else {
+        const res = await supabase
+          .from('chapters')
+          .select('*')
+          .eq('story_id', historyItem.id)
+          .eq('chapter_number', historyItem.chapter_number)
+          .single();
+        data = res.data;
+        error = res.error;
+      }
 
       if (error) throw error;
       
@@ -114,7 +158,6 @@ export function LibraryScreen({ onNavigate }: LibraryScreenProps) {
       }
     } catch (err) {
       console.error('Failed to load chapter:', err);
-      // Fallback to story detail
       onNavigate("detail", historyItem);
     }
   };

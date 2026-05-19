@@ -7,14 +7,17 @@ import { LibraryScreen } from "./screens/LibraryScreen";
 import { DetailScreen } from "./screens/DetailScreen";
 import { ProfileScreen } from "./screens/ProfileScreen";
 import { ScrapeScreen } from "./screens/ScrapeScreen";
+import { AuthScreen } from "./screens/AuthScreen";
+import { supabase } from "../lib/supabase";
 
-type Screen = "home" | "library" | "search" | "profile" | "more" | "reading" | "detail";
+type Screen = "home" | "library" | "search" | "profile" | "more" | "reading" | "detail" | "auth";
 
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState<Screen>("home");
   const [screenData, setScreenData] = useState<any>(null);
   const [navigationHistory, setNavigationHistory] = useState<Array<{ screen: Screen; data?: any }>>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
     // Load dark mode preference
@@ -23,7 +26,93 @@ export default function App() {
       setIsDarkMode(true);
       document.documentElement.classList.add('dark');
     }
+
+    // Get current session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+      if (session?.user) {
+        syncLocalBookmarks(session.user.id);
+        syncLocalReadingHistory(session.user.id);
+      }
+    });
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      
+      if (event === 'SIGNED_IN' && currentUser) {
+        syncLocalBookmarks(currentUser.id);
+        syncLocalReadingHistory(currentUser.id);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
+
+  const syncLocalBookmarks = async (userId: string) => {
+    try {
+      const saved = localStorage.getItem('bookmarks');
+      if (saved) {
+        const bookmarkIds = JSON.parse(saved);
+        if (bookmarkIds.length > 0) {
+          console.log('Syncing local bookmarks for user:', userId);
+          const bookmarkInserts = bookmarkIds.map((storyId: number) => ({
+            user_id: userId,
+            story_id: storyId,
+          }));
+
+          const { error } = await supabase
+            .from('bookmarks')
+            .upsert(bookmarkInserts, { onConflict: 'user_id,story_id' });
+
+          if (error) throw error;
+          localStorage.removeItem('bookmarks');
+          console.log('Local bookmarks synced');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to sync local bookmarks:', err);
+    }
+  };
+
+  const syncLocalReadingHistory = async (userId: string) => {
+    try {
+      const saved = localStorage.getItem('reading_history');
+      if (saved) {
+        const history = JSON.parse(saved);
+        if (history.length > 0) {
+          console.log('Syncing local history for user:', userId);
+          const historyInserts = history.map((h: any) => ({
+            user_id: userId,
+            story_id: h.story_id,
+            last_chapter_number: h.chapter_number,
+            last_read_at: h.last_read,
+          }));
+
+          const { error } = await supabase
+            .from('reading_history')
+            .upsert(historyInserts, { onConflict: 'user_id,story_id' });
+
+          if (error) throw error;
+          localStorage.removeItem('reading_history');
+          console.log('Local reading history synced');
+        }
+      }
+    } catch (err) {
+      console.error('Failed to sync local reading history:', err);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setCurrentScreen("profile");
+    } catch (err) {
+      console.error('Failed to sign out:', err);
+    }
+  };
 
   useEffect(() => {
     const backButtonListener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
@@ -84,20 +173,29 @@ export default function App() {
       {/* Main Content */}
       <div className="h-screen overflow-y-auto">
         {currentScreen === "home" && <HomeScreen onNavigate={handleNavigate} />}
-        {currentScreen === "library" && <LibraryScreen onNavigate={handleNavigate} />}
-        {currentScreen === "profile" && <ProfileScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} />}
+        {currentScreen === "library" && <LibraryScreen onNavigate={handleNavigate} user={user} />}
+        {currentScreen === "profile" && <ProfileScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} user={user} onLogout={handleLogout} />}
         {currentScreen === "reading" && (
-          <ReadingScreen chapter={screenData} onBack={handleBack} />
+          <ReadingScreen chapter={screenData} onBack={handleBack} user={user} />
         )}
         {currentScreen === "detail" && (
           <DetailScreen
             book={screenData}
             onBack={handleBack}
             onStartReading={(chapter) => handleNavigate("reading", chapter)}
+            user={user}
           />
         )}
         {currentScreen === "search" && (
           <ScrapeScreen onNavigate={handleNavigate} />
+        )}
+        {currentScreen === "auth" && (
+          <AuthScreen 
+            onBack={handleBack} 
+            onSuccess={() => {
+              handleBack();
+            }} 
+          />
         )}
         {currentScreen === "more" && (
           <div className="flex flex-col items-center justify-center h-screen px-4 pb-24">
@@ -110,7 +208,7 @@ export default function App() {
       </div>
 
       {/* Bottom Navigation */}
-      {!["reading", "detail"].includes(currentScreen) && (
+      {!["reading", "detail", "auth"].includes(currentScreen) && (
         <BottomNav
           activeTab={currentScreen}
           onTabChange={(tab) => handleNavigate(tab as Screen)}

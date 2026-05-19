@@ -116,7 +116,7 @@ CREATE TABLE public.scrape_jobs (
     id BIGSERIAL PRIMARY KEY,
     story_id BIGINT REFERENCES public.stories(id) ON DELETE SET NULL,
     status TEXT NOT NULL DEFAULT 'pending'
-        CHECK (status IN ('pending', 'running', 'completed', 'failed')),
+        CHECK (status IN ('pending', 'running', 'completed', 'failed', 'canceled')),
     chapter_start INT,
     chapter_end INT,
     chapters_scraped INT NOT NULL DEFAULT 0,

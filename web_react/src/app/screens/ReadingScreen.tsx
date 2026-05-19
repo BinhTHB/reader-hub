@@ -35,6 +35,7 @@ try {
 interface ReadingScreenProps {
   chapter?: any;
   onBack: () => void;
+  user?: any;
 }
 
 interface ChapterContent {
@@ -48,7 +49,7 @@ interface Chapter {
   text_r2_url: string;
 }
 
-export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreenProps) {
+export function ReadingScreen({ chapter: initialChapter, onBack, user }: ReadingScreenProps) {
   const [showSettings, setShowSettings] = useState(false);
   const [showChapterList, setShowChapterList] = useState(false);
   const [fontSize, setFontSize] = useState(() => {
@@ -91,38 +92,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
   });
   const [shouldAutoResume, setShouldAutoResume] = useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
-  const [touchStart, setTouchStart] = useState<number | null>(null);
-  const [touchEnd, setTouchEnd] = useState<number | null>(null);
   const isPlayingRef = React.useRef(isPlaying);
-
-  // Minimum swipe distance (in px)
-  const minSwipeDistance = 50;
-
-  const onTouchStart = (e: React.TouchEvent) => {
-    setTouchEnd(null);
-    setTouchStart(e.targetTouches[0].clientX);
-  };
-
-  const onTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0].clientX);
-  };
-
-  const onTouchEnd = () => {
-    if (!touchStart || !touchEnd) return;
-    
-    const distance = touchStart - touchEnd;
-    const isLeftSwipe = distance > minSwipeDistance;
-    const isRightSwipe = distance < -minSwipeDistance;
-    
-    if (isLeftSwipe && currentChapterIndex < chapters.length - 1) {
-      // Swipe left -> next chapter
-      goToNextChapter();
-    }
-    if (isRightSwipe && currentChapterIndex > 0) {
-      // Swipe right -> previous chapter
-      goToPreviousChapter();
-    }
-  };
 
   // Auto-scroll to current paragraph
   useEffect(() => {
@@ -299,9 +269,28 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
 
         console.log('Cleanup: Final save for chapter', chapter.id, ':', positionsMap[chapter.id]);
         localStorage.setItem('reading_positions', JSON.stringify(positionsMap));
+
+        // Sync to Supabase if logged in
+        if (user && chapter?.story_id) {
+          const scrollPos = content?.paragraphs?.length ? currentParagraphIndex / content.paragraphs.length : 0;
+          supabase
+            .from('reading_history')
+            .upsert({
+              user_id: user.id,
+              story_id: chapter.story_id,
+              last_chapter_number: chapter.chapter_number,
+              scroll_position: scrollPos,
+              last_read_at: new Date().toISOString(),
+            }, {
+              onConflict: 'user_id,story_id'
+            })
+            .then(({ error }) => {
+              if (error) console.error('Failed final reading position sync:', error);
+            });
+        }
       }
     };
-  }, [chapter?.id, currentParagraphIndex, isPlaying]);
+  }, [chapter?.id, currentParagraphIndex, isPlaying, user, content]);
 
   // Restore reading position when content loads
   useEffect(() => {
@@ -333,16 +322,14 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
     }
   }, [content]);
 
-  const saveReadingHistory = () => {
+  const saveReadingHistory = async () => {
     if (!chapter?.story_id || !chapter?.chapter_number || !chapter?.id) return;
 
+    // Save locally first
     const saved = localStorage.getItem('reading_history');
     const history = saved ? JSON.parse(saved) : [];
 
-    // Remove existing entry for this story
     const filtered = history.filter((h: any) => h.story_id !== chapter.story_id);
-
-    // Add new entry at the beginning
     filtered.unshift({
       story_id: chapter.story_id,
       chapter_id: chapter.id,
@@ -350,10 +337,28 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
       last_read: new Date().toISOString(),
     });
 
-    // Keep only last 50 items
     const trimmed = filtered.slice(0, 50);
-
     localStorage.setItem('reading_history', JSON.stringify(trimmed));
+
+    // Sync to Supabase if logged in
+    if (user) {
+      try {
+        const { error } = await supabase
+          .from('reading_history')
+          .upsert({
+            user_id: user.id,
+            story_id: chapter.story_id,
+            last_chapter_number: chapter.chapter_number,
+            last_read_at: new Date().toISOString(),
+          }, {
+            onConflict: 'user_id,story_id'
+          });
+
+        if (error) throw error;
+      } catch (err) {
+        console.error('Failed to sync reading history to DB:', err);
+      }
+    }
   };
 
   const restoreReadingPosition = () => {
@@ -676,9 +681,6 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
             ref={contentRef}
             className="max-w-2xl mx-auto px-6 py-8 pb-48 overflow-y-auto"
             onScroll={handleScroll}
-            onTouchStart={onTouchStart}
-            onTouchMove={onTouchMove}
-            onTouchEnd={onTouchEnd}
             style={{ maxHeight: 'calc(100vh - 200px)' }}
           >
             <div
