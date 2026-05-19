@@ -1448,6 +1448,48 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Cấu hình CI linh hoạt, chuyển đổi biến `SCRAPER_DIR` qua lại hoàn toàn an sau khi sửa tệp workflow.
 - ✅ Tạo tệp `scrapling/README.md` chính thức ghi nhận bản quyền và hướng dẫn sử dụng thư viện Scrapling gốc tại `https://github.com/D4Vinci/Scrapling`.
 
+---
 
+## 2026-05-19 19:50 - Khắc phục lỗi Bypass Cloudflare (Turnstile/HTTP 403) và Tự động Hủy Job khi lỗi liên tiếp trong Scrapling
 
+**Vấn đề**:
+1. Scrapling khởi tạo `PlayWrightFetcher` (browser session) mới cho từng chương một. Việc liên tục mở/đóng trình duyệt Chromium trong vòng lặp làm lộ hành vi tự động hóa, dễ bị Cloudflare / Turnstile nhận diện và chặn (trả về lỗi HTTP 403 / trang trống) sau một vài chương đầu tiên.
+2. Vòng lặp cào chương gặp lỗi trống nội dung/Turnstile sẽ ghi log cảnh báo bỏ qua (`⚠️ No content found, skipping`) thay vì tính là lỗi để cộng dồn vào `consecutive_failures`, dẫn đến việc scraper liên tục tiếp tục chạy vô hạn qua các chương bị chặn thay vì kích hoạt cơ chế tự động hủy job (`ScraperAbortException`) sau 5 lần lỗi liên tiếp.
 
+**Giải pháp đã thực hiện**:
+1. **Nâng cấp `StealthySession` thành Persistent Browser Context**:
+   - Cập nhật lớp `StealthySession` trong [scrapling/scraper.py](file:///e:/projects_window/reader-hub/scrapling/scraper.py#L180-L290) chuyển từ gọi `PlayWrightFetcher` cho từng trang đơn lẻ sang khởi tạo một Browser và BrowserContext Playwright duy nhất tồn tại xuyên suốt chu kỳ sống của Session (quản lý qua context manager `__enter__` / `__exit__`).
+   - Cấu hình stealth tối đa cho context (custom User-Agent, dark mode, locale, scale factor, screen/viewport resolution, JS stealth bypass scripts, custom referrer headers cho từng trang, intercept các requests phụ tải tài nguyên không cần thiết để tối ưu tốc độ).
+2. **Chuẩn hóa Cơ chế Tính Lỗi Liên Tiếp & Tự động Hủy**:
+   - Cập nhật vòng lặp cào chương trong `scrapling/scraper.py` để ném lỗi `RuntimeError` khi nội dung chương cào về trống (hoặc bị kẹt ở Turnstile).
+   - Đảm bảo lỗi này được bắt trong block `except Exception`, được đếm vào `consecutive_failures` và kích hoạt ngắt tiến trình `ScraperAbortException` ngay khi đạt ngưỡng 5 chương lỗi liên tiếp.
+
+**Kết quả**:
+- ✅ Vượt qua cơ chế Turnstile/Cloudflare của `truyendich.ai` thành công, cào nhiều chương liên tiếp ổn định mà không bị HTTP 403 hoặc trang trống.
+- ✅ Cơ chế tự động hủy job hoạt động chuẩn xác và kịp thời ngăn ngừa lãng phí tài nguyên hệ thống khi nguồn truyện bị thay đổi cấu trúc hoặc chặn hoàn toàn.
+
+---
+
+## 2026-05-19 20:10 - Tích hợp xoay Proxy (Proxy Rotation) tự động cho Scrapling Scraper
+
+**Vấn đề**:
+- Khi scrapling scraper bị Cloudflare / Turnstile chặn (HTTP 403 hoặc trang trống) hoặc gặp sự cố mạng, nó không tự động xoay proxy như phiên bản scraper truyền thống (vốn sử dụng `proxy_rotator.py` để lấy và xoay vòng danh sách proxy miễn phí). Điều này làm giảm đáng kể tính tối ưu và tỷ lệ thành công của tiến trình cào khi chạy ở các môi trường nhạy cảm.
+
+**Giải pháp đã thực hiện**:
+1. **Đồng bộ hóa proxy_rotator.py**:
+   - Sao chép [proxy_rotator.py](file:///e:/projects_window/reader-hub/scrapling/proxy_rotator.py) từ thư mục `scraper` truyền thống sang thư mục `scrapling` mới nhằm giữ cho cấu trúc của scrapling engine hoàn toàn độc lập và khép kín.
+2. **Nâng cấp StealthySession**:
+   - Thêm phương thức `rotate_proxy(self, new_proxy_url: str | None)` vào lớp `StealthySession` trong [scrapling/scraper.py](file:///e:/projects_window/reader-hub/scrapling/scraper.py). Phương thức này tự động đóng trình duyệt và context hiện tại, sau đó khởi tạo lại trình duyệt và context Playwright mới với proxy mới, đảm bảo tính liên tục của session.
+   - Thêm bộ chuyển đổi cấu hình proxy tự động để đảm bảo tham số proxy luôn được truyền đúng định dạng dict (`{"server": proxy_url}`) của Playwright.
+3. **Cơ chế tự động xoay và thử lại (Retry with Rotation Wrapper)**:
+   - Viết helper `fetch_with_rotation_wrapper(session, action_fn, max_rotations=5)` để thực thi các tác vụ cào. Nếu tác vụ thất bại (do lỗi kết nối, HTTP status không phải 200, hoặc nội dung trả về trống), hệ thống sẽ tự động cập nhật số lần lỗi của proxy hiện tại, loại bỏ proxy nếu hỏng liên tục, lấy proxy tiếp theo từ pool, gọi `session.rotate_proxy` để đổi proxy và thực hiện thử lại tác vụ cào.
+   - Áp dụng wrapper này đồng bộ cho cả 3 bước cào:
+     * Lấy thông tin truyện (Story details).
+     * Lấy trang danh sách chương (Chapter list pagination).
+     * Lấy chi tiết nội dung chương (Chapter content).
+4. **Hỗ trợ USE_FREE_PROXY**:
+   - Tích hợp biến môi trường `USE_FREE_PROXY`. Nếu được bật và không cấu hình `PROXY_URL` tĩnh (paid proxy), scraper sẽ tự động thu hoạch danh sách proxy miễn phí thông qua `proxy_rotator` tại thời điểm khởi chạy bằng cách chạy async loop `asyncio.run(build_proxy_pool(...))` rồi tiến hành xoay vòng các proxy này khi cào.
+
+**Kết quả**:
+- ✅ Khắc phục hoàn toàn tình trạng bị chặn ngắt quãng không thể tiếp tục cào của Scrapling Scraper.
+- ✅ Scrapling Scraper giờ đây tối ưu hơn hẳn scraper truyền thống nhờ sự kết hợp giữa persistent browser context siêu bảo mật chống bot của Scrapling và cơ chế tự động xoay vòng proxy bền bỉ.

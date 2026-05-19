@@ -177,25 +177,202 @@ _pw_module.PlaywrightEngine.fetch = _fetch_no_sandbox
 
 
 class StealthySession:
-    """Wrapper around PlayWrightFetcher to act as a session context manager."""
+    """Wrapper around a persistent Playwright browser context to act as a session manager."""
     def __init__(self, **kwargs):
-        self.fetcher = PlayWrightFetcher()
         self.kwargs = kwargs
+        self.playwright = None
+        self.browser = None
+        self.context = None
 
     def __enter__(self):
+        if self.kwargs.get("stealth", True):
+            from rebrowser_playwright.sync_api import sync_playwright
+        else:
+            from playwright.sync_api import sync_playwright
+
+        self.playwright = sync_playwright().start()
+
+        from scrapling.engines.constants import DEFAULT_STEALTH_FLAGS
+        flags = list(DEFAULT_STEALTH_FLAGS)
+        if self.kwargs.get("hide_canvas", True):
+            flags += ['--fingerprinting-canvas-image-data-noise']
+        if self.kwargs.get("disable_webgl", False):
+            flags += ['--disable-webgl', '--disable-webgl-image-chromium', '--disable-webgl2']
+
+        self.browser = self.playwright.chromium.launch(
+            headless=self.kwargs.get("headless", True),
+            args=flags,
+            ignore_default_args=['--enable-automation'],
+            chromium_sandbox=False
+        )
+
+        from scrapling.engines.toolbelt import generate_headers
+        extra_headers = generate_headers(browser_mode=True)
+        useragent = extra_headers.get('User-Agent')
+
+        # Convert proxy if it's a string
+        proxy_config = None
+        raw_proxy = self.kwargs.get("proxy")
+        if raw_proxy:
+            if isinstance(raw_proxy, dict):
+                proxy_config = raw_proxy
+            else:
+                proxy_config = {"server": raw_proxy}
+
+        self.context = self.browser.new_context(
+            locale='en-US', is_mobile=False, has_touch=False,
+            proxy=proxy_config, color_scheme='dark', user_agent=useragent,
+            device_scale_factor=2, service_workers="allow",
+            ignore_https_errors=True, extra_http_headers=extra_headers,
+            screen={"width": 1920, "height": 1080},
+            viewport={"width": 1920, "height": 1080},
+            permissions=["geolocation", 'notifications'],
+        )
         return self
 
+    def rotate_proxy(self, new_proxy_url: str | None):
+        """Close current browser/context and launch a new one with a different proxy."""
+        print(f"  🔄 Recreating browser session with proxy: {new_proxy_url if new_proxy_url else 'direct'}")
+        
+        # Close old resources
+        if self.context:
+            try:
+                self.context.close()
+            except Exception:
+                pass
+        if self.browser:
+            try:
+                self.browser.close()
+            except Exception:
+                pass
+
+        self.kwargs["proxy"] = new_proxy_url
+
+        from scrapling.engines.constants import DEFAULT_STEALTH_FLAGS
+        flags = list(DEFAULT_STEALTH_FLAGS)
+        if self.kwargs.get("hide_canvas", True):
+            flags += ['--fingerprinting-canvas-image-data-noise']
+        if self.kwargs.get("disable_webgl", False):
+            flags += ['--disable-webgl', '--disable-webgl-image-chromium', '--disable-webgl2']
+
+        launch_args = {
+            "headless": self.kwargs.get("headless", True),
+            "args": flags,
+            "ignore_default_args": ['--enable-automation'],
+            "chromium_sandbox": False
+        }
+
+        proxy_config = None
+        if new_proxy_url:
+            proxy_config = {"server": new_proxy_url}
+            launch_args["proxy"] = proxy_config
+
+        self.browser = self.playwright.chromium.launch(**launch_args)
+
+        from scrapling.engines.toolbelt import generate_headers
+        extra_headers = generate_headers(browser_mode=True)
+        useragent = extra_headers.get('User-Agent')
+
+        self.context = self.browser.new_context(
+            locale='en-US', is_mobile=False, has_touch=False,
+            proxy=proxy_config, color_scheme='dark', user_agent=useragent,
+            device_scale_factor=2, service_workers="allow",
+            ignore_https_errors=True, extra_http_headers=extra_headers,
+            screen={"width": 1920, "height": 1080},
+            viewport={"width": 1920, "height": 1080},
+            permissions=["geolocation", 'notifications'],
+        )
+
     def __exit__(self, exc_type, exc_val, exc_tb):
-        pass
+        if self.context:
+            self.context.close()
+        if self.browser:
+            self.browser.close()
+        if self.playwright:
+            self.playwright.stop()
 
     def fetch(self, url: str):
-        return self.fetcher.fetch(
-            url,
-            headless=self.kwargs.get("headless", True),
-            disable_resources=self.kwargs.get("disable_resources", True),
-            proxy=self.kwargs.get("proxy"),
-            stealth=True
+        if not self.context:
+            fetcher = PlayWrightFetcher()
+            return fetcher.fetch(
+                url,
+                headless=self.kwargs.get("headless", True),
+                disable_resources=self.kwargs.get("disable_resources", True),
+                proxy=self.kwargs.get("proxy"),
+                stealth=True
+            )
+
+        from scrapling.engines.toolbelt import (
+            Response, intercept_route, generate_convincing_referer,
         )
+
+        page = self.context.new_page()
+        page.set_default_navigation_timeout(30000)
+        page.set_default_timeout(30000)
+
+        if self.kwargs.get("disable_resources", True):
+            page.route("**/*", intercept_route)
+
+        if self.kwargs.get("stealth", True):
+            _js_path = custom_js_bypass_path
+            page.add_init_script(path=_js_path('webdriver_fully.js'))
+            page.add_init_script(path=_js_path('window_chrome.js'))
+            page.add_init_script(path=_js_path('navigator_plugins.js'))
+            page.add_init_script(path=_js_path('pdf_viewer.js'))
+            page.add_init_script(path=_js_path('notification_permission.js'))
+            page.add_init_script(path=_js_path('screen_props.js'))
+            page.add_init_script(path=_js_path('playwright_fingerprint.js'))
+
+        res = page.goto(url, referer=generate_convincing_referer(url))
+        try:
+            page.wait_for_load_state(state="load", timeout=15000)
+        except Exception:
+            pass
+        page.wait_for_load_state(state="domcontentloaded")
+
+        content_type = res.headers.get('content-type', '') if res else ''
+        encoding = 'utf-8'
+        if 'charset=' in content_type.lower():
+            encoding = content_type.lower().split('charset=')[-1].split(';')[0].strip()
+
+        # Robust text content retrieval
+        page_content = ""
+        for attempt in range(5):
+            try:
+                page_content = page.content()
+                break
+            except Exception as e:
+                if "navigating" in str(e).lower() or "navigation" in str(e).lower():
+                    time.sleep(1)
+                    try:
+                        page.wait_for_load_state(state="load", timeout=5000)
+                    except Exception:
+                        pass
+                else:
+                    raise e
+        else:
+            try:
+                page_content = page.evaluate("() => document.documentElement.outerHTML")
+            except Exception:
+                page_content = page.content()
+
+        res_body = b""
+        if res:
+            try:
+                res_body = res.body()
+            except Exception:
+                res_body = page_content.encode(encoding, errors='replace')
+
+        response = Response(
+            url=page.url if page else (res.url if res else url), text=page_content, content=res_body,
+            status=res.status if res else 200, reason=res.status_text if res else '', encoding=encoding,
+            cookies={cookie['name']: cookie['value'] for cookie in page.context.cookies()},
+            headers=res.all_headers() if res else {}, request_headers=res.request.all_headers() if res and res.request else {},
+            adaptor_arguments={}
+        )
+        page.close()
+        return response
+
 
 from parsers import detect_parser
 from r2_uploader import upload_chapter, upload_cover, get_existing_chapters
@@ -206,6 +383,7 @@ from supabase_client import (
     update_story_total_chapters,
     update_scrape_job,
 )
+from proxy_rotator import build_proxy_pool, ProxyPool, ProxyInfo
 
 
 # ─── Config & Arguments ──────────────────────────────────────
@@ -241,6 +419,10 @@ USE_FREE_PROXY = os.environ.get("USE_FREE_PROXY", "false").lower() == "true"
 MIN_DELAY = float(os.environ.get("SCRAPE_MIN_DELAY", "2.0"))
 MAX_DELAY = float(os.environ.get("SCRAPE_MAX_DELAY", "5.0"))
 
+# Proxy pool (populated at runtime)
+proxy_pool: ProxyPool | None = None
+current_proxy: ProxyInfo | None = None
+
 # Global state to track progress for signal handlers and early aborts
 scrape_progress = {
     "start": None,
@@ -252,6 +434,39 @@ scrape_progress = {
 class ScraperAbortException(Exception):
     """Custom exception raised when the scraper is aborted early."""
     pass
+
+
+def fetch_with_rotation_wrapper(session: StealthySession, action_fn, max_rotations: int = 5):
+    """Executes action_fn(session). If it raises an exception, rotates proxy and retries."""
+    global proxy_pool, current_proxy
+    
+    for rotation in range(max_rotations):
+        try:
+            return action_fn(session)
+        except Exception as e:
+            if (PROXY_URL or (proxy_pool and proxy_pool.size > 0)) and rotation < max_rotations - 1:
+                print(f"  ❌ Action failed: {e}")
+                print(f"  🔄 Rotating proxy and retrying... ({rotation + 1}/{max_rotations})")
+                
+                # If we are using a free proxy pool, mark the current proxy as failed
+                if proxy_pool and current_proxy:
+                    current_proxy.fail_count += 1
+                    if current_proxy.fail_count >= 3:
+                        proxy_pool.remove(current_proxy)
+                        print(f"  🗑️ Removed bad proxy: {current_proxy.url} (pool: {proxy_pool.size})")
+                
+                # Get next proxy and rotate session
+                if proxy_pool:
+                    current_proxy = proxy_pool.get_next()
+                    new_proxy_url = current_proxy.url if current_proxy else None
+                else:
+                    new_proxy_url = PROXY_URL
+                
+                session.rotate_proxy(new_proxy_url)
+                time.sleep(2)
+            else:
+                raise e
+    raise RuntimeError(f"Action failed after {max_rotations} proxy rotations")
 
 
 import signal
@@ -301,6 +516,8 @@ def download_image(img_url: str) -> bytes | None:
 
 def run_scraper():
     """Main scraping pipeline using Scrapling."""
+    global proxy_pool, current_proxy
+
     if not STORY_SOURCE_URL:
         print("❌ No STORY_SOURCE_URL provided. Exiting.")
         sys.exit(1)
@@ -314,6 +531,20 @@ def run_scraper():
     if JOB_ID:
         update_scrape_job(int(JOB_ID), status="running")
 
+    # ─── Build proxy pool ──────────────────────────────
+    if not PROXY_URL and USE_FREE_PROXY:
+        print("\n🌐 [Scrapling] Building free proxy pool...")
+        import asyncio
+        proxy_pool = asyncio.run(build_proxy_pool(max_proxies=200, test_concurrency=150))
+        if proxy_pool.size == 0:
+            print("  ⚠️ No working free proxies found, will connect directly")
+            current_proxy = None
+        else:
+            current_proxy = proxy_pool.get_next()
+    else:
+        proxy_pool = None
+        current_proxy = None
+
     # Configure session proxy
     session_kwargs = {
         "headless": True,
@@ -324,7 +555,10 @@ def run_scraper():
 
     if PROXY_URL:
         session_kwargs["proxy"] = PROXY_URL
-        print(f"🔄 [Scrapling] Configured proxy: {PROXY_URL[:35]}...")
+        print(f"🔄 [Scrapling] Configured paid proxy: {PROXY_URL[:35]}...")
+    elif current_proxy:
+        session_kwargs["proxy"] = current_proxy.url
+        print(f"🔄 [Scrapling] Configured free proxy: {current_proxy.url}")
 
     chapters_scraped = 0
     consecutive_failures = 0
@@ -334,11 +568,17 @@ def run_scraper():
         try:
             # ─── Step 1: Scrape story info ─────────────────
             print("\n📚 [Scrapling] Scraping story info...")
-            response = session.fetch(STORY_SOURCE_URL)
-            if response.status != 200:
-                raise RuntimeError(f"Failed to fetch story details: HTTP {response.status}")
+            
+            def get_story_info(sess):
+                resp = sess.fetch(STORY_SOURCE_URL)
+                if resp.status != 200:
+                    raise RuntimeError(f"HTTP {resp.status}")
+                info = parser.parse_story_info(resp.body, STORY_SOURCE_URL)
+                if not info or not info.get("title"):
+                    raise RuntimeError("Failed to parse story info or title is empty")
+                return resp, info
 
-            story_info = parser.parse_story_info(response.body, STORY_SOURCE_URL)
+            response, story_info = fetch_with_rotation_wrapper(session, get_story_info)
             print(f"  Title: {story_info['title']}")
             print(f"  Author: {story_info.get('author', 'N/A')}")
             print(f"  Slug: {story_info['slug']}")
@@ -414,12 +654,16 @@ def run_scraper():
                 max_pages = 1
             else:
                 first_page_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=1)
-                first_page_resp = session.fetch(first_page_url)
-                if first_page_resp.status != 200:
-                    raise RuntimeError(f"Failed to fetch chapter list page 1: HTTP {first_page_resp.status}")
+                
+                def get_first_page(sess):
+                    resp = sess.fetch(first_page_url)
+                    if resp.status != 200:
+                        raise RuntimeError(f"HTTP {resp.status}")
+                    ch_list = parser.parse_chapter_list(resp.body)
+                    max_p = parser.parse_max_pages(resp.body)
+                    return ch_list, max_p, resp
 
-                all_chapters = parser.parse_chapter_list(first_page_resp.body)
-                max_pages = parser.parse_max_pages(first_page_resp.body)
+                all_chapters, max_pages, first_page_resp = fetch_with_rotation_wrapper(session, get_first_page)
                 
             print(f"  Found {len(all_chapters)} chapters (Total pages: {max_pages})")
 
@@ -437,14 +681,20 @@ def run_scraper():
                 random_delay()
                 
                 p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=page_num)
-                p_resp = session.fetch(p_url)
-                if p_resp.status != 200:
-                    print(f"  ⚠️ Failed to fetch page {page_num}: HTTP {p_resp.status}")
-                    break
                 
-                p_chapters = parser.parse_chapter_list(p_resp.body)
-                if not p_chapters:
-                    print(f"  ⚠️ No chapters found on page {page_num}, stopping")
+                def get_page_chapters(sess):
+                    p_resp = sess.fetch(p_url)
+                    if p_resp.status != 200:
+                        raise RuntimeError(f"HTTP {p_resp.status}")
+                    p_chapters = parser.parse_chapter_list(p_resp.body)
+                    if not p_chapters:
+                        raise RuntimeError(f"No chapters found on page {page_num}")
+                    return p_chapters
+
+                try:
+                    p_chapters = fetch_with_rotation_wrapper(session, get_page_chapters)
+                except Exception as e:
+                    print(f"  ⚠️ Failed to fetch page {page_num}: {e}")
                     break
                 
                 existing_nums = {ch["chapter_number"] for ch in all_chapters}
@@ -499,10 +749,17 @@ def run_scraper():
                     continue
 
                 try:
-                    ch_resp = session.fetch(ch_info["source_url"])
-                    if ch_resp.status != 200:
-                        raise RuntimeError(f"HTTP {ch_resp.status}")
-                    
+                    def get_chapter_content(sess):
+                        ch_resp = sess.fetch(ch_info["source_url"])
+                        if ch_resp.status != 200:
+                            raise RuntimeError(f"HTTP {ch_resp.status}")
+                        
+                        content = parser.parse_chapter_content(ch_resp.body)
+                        if not content["paragraphs"]:
+                            raise RuntimeError("No content found/parsed (page might be blank or blocked by Turnstile)")
+                        return content
+
+                    content = fetch_with_rotation_wrapper(session, get_chapter_content)
                     consecutive_failures = 0
                 except Exception as e:
                     print(f"  ❌ Failed to fetch chapter {ch_num}: {e}")
@@ -511,11 +768,6 @@ def run_scraper():
                         raise ScraperAbortException(
                             f"Aborting: {consecutive_failures} consecutive chapter failures detected."
                         )
-                    continue
-
-                content = parser.parse_chapter_content(ch_resp.body)
-                if not content["paragraphs"]:
-                    print("  ⚠️ No content found, skipping")
                     continue
 
                 print(f"  📝 {len(content['paragraphs'])} paragraphs, {content['word_count']} words")
