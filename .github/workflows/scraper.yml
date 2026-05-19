@@ -61,7 +61,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r ${{ env.SCRAPER_DIR }}/requirements.txt
-          playwright install chromium
+          python -m rebrowser_playwright install chromium
           playwright install-deps chromium
 
       - name: Run scraper
