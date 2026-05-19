@@ -1231,11 +1231,13 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 
 ## 2026-05-19 10:30 - Khắc phục sự cố rò rỉ mã bí mật Supabase (Secrets Leak)
 
-**Vấn đề**: Supabase và GitGuardian phát hiện và báo động rò rỉ:
-1. Supabase Personal Access Token (PAT) trong file `CONTEXT.md` tại commit `4a6fe4e`.
-2. Supabase Service Role Key trong hai file test `check_chapters.py` và `check_schema.py` tại commit `2c03824`.
+**Vấn đề**: GitGuardian quét thấy 2 cảnh báo rò rỉ mã bí mật trong repository:
+1. **Supabase Service Role Key** (Rò rỉ thật) trong file test `check_schema.py` tại commit `2c03824`. Khóa này có quyền quản trị tối cao, cực kỳ nguy hiểm.
+2. **Supabase Anon Key** (Cảnh báo nhầm) trong file client `mobile_flutter/lib/config.dart` tại commit `60c0337`. Đây là khóa công khai cho client-side app, hoàn toàn an toàn và được phép lộ trong code.
 
 **Giải pháp đã thực hiện**:
-1. **Loại bỏ PAT**: Cập nhật file `CONTEXT.md` thay thế PAT thực bằng placeholder bảo mật `<REDACTED_SUPABASE_PAT>`.
-2. **Dọn dẹp mã nguồn**: Xác nhận các file test chứa khóa rò rỉ đã được xóa khỏi working tree, đồng thời commit chính thức thay đổi loại bỏ hoàn toàn các file này ra khỏi luồng theo dõi của mã nguồn hiện tại.
-3. **Kế hoạch ứng phó**: Cung cấp tài liệu khắc phục chi tiết `supabase_leak_remediation_plan.md` cho người dùng để thực hiện xoay khóa (Rotate) trên Supabase Dashboard và cập nhật GitHub Secrets.
+1. **Dọn dẹp mã nguồn**: Các file python test (`check_schema.py`, `check_chapters.py`, v.v.) đã được xóa sạch hoàn toàn khỏi working tree hiện tại và commit loại bỏ chính thức.
+2. **Loại bỏ PAT**: Đã xóa token `sbp_e4df...` nhạy cảm khỏi dòng 974 trong `CONTEXT.md`, thay bằng placeholder bảo mật `<REDACTED_SUPABASE_PAT>`.
+3. **Giải thích bảo mật**: Phân biệt và làm rõ cho người dùng giữa khóa `service_role` (phải xoay ngay lập tức) và khóa `anon` (an toàn, chỉ cần ẩn cảnh báo trong dashboard GitGuardian).
+4. **Kế hoạch ứng phó**: Cập nhật tài liệu khắc phục chi tiết `supabase_leak_remediation_plan.md` làm cẩm nang hướng dẫn người dùng tự xoay khóa trên Supabase Dashboard và cập nhật GitHub Secrets.
+
