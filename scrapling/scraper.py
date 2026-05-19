@@ -38,6 +38,110 @@ def custom_js_bypass_path(filename):
 scrapling.engines.pw.js_bypass_path = custom_js_bypass_path
 scrapling.engines.toolbelt.navigation.js_bypass_path = custom_js_bypass_path
 
+# Monkeypatch PlaywrightEngine.fetch to disable chromium_sandbox in CI
+# GitHub Actions Ubuntu runners don't support Chromium sandboxing
+if os.environ.get('CI') or os.environ.get('GITHUB_ACTIONS'):
+    import scrapling.engines.pw as _pw_module
+
+    def _fetch_no_sandbox(self, url):
+        """Patched fetch that disables chromium sandbox for CI environments."""
+        if not self.stealth:
+            from playwright.sync_api import sync_playwright
+        else:
+            from rebrowser_playwright.sync_api import sync_playwright
+
+        from scrapling.engines.constants import DEFAULT_STEALTH_FLAGS
+        from scrapling.engines.toolbelt import (
+            Response, intercept_route, generate_headers,
+            construct_cdp_url, generate_convincing_referer,
+        )
+
+        with sync_playwright() as p:
+            if self.useragent:
+                extra_headers = {}
+                useragent = self.useragent
+            else:
+                extra_headers = generate_headers(browser_mode=True)
+                useragent = extra_headers.get('User-Agent')
+
+            flags = DEFAULT_STEALTH_FLAGS
+            if self.hide_canvas:
+                flags += ['--fingerprinting-canvas-image-data-noise']
+            if self.disable_webgl:
+                flags += ['--disable-webgl', '--disable-webgl-image-chromium', '--disable-webgl2']
+
+            if self.cdp_url:
+                cdp_url = self._cdp_url_logic(flags if self.stealth else None)
+                browser = p.chromium.connect_over_cdp(endpoint_url=cdp_url)
+            else:
+                if self.stealth:
+                    browser = p.chromium.launch(headless=self.headless, args=flags, ignore_default_args=['--enable-automation'], chromium_sandbox=False)
+                else:
+                    browser = p.chromium.launch(headless=self.headless, ignore_default_args=['--enable-automation'])
+
+            if self.stealth:
+                context = browser.new_context(
+                    locale='en-US', is_mobile=False, has_touch=False,
+                    proxy=self.proxy, color_scheme='dark', user_agent=useragent,
+                    device_scale_factor=2, service_workers="allow",
+                    ignore_https_errors=True, extra_http_headers=extra_headers,
+                    screen={"width": 1920, "height": 1080},
+                    viewport={"width": 1920, "height": 1080},
+                    permissions=["geolocation", 'notifications'],
+                )
+            else:
+                context = browser.new_context(
+                    color_scheme='dark', user_agent=useragent,
+                    device_scale_factor=2, extra_http_headers=extra_headers
+                )
+
+            page = context.new_page()
+            page.set_default_navigation_timeout(self.timeout)
+            page.set_default_timeout(self.timeout)
+
+            if self.extra_headers:
+                page.set_extra_http_headers(self.extra_headers)
+            if self.disable_resources:
+                page.route("**/*", intercept_route)
+
+            if self.stealth:
+                _js_path = custom_js_bypass_path
+                page.add_init_script(path=_js_path('webdriver_fully.js'))
+                page.add_init_script(path=_js_path('window_chrome.js'))
+                page.add_init_script(path=_js_path('navigator_plugins.js'))
+                page.add_init_script(path=_js_path('pdf_viewer.js'))
+                page.add_init_script(path=_js_path('notification_permission.js'))
+                page.add_init_script(path=_js_path('screen_props.js'))
+                page.add_init_script(path=_js_path('playwright_fingerprint.js'))
+
+            res = page.goto(url, referer=generate_convincing_referer(url) if self.google_search else None)
+            page.wait_for_load_state(state="domcontentloaded")
+            if self.network_idle:
+                page.wait_for_load_state('networkidle')
+
+            page = self.page_action(page)
+
+            if self.wait_selector and type(self.wait_selector) is str:
+                waiter = page.locator(self.wait_selector)
+                waiter.wait_for(state=self.wait_selector_state)
+
+            content_type = res.headers.get('content-type', '')
+            encoding = 'utf-8'
+            if 'charset=' in content_type.lower():
+                encoding = content_type.lower().split('charset=')[-1].split(';')[0].strip()
+
+            response = Response(
+                url=res.url, text=page.content(), content=res.body(),
+                status=res.status, reason=res.status_text, encoding=encoding,
+                cookies={cookie['name']: cookie['value'] for cookie in page.context.cookies()},
+                headers=res.all_headers(), request_headers=res.request.all_headers(),
+                adaptor_arguments=self.adaptor_arguments
+            )
+            page.close()
+        return response
+
+    _pw_module.PlaywrightEngine.fetch = _fetch_no_sandbox
+
 
 class StealthySession:
     """Wrapper around PlayWrightFetcher to act as a session context manager."""
