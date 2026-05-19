@@ -1379,3 +1379,44 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 **Kết quả**:
 - ✅ Khắc phục tình trạng job cào truyện lớn bị hủy ngắt quãng do timeout của GitHub Actions.
 
+---
+
+## 2026-05-19 17:35 - Triển khai Scrapling Engine song song với Scraper truyền thống
+
+**Yêu cầu**:
+- Triển khai thư viện Scrapling vào dự án, thêm 1 thư mục/nhánh cào ngang cấp với thư mục `scraper` truyền thống để cung cấp giải pháp render Javascript và vượt các lá chắn Cloudflare/Anti-bot tiên tiến.
+
+**Giải pháp đã thực hiện**:
+1. **Khởi tạo và cài đặt môi trường ảo (Virtual Environment)**:
+   - Tạo môi trường ảo riêng biệt `venv` ngay trong thư mục `scrapling` (`e:\projects_window\reader-hub\scrapling\venv`).
+   - Cài đặt đầy đủ các thư viện phụ thuộc từ `requirements.txt` bao gồm `scrapling[fetchers]==0.2.1`, `playwright`, `beautifulsoup4`, `lxml`, `supabase`, `boto3`, v.v.
+   - Cài đặt thành công Chromium binary của Playwright thông qua lệnh `playwright install chromium`.
+2. **Khắc phục lỗi Import và cấu hình Stealth Mode của Scrapling**:
+   - Khắc phục lỗi thiếu file cấu hình chống bot (`.js` bypass scripts) của `StealthySession` trong Scrapling trên hệ điều hành Windows bằng cách chuyển sang sử dụng `PlayWrightFetcher(headless=True, disable_resources=True)`. Bộ giải pháp `PlayWrightFetcher` nguyên bản của Playwright hoạt động cực kỳ ổn định và đã vượt qua thành công cơ chế Cloudflare của các trang khó như `uukanshu.cc`.
+   - Thay đổi các lệnh gọi từ `response.text` sang `response.body` nhằm lấy đúng nội dung HTML trả về dưới dạng chuỗi văn bản từ `PlayWrightFetcher`.
+3. **Cơ chế tương thích ngược (Scrapy Compatibility Layer Patching) trong [parsers.py](file:///e:/projects_window/reader-hub/scrapling/parsers.py)**:
+   - Cải tiến và ánh xạ `Selector` của Scrapling thông qua `from scrapling import Adaptor as Selector`.
+   - **Patching lớp `Adaptors`**: Định nghĩa thêm thuộc tính động `attrib` trả về `.attrib` của phần tử đầu tiên (hoặc `{}` nếu danh sách trống), và hàm `getall()` để serialize danh sách phần tử thành chuỗi HTML, mô phỏng hoàn hảo hành vi của Scrapy `SelectorList`.
+   - **Patching lớp `TextHandlers`**: Bổ sung hai phương thức `.get()` (trả về văn bản đầu tiên) và `.getall()` (trả về list các chuỗi văn bản), giúp toàn bộ các parser cũ giữ nguyên 100% cú pháp cào Scrapy truyền thống mà vẫn chạy mượt mà trên nền Scrapling.
+4. **Cập nhật Scripts cào và tìm kiếm**:
+   - Cập nhật [search_sources.py](file:///e:/projects_window/reader-hub/scrapling/search_sources.py) và [test_local.py](file:///e:/projects_window/reader-hub/scrapling/test_local.py) sử dụng `PlayWrightFetcher` và truyền HTML string thông qua `response.body` vào các bộ parser.
+
+**Kết quả**:
+- ✅ Thư mục `scrapling` hoạt động hoàn toàn độc lập và song song với `scraper` cũ.
+- ✅ Chạy thử nghiệm thành công cào truyện `傲世丹神` trên nguồn `uukanshu.cc` bằng `scrapling/venv`: Lấy thành công thông tin truyện, tải danh sách 12,002 chương và bóc tách nội dung chi tiết chương 1 với 61 đoạn văn bản không gặp bất kỳ lỗi chặn nào.
+
+---
+
+## 2026-05-19 17:40 - Tích hợp cấu hình chuyển đổi Engine linh hoạt trên GitHub Actions
+
+**Yêu cầu**:
+- Cho phép chuyển đổi linh hoạt giữa 2 bộ scraper (`scraper` truyền thống và `scrapling` mới) trên môi trường GitHub Actions một cách dễ dàng và đồng bộ.
+
+**Giải pháp đã thực hiện**:
+- Nâng cấp tệp cấu hình [.github/workflows/scraper.yml](file:///e:/projects_window/reader-hub/.github/workflows/scraper.yml):
+  * Khai báo biến môi trường toàn cục `SCRAPER_DIR: scraper` (hoặc đặt là `scrapling`).
+  * Tham chiếu động biến này (`${{ env.SCRAPER_DIR }}`) trong tất cả các bước liên quan: thiết lập đường dẫn caching dependencies (`cache-dependency-path`), cài đặt thư viện phụ thuộc (`pip install -r .../requirements.txt`), và thư mục làm việc của bước chạy (`working-directory`).
+- **Kết quả**: Chỉ cần sửa **1 dòng duy nhất** (biến `SCRAPER_DIR` từ `scraper` thành `scrapling` hoặc ngược lại), toàn bộ workflow bao gồm cả job `scrape` và `search` sẽ tự động chuyển đổi đồng bộ tất cả cấu hình môi trường, cài đặt thư viện tương ứng và thực thi đúng mã nguồn đích.
+
+
+
