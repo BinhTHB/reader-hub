@@ -18,7 +18,19 @@ import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor } from '@capacitor/core';
 import { R2_PUBLIC_DOMAIN, supabase } from "../../lib/supabase";
 import { mediaService } from "../../lib/mediaService";
-import AudioService from "../../lib/audioService";
+
+let AudioService: any = null;
+
+// Try to load AudioService plugin
+try {
+  if (Capacitor.isNativePlatform()) {
+    AudioService = require('../../lib/audioService').default;
+    console.log('[ReadingScreen] AudioService loaded:', AudioService);
+  }
+} catch (err) {
+  console.warn('[ReadingScreen] AudioService not available:', err);
+  AudioService = null;
+}
 
 interface ReadingScreenProps {
   chapter?: any;
@@ -162,62 +174,59 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
     }
   }, [chapter?.story_id]);
 
-  // Initialize Media Session and set up handlers
-  useEffect(() => {
-    if (chapter && story) {
-      const coverUrl = story.cover_url?.startsWith('http') 
-        ? story.cover_url 
-        : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`;
-      
-      console.log('[ReadingScreen] Initializing media session for:', chapter.title);
-      console.log('[ReadingScreen] Capacitor platform:', Capacitor.getPlatform());
-      console.log('[ReadingScreen] Is native:', Capacitor.isNativePlatform());
-      
-      mediaService.initMediaSession(chapter, story.title, coverUrl);
-      
-      mediaService.setMediaSessionHandlers({
-        play: handlePlayPause,
-        pause: handlePlayPause,
-        nexttrack: goToNextChapter,
-        previoustrack: goToPreviousChapter,
-      });
+   // Initialize Media Session and set up handlers
+   useEffect(() => {
+     if (chapter && story) {
+       const coverUrl = story.cover_url?.startsWith('http') 
+         ? story.cover_url 
+         : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`;
+       
+       console.log('[ReadingScreen] Initializing media session for:', chapter.title);
+       console.log('[ReadingScreen] Capacitor platform:', Capacitor.getPlatform());
+       console.log('[ReadingScreen] Is native:', Capacitor.isNativePlatform());
+       
+       mediaService.initMediaSession(chapter, story.title, coverUrl);
+       
+       mediaService.setMediaSessionHandlers({
+         play: handlePlayPause,
+         pause: handlePlayPause,
+         nexttrack: goToNextChapter,
+         previoustrack: goToPreviousChapter,
+       });
 
-      // Start foreground service on Android
-      if (Capacitor.isNativePlatform()) {
-        console.log('[ReadingScreen] Starting audio service...');
-        console.log('[ReadingScreen] AudioService object:', AudioService);
-        
-        AudioService.startService({
-          title: chapter?.title || `Chương ${chapter?.chapter_number}`,
-          artist: story.title,
-          coverUrl: coverUrl,
-        }).then(() => {
-          console.log('[ReadingScreen] Audio service started successfully');
-        }).catch(err => {
-          console.error('[ReadingScreen] Failed to start audio service:', err);
-          console.error('[ReadingScreen] Error details:', JSON.stringify(err));
-          alert('Lỗi: Không thể khởi động dịch vụ audio.\n' + JSON.stringify(err));
-        });
-      } else {
-        console.log('[ReadingScreen] Skipping audio service (not native platform)');
-      }
-    }
-  }, [chapter, story]);
+       // Start foreground service on Android only
+       if (Capacitor.isNativePlatform() && AudioService) {
+         console.log('[ReadingScreen] Starting audio service...');
+         
+         AudioService.startService({
+           title: chapter?.title || `Chương ${chapter?.chapter_number}`,
+           artist: story.title,
+           coverUrl: coverUrl,
+         }).then(() => {
+           console.log('[ReadingScreen] Audio service started successfully');
+         }).catch(err => {
+           console.error('[ReadingScreen] Failed to start audio service:', err);
+         });
+       } else {
+         console.log('[ReadingScreen] Skipping audio service (web platform or service unavailable)');
+       }
+     }
+   }, [chapter, story]);
 
-  // Update playback state and manage Wake Lock
-  useEffect(() => {
-    if (content) {
-      mediaService.updatePlaybackState(isPlaying, currentParagraphIndex, content.paragraphs.length);
-      mediaService.ensureWakeLock(isPlaying);
+   // Update playback state and manage Wake Lock
+   useEffect(() => {
+     if (content) {
+       mediaService.updatePlaybackState(isPlaying, currentParagraphIndex, content.paragraphs.length);
+       mediaService.ensureWakeLock(isPlaying);
 
-      // Update foreground service on Android
-      if (Capacitor.isNativePlatform()) {
-        AudioService.updatePlaybackState({
-          isPlaying: isPlaying,
-        }).catch(err => console.error('Failed to update playback state:', err));
-      }
-    }
-  }, [isPlaying, currentParagraphIndex, content]);
+       // Update foreground service on Android only
+       if (Capacitor.isNativePlatform() && AudioService) {
+         AudioService.updatePlaybackState({
+           isPlaying: isPlaying,
+         }).catch(err => console.error('Failed to update playback state:', err));
+       }
+     }
+   }, [isPlaying, currentParagraphIndex, content]);
 
   // Load story details for Media Session
   useEffect(() => {
@@ -240,15 +249,15 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
     }
   }, [chapter?.story_id]);
 
-  // Cleanup: Release Wake Lock and stop service on unmount
-  useEffect(() => {
-    return () => {
-      mediaService.releaseWakeLock();
-      if (Capacitor.isNativePlatform()) {
-        AudioService.stopService().catch(err => console.error('Failed to stop audio service:', err));
-      }
-    };
-  }, []);
+   // Cleanup: Release Wake Lock and stop service on unmount
+   useEffect(() => {
+     return () => {
+       mediaService.releaseWakeLock();
+       if (Capacitor.isNativePlatform() && AudioService) {
+         AudioService.stopService().catch(err => console.error('Failed to stop audio service:', err));
+       }
+     };
+   }, []);
 
   useEffect(() => {
     if (chapter?.text_r2_url) {
@@ -448,20 +457,20 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
     setCurrentChapterIndex(newIndex);
     setShowChapterList(false);
 
-    // Update metadata for new chapter
-    if (story) {
-      const newTitle = newChapter.title || `Chương ${newChapter.chapter_number}`;
-      mediaService.initMediaSession(newChapter, story.title, 
-        story.cover_url?.startsWith('http') ? story.cover_url : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`
-      );
+     // Update metadata for new chapter
+     if (story) {
+       const newTitle = newChapter.title || `Chương ${newChapter.chapter_number}`;
+       mediaService.initMediaSession(newChapter, story.title, 
+         story.cover_url?.startsWith('http') ? story.cover_url : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`
+       );
 
-      if (Capacitor.isNativePlatform()) {
-        AudioService.updateMetadata({
-          title: newTitle,
-          artist: story.title,
-        }).catch(err => console.error('Failed to update metadata:', err));
-      }
-    }
+       if (Capacitor.isNativePlatform() && AudioService) {
+         AudioService.updateMetadata({
+           title: newTitle,
+           artist: story.title,
+         }).catch(err => console.error('Failed to update metadata:', err));
+       }
+     }
     
     // Return whether audio was playing (for auto-resume)
     return wasPlaying;
@@ -495,97 +504,103 @@ export function ReadingScreen({ chapter: initialChapter, onBack }: ReadingScreen
     }
   };
 
-  const speakParagraph = async (index: number) => {
-    if (!content || index >= content.paragraphs.length) {
-      // Finished all paragraphs, auto-advance to next chapter if available
-      if (currentChapterIndex < chapters.length - 1) {
-        const nextChapter = chapters[currentChapterIndex + 1];
-        await changeChapter(nextChapter, true);
-        // Keep playing state, auto-resume will happen via useEffect
-      } else {
-        // Last chapter, stop playing
-        setIsPlaying(false);
-        setCurrentParagraphIndex(0);
-      }
-      return;
-    }
+   const speakParagraph = async (index: number) => {
+     if (!content || index >= content.paragraphs.length) {
+       // Finished all paragraphs, auto-advance to next chapter if available
+       if (currentChapterIndex < chapters.length - 1) {
+         const nextChapter = chapters[currentChapterIndex + 1];
+         await changeChapter(nextChapter, true);
+         // Keep playing state, auto-resume will happen via useEffect
+       } else {
+         // Last chapter, stop playing
+         setIsPlaying(false);
+         setCurrentParagraphIndex(0);
+       }
+       return;
+     }
 
-    const text = content.paragraphs[index];
+     const text = content.paragraphs[index];
 
-    if (Capacitor.isNativePlatform()) {
-      // Use native TTS on Android
-      try {
-        await TextToSpeech.speak({
-          text: text,
-          lang: 'vi-VN',
-          rate: speechRate,
-          pitch: speechPitch,
-          volume: 1.0,
-          category: 'ambient',
-        });
+     if (Capacitor.isNativePlatform()) {
+       // Use native TTS on Android
+       try {
+         // Update paragraph index immediately for smooth UI
+         setCurrentParagraphIndex(index);
+         
+         await TextToSpeech.speak({
+           text: text,
+           lang: 'vi-VN',
+           rate: speechRate,
+           pitch: speechPitch,
+           volume: 1.0,
+           category: 'ambient',
+         });
 
-        // Check if still playing using ref (more reliable than state)
-        if (!isPlayingRef.current) return;
+         // Check if still playing using ref (more reliable than state)
+         if (!isPlayingRef.current) return;
 
-        // Auto-advance to next paragraph
-        if (index < content.paragraphs.length - 1) {
-          setCurrentParagraphIndex(index + 1);
-          // Use setTimeout to ensure state update before next speak
-          setTimeout(() => {
-            if (isPlayingRef.current) {
-              speakParagraph(index + 1);
-            }
-          }, 50);
-        } else {
-          // Finished chapter, auto-advance
-          if (currentChapterIndex < chapters.length - 1) {
-            const nextChapter = chapters[currentChapterIndex + 1];
-            await changeChapter(nextChapter, true);
-          } else {
-            setIsPlaying(false);
-            setCurrentParagraphIndex(0);
-          }
-        }
-      } catch (error) {
-        console.error('TTS error:', error);
-        setIsPlaying(false);
-      }
-    } else {
-      // Use Web Speech API on browser
-      if ('speechSynthesis' in window) {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.rate = speechRate;
-        utterance.pitch = speechPitch;
-        utterance.lang = 'vi-VN';
-        
-        utterance.onend = async () => {
-          // Check if still playing using ref
-          if (!isPlayingRef.current) return;
+         // Auto-advance to next paragraph
+         if (index < content.paragraphs.length - 1) {
+           // Minimal delay for smooth transition
+           setTimeout(() => {
+             if (isPlayingRef.current) {
+               speakParagraph(index + 1);
+             }
+           }, 100);
+         } else {
+           // Finished chapter, auto-advance
+           if (currentChapterIndex < chapters.length - 1) {
+             const nextChapter = chapters[currentChapterIndex + 1];
+             await changeChapter(nextChapter, true);
+           } else {
+             setIsPlaying(false);
+             setCurrentParagraphIndex(0);
+           }
+         }
+       } catch (error) {
+         console.error('TTS error:', error);
+         setIsPlaying(false);
+       }
+     } else {
+       // Use Web Speech API on browser
+       if ('speechSynthesis' in window) {
+         const utterance = new SpeechSynthesisUtterance(text);
+         utterance.rate = speechRate;
+         utterance.pitch = speechPitch;
+         utterance.lang = 'vi-VN';
+         
+         utterance.onstart = () => {
+           // Update UI immediately when speech starts
+           setCurrentParagraphIndex(index);
+         };
+         
+         utterance.onend = async () => {
+           // Check if still playing using ref
+           if (!isPlayingRef.current) return;
 
-          if (index < content.paragraphs.length - 1) {
-            setCurrentParagraphIndex(index + 1);
-            // Small delay to ensure smooth transition
-            setTimeout(() => {
-              if (isPlayingRef.current) {
-                speakParagraph(index + 1);
-              }
-            }, 50);
-          } else {
-            // Finished chapter, auto-advance
-            if (currentChapterIndex < chapters.length - 1) {
-              const nextChapter = chapters[currentChapterIndex + 1];
-              await changeChapter(nextChapter, true);
-            } else {
-              setIsPlaying(false);
-              setCurrentParagraphIndex(0);
-            }
-          }
-        };
+           if (index < content.paragraphs.length - 1) {
+             // Minimal delay for smooth transition
+             setTimeout(() => {
+               if (isPlayingRef.current) {
+                 speakParagraph(index + 1);
+               }
+             }, 100);
+           } else {
+             // Finished chapter, auto-advance
+             if (currentChapterIndex < chapters.length - 1) {
+               const nextChapter = chapters[currentChapterIndex + 1];
+               await changeChapter(nextChapter, true);
+             } else {
+               setIsPlaying(false);
+               setCurrentParagraphIndex(0);
+             }
+           }
+         };
 
-        window.speechSynthesis.speak(utterance);
-      }
-    }
-  };
+         window.speechSynthesis.speak(utterance);
+       }
+     }
+   };
 
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;

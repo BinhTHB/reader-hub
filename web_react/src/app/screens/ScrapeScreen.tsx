@@ -44,6 +44,8 @@ interface ScrapeJob {
   };
   chapters_scraped?: number;
   total_chapters?: number;
+  chapter_start?: number;
+  chapter_end?: number;
   logs: string[];
   created_at: string;
   completed_at?: string;
@@ -53,6 +55,54 @@ interface ScrapeJob {
 interface ScrapeScreenProps {
   onNavigate?: (screen: string, data?: any) => void;
 }
+
+const getParserName = (job: ScrapeJob) => {
+  if (job.parser && job.parser.trim() !== '') return job.parser;
+  try {
+    const urlObj = new URL(job.url);
+    return urlObj.hostname.replace('www.', '');
+  } catch {
+    return 'unknown';
+  }
+};
+
+const renderJobProgressText = (job: ScrapeJob) => {
+  const startCh = job.chapter_start || 1;
+  const scrapedCount = job.chapters_scraped || 0;
+  const totalCh = job.metadata?.total_chapters || job.total_chapters || 0;
+  
+  if (scrapedCount === 0) {
+    if (totalCh > 0) {
+      return (
+        <span className="text-xs text-muted-foreground">
+          Chưa cào (Chương mới nhất: <span className="font-semibold text-primary">{totalCh}</span>)
+        </span>
+      );
+    }
+    return <span className="text-xs text-muted-foreground">Chưa cào chương nào</span>;
+  }
+  
+  const endCh = startCh + scrapedCount - 1;
+  const remaining = totalCh > endCh ? totalCh - endCh : 0;
+  
+  return (
+    <div className="text-xs space-y-1 mt-1">
+      <p className="text-muted-foreground">
+        Đã cào: từ chương <span className="font-semibold text-primary">{startCh}</span> đến <span className="font-semibold text-primary">{endCh}</span>
+      </p>
+      {totalCh > 0 && (
+        <p className="text-muted-foreground">
+          Chương mới nhất trên nguồn: <span className="font-medium text-foreground">{totalCh}</span> 
+          {remaining > 0 ? (
+            <span> (Còn lại <span className="font-semibold text-amber-600">{remaining}</span> chương chưa cào)</span>
+          ) : (
+            <span className="text-green-600 font-medium"> (Đã cào hết)</span>
+          )}
+        </p>
+      )}
+    </div>
+  );
+};
 
 export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
   const [searchQuery, setSearchQuery] = useState("");
@@ -74,7 +124,8 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               title,
               author,
               cover_url,
-              total_chapters
+              total_chapters,
+              source_name
             )
           `)
           .order('created_at', { ascending: false })
@@ -114,7 +165,13 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               id: job.id.toString(),
               url: job.stories?.source_url || '',
               status: mappedStatus,
-              progress: mappedStatus === 'completed' ? 100 : mappedStatus === 'failed' ? 0 : 50,
+              progress: mappedStatus === 'completed'
+                ? 100
+                : mappedStatus === 'failed'
+                  ? 0
+                  : (job.chapter_start && job.chapter_end && job.chapter_end >= job.chapter_start)
+                    ? Math.min(99, Math.round(((job.chapters_scraped || 0) / (job.chapter_end - job.chapter_start + 1)) * 100))
+                    : 10,
               currentStep: mappedStatus === 'completed' ? 'Hoàn tất!' : mappedStatus === 'failed' ? 'Thất bại' : mappedStatus === 'pending' ? 'Đang chờ...' : 'Đang chạy...',
               parser: job.stories?.source_name || '',
               metadata: job.stories ? {
@@ -125,6 +182,8 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               } : undefined,
               chapters_scraped: job.chapters_scraped || 0,
               total_chapters: job.stories?.total_chapters || 0,
+              chapter_start: job.chapter_start || 1,
+              chapter_end: job.chapter_end || 0,
               logs: [],
               created_at: job.created_at,
               completed_at: job.completed_at,
@@ -250,10 +309,18 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                 id: updatedJob.id.toString(),
                 url: result.url,
                 status: updatedJob.status,
-                progress: updatedJob.status === 'completed' ? 100 : updatedJob.status === 'running' ? 50 : 10,
+                progress: updatedJob.status === 'completed'
+                  ? 100
+                  : updatedJob.status === 'failed'
+                    ? 0
+                    : (updatedJob.chapter_start && updatedJob.chapter_end && updatedJob.chapter_end >= updatedJob.chapter_start)
+                      ? Math.min(99, Math.round(((updatedJob.chapters_scraped || 0) / (updatedJob.chapter_end - updatedJob.chapter_start + 1)) * 100))
+                      : 10,
                 currentStep: updatedJob.status === 'completed' ? 'Hoàn tất!' : updatedJob.status === 'running' ? 'Đang cào...' : 'Đang chờ...',
                 chapters_scraped: updatedJob.chapters_scraped || 0,
                 total_chapters: updatedJob.chapter_end || 50,
+                chapter_start: updatedJob.chapter_start || 1,
+                chapter_end: updatedJob.chapter_end || 0,
                 logs: [`[${new Date().toLocaleTimeString()}] Status: ${updatedJob.status}`],
                 created_at: updatedJob.created_at,
                 completed_at: updatedJob.completed_at,
@@ -470,8 +537,8 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                   <span className="font-medium text-blue-900 dark:text-blue-100">
                     Đang cào chương...
                   </span>
-                  <span className="text-blue-700 dark:text-blue-300">
-                    {activeJob.chapters_scraped}/{activeJob.total_chapters}
+                  <span className="text-blue-700 dark:text-blue-300 font-medium">
+                    Chương {activeJob.chapter_start} - {activeJob.chapter_end} ({activeJob.chapters_scraped} / {activeJob.chapter_end && activeJob.chapter_start ? (activeJob.chapter_end - activeJob.chapter_start + 1) : (activeJob.total_chapters || 50)})
                   </span>
                 </div>
               </div>
@@ -512,15 +579,24 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               ))}
             </div>
 
-            {/* Action Button */}
+            {/* Action & Info for Completed Jobs */}
             {activeJob.status === "completed" && (
-              <button
-                onClick={() => onNavigate?.("library")}
-                className="w-full mt-4 px-4 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-              >
-                <BookOpen className="w-5 h-5" />
-                Xem trong thư viện
-              </button>
+              <div className="mt-4 space-y-3">
+                {activeJob.error && (
+                  <div className="bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3">
+                    <p className="text-sm text-emerald-800 dark:text-emerald-300">
+                      <strong>Thông tin:</strong> {activeJob.error}
+                    </p>
+                  </div>
+                )}
+                <button
+                  onClick={() => onNavigate?.("library")}
+                  className="w-full px-4 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+                >
+                  <BookOpen className="w-5 h-5" />
+                  Xem trong thư viện
+                </button>
+              </div>
             )}
 
             {/* Retry Button for Failed Jobs */}
@@ -586,15 +662,23 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                       <div className="flex-1 min-w-0">
                         <h5 className="text-sm font-medium truncate">{job.metadata.title}</h5>
                         <p className="text-xs text-muted-foreground">{job.metadata.author}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {job.metadata.total_chapters} chương
-                        </p>
+                        {renderJobProgressText(job)}
                       </div>
                     </div>
                   )}
 
+                  {job.error && (
+                    <div className={`mt-3 p-2.5 rounded-lg border text-xs ${
+                      job.status === "completed" 
+                        ? "bg-emerald-50/50 dark:bg-emerald-950/10 border-emerald-100 dark:border-emerald-900 text-emerald-800 dark:text-emerald-400"
+                        : "bg-red-50/50 dark:bg-red-950/10 border-red-100 dark:border-red-900 text-red-800 dark:text-red-400"
+                    }`}>
+                      <strong>{job.status === "completed" ? "Kết quả:" : "Chi tiết lỗi:"}</strong> {job.error}
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between mt-3 text-xs text-muted-foreground">
-                    <span>Parser: {job.parser}</span>
+                    <span>Parser: <span className="font-medium text-foreground">{getParserName(job)}</span></span>
                     <span>{new Date(job.created_at).toLocaleString("vi-VN")}</span>
                   </div>
                 </div>

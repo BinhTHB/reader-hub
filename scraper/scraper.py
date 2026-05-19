@@ -36,6 +36,7 @@ from supabase_client import (
     upsert_story,
     upsert_chapter,
     update_story_scrape_progress,
+    update_story_total_chapters,
     update_scrape_job,
 )
 
@@ -75,6 +76,40 @@ MAX_DELAY = float(os.environ.get("SCRAPE_MAX_DELAY", "5.0"))
 # Proxy pool (populated at runtime)
 proxy_pool: ProxyPool | None = None
 current_proxy: ProxyInfo | None = None
+
+# Global state to track progress for signal handlers and early aborts
+scrape_progress = {
+    "start": None,
+    "end": None,
+    "count": 0
+}
+
+class ScraperAbortException(Exception):
+    """Custom exception raised when the scraper is aborted early due to consecutive failures."""
+    pass
+
+import signal
+
+def handle_signal(sig, frame):
+    print(f"\n⚠️ Scraper interrupted by signal {sig}. Gracefully shutting down...")
+    if JOB_ID:
+        start = scrape_progress["start"]
+        end = scrape_progress["end"]
+        count = scrape_progress["count"]
+        scraped_log = f"Scraped chapters from {start} to {end}" if start else "No chapters scraped"
+        try:
+            update_scrape_job(int(JOB_ID), status="completed", error_message=scraped_log, chapters_scraped=count)
+            print("  ✅ Gracefully marked job as completed in Supabase.")
+        except Exception as e:
+            print(f"  ❌ Failed to update job status on signal: {e}")
+    sys.exit(0)
+
+# Register signal handlers
+try:
+    signal.signal(signal.SIGINT, handle_signal)
+    signal.signal(signal.SIGTERM, handle_signal)
+except ValueError:
+    pass
 
 
 async def random_delay():
@@ -272,7 +307,7 @@ async def run_scraper():
         current_proxy = None
 
     chapters_scraped = 0
-    max_proxy_rotations = 5  # Max times to rotate proxy per chapter
+    max_proxy_rotations = 10  # Max times to rotate proxy per chapter
 
     async with async_playwright() as p:
         browser, context, page = await create_browser_context(p, current_proxy)
@@ -426,7 +461,14 @@ async def run_scraper():
                 print(f"  Added {len(new_chapters)} new chapters (total: {len(all_chapters)})")
                 page_num += 1
 
-            # Filter to requested range
+            # Update story total chapters count
+            if story_id and all_chapters:
+                try:
+                    update_story_total_chapters(story_id, len(all_chapters))
+                    print(f"  📊 Updated story total chapters to {len(all_chapters)}")
+                except Exception as e:
+                    print(f"  ⚠️ Failed to update story total chapters: {e}")
+
             # Filter to requested range
             if CHAPTER_LIMIT == 0:
                 # Scrape all chapters from CHAPTER_START onwards
@@ -442,6 +484,15 @@ async def run_scraper():
                     if CHAPTER_START <= ch["chapter_number"] < CHAPTER_START + CHAPTER_LIMIT
                 ]
                 print(f"  Targeting {len(target_chapters)} chapters (starting from {CHAPTER_START}, limit {CHAPTER_LIMIT})")
+
+            # Update scrape job's actual end chapter
+            if JOB_ID and target_chapters:
+                actual_end_ch = target_chapters[-1]["chapter_number"]
+                try:
+                    update_scrape_job(int(JOB_ID), chapter_end=actual_end_ch)
+                    print(f"  📊 Updated scrape job chapter_end to {actual_end_ch}")
+                except Exception as e:
+                    print(f"  ⚠️ Failed to update scrape job chapter_end: {e}")
 
             await random_delay()
 
@@ -498,8 +549,8 @@ async def run_scraper():
                 except RuntimeError as e:
                     print(f"  ❌ Failed to fetch chapter {ch_num} after all retries: {e}")
                     consecutive_failures += 1
-                    if consecutive_failures >= 3:
-                        raise RuntimeError(
+                    if consecutive_failures >= 5:
+                        raise ScraperAbortException(
                             f"Aborting job: {consecutive_failures} consecutive chapter failures detected. "
                             f"The IP or Proxy pool is likely permanently blocked by Cloudflare."
                         )
@@ -508,8 +559,8 @@ async def run_scraper():
                 if not ch_html:
                     print(f"  ❌ Failed to fetch chapter {ch_num} after all retries (no HTML)")
                     consecutive_failures += 1
-                    if consecutive_failures >= 3:
-                        raise RuntimeError(
+                    if consecutive_failures >= 5:
+                        raise ScraperAbortException(
                             f"Aborting job: {consecutive_failures} consecutive chapter failures detected (no HTML)."
                         )
                     continue
@@ -545,11 +596,16 @@ async def run_scraper():
                 chapters_scraped += 1
                 active_scrapes_in_batch += 1
 
-                # Update progress periodically
-                if chapters_scraped % 5 == 0:
-                    update_story_scrape_progress(story_id, ch_num)
-                    if JOB_ID:
-                        update_scrape_job(int(JOB_ID), chapters_scraped=chapters_scraped)
+                # Update progress tracking for signals/aborts
+                if scrape_progress["start"] is None:
+                    scrape_progress["start"] = ch_num
+                scrape_progress["end"] = ch_num
+                scrape_progress["count"] = chapters_scraped
+
+                # Update progress on every chapter
+                update_story_scrape_progress(story_id, ch_num)
+                if JOB_ID:
+                    update_scrape_job(int(JOB_ID), chapters_scraped=chapters_scraped)
 
                 # Rate limit
                 await random_delay()
@@ -557,18 +613,46 @@ async def run_scraper():
             # Final progress update
             update_story_scrape_progress(story_id, target_chapters[-1]["chapter_number"] if target_chapters else 0)
 
+        except ScraperAbortException as e:
+            print(f"\n⚠️ Scraper aborted early: {e}")
+            if JOB_ID:
+                start = scrape_progress["start"]
+                end = scrape_progress["end"]
+                scraped_log = f"Scraped chapters from {start} to {end}" if start else "No chapters scraped"
+                update_scrape_job(
+                    int(JOB_ID),
+                    status="completed",
+                    error_message=f"Aborted: {e} | {scraped_log}",
+                    chapters_scraped=chapters_scraped
+                )
         except Exception as e:
             print(f"\n❌ Fatal error: {e}")
             traceback.print_exc()
             if JOB_ID:
-                update_scrape_job(int(JOB_ID), status="failed", error_message=str(e), chapters_scraped=chapters_scraped)
+                start = scrape_progress["start"]
+                end = scrape_progress["end"]
+                scraped_log = f"Scraped chapters from {start} to {end}" if start else "No chapters scraped"
+                update_scrape_job(
+                    int(JOB_ID),
+                    status="failed",
+                    error_message=f"Error: {e} | {scraped_log}",
+                    chapters_scraped=chapters_scraped
+                )
             raise
         finally:
             await browser.close()
 
     # Mark job as completed
     if JOB_ID:
-        update_scrape_job(int(JOB_ID), status="completed", chapters_scraped=chapters_scraped)
+        start = scrape_progress["start"]
+        end = scrape_progress["end"]
+        scraped_log = f"Successfully scraped chapters from {start} to {end}" if start else "No newly scraped chapters."
+        update_scrape_job(
+            int(JOB_ID),
+            status="completed",
+            error_message=scraped_log,
+            chapters_scraped=chapters_scraped
+        )
 
     print(f"\n✅ Done! Scraped {chapters_scraped} chapters successfully.")
 

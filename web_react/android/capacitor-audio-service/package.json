@@ -1,0 +1,12 @@
+{
+  "name": "capacitor-audio-service",
+  "version": "1.0.0",
+  "description": "Audio Service Plugin for Capacitor",
+  "main": "dist/plugin.js",
+  "types": "dist/plugin.d.ts",
+  "capacitor": {
+    "android": {
+      "src": "android"
+    }
+  }
+}

@@ -80,6 +80,14 @@ def update_story_scrape_progress(story_id: int, last_chapter: int):
     }).eq("id", story_id).execute()
 
 
+def update_story_total_chapters(story_id: int, total_chapters: int):
+    """Update the total_chapters field for a story."""
+    client = get_supabase_client()
+    client.table("stories").update({
+        "total_chapters": total_chapters,
+    }).eq("id", story_id).execute()
+
+
 # ─── Chapters ──────────────────────────────────────────────
 
 def upsert_chapter(
@@ -145,6 +153,7 @@ def update_scrape_job(
     chapters_scraped: int = None,
     error_message: str = None,
     github_run_id: str = None,
+    chapter_end: int = None,
 ):
     """Update a scrape job's status and progress."""
     client = get_supabase_client()
@@ -162,6 +171,8 @@ def update_scrape_job(
         data["error_message"] = error_message
     if github_run_id is not None:
         data["github_run_id"] = github_run_id
+    if chapter_end is not None:
+        data["chapter_end"] = chapter_end
 
     if data:
         client.table("scrape_jobs").update(data).eq("id", job_id).execute()
