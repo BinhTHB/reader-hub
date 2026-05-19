@@ -1,0 +1,9 @@
+# Supabase project configuration
+
+project_id = "gvxzdhufnqhicsgawlyz"
+
+[functions.search-sources]
+verify_jwt = false
+
+[functions.trigger-scraper]
+verify_jwt = false
