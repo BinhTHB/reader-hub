@@ -1435,16 +1435,17 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
    - Loại bỏ hoàn toàn pseudo-selector `::text` khỏi parsers.py.
 2. **Deduplication chapter list**: Thêm `seen` set để loại bỏ chapter trùng lặp do CSS selectors chồng chéo (`#list-chapter a` vs `ul.list-chapter li a`).
 3. **Loại bỏ SL monkeypatch** trong [scraper.py](file:///e:/projects_window/reader-hub/scrapling/scraper.py): Không còn cần thiết sau khi loại bỏ `::text`.
-4. **Fix CI (GitHub Actions)**:
+4. **Fix CI (GitHub Actions) & Active Page Navigation**:
    - Đổi `playwright install chromium` → `python -m rebrowser_playwright install chromium` trong workflow.
-   - Monkeypatch `PlaywrightEngine.fetch` để set `chromium_sandbox=False` khi detect môi trường CI (`CI` hoặc `GITHUB_ACTIONS` env var).
+   - Monkeypatch `PlaywrightEngine.fetch` để set `chromium_sandbox=False` (áp dụng toàn bộ các môi trường bao gồm cả máy local).
    - Thêm thư mục `scrapling/bypasses/` (7 file JS stealth bypass) vào git tracking.
    - Cải tiến tệp `scraper.yml` để tự động kiểm tra xem gói `rebrowser_playwright` hay `playwright` chuẩn được cài đặt và thực hiện lệnh cài đặt trình duyệt Chromium tương ứng (`python -m rebrowser_playwright install` hoặc `playwright install`), đảm bảo workflow không bị lỗi khi chuyển đổi qua lại giữa `scraper` và `scrapling`.
+   - **Fix lỗi `Page.content: Unable to retrieve content because the page is navigating...`**: Cập nhật hàm khỉ vá `_fetch_no_sandbox` trong `scrapling/scraper.py` để tự động phát hiện và thử lại (tối đa 5 lần, ngủ 1 giây và đợi tải trạng thái `load`) khi có chuyển hướng/trang đang di chuyển, đồng thời fallback về JavaScript `documentElement.outerHTML` và encode lại text từ `page_content` nếu `res.body()` bị tách khỏi trang.
 
 **Kết quả**:
-- ✅ GitHub Actions workflow pass thành công (run #26095155961).
-- ✅ Scrape đúng title "Đấu La Đại Lục", author "Đường Gia Tam Thiếu", 50 chapters/page (không trùng lặp).
-- ✅ 5 chapters targeted đúng, skip những chapter đã tồn tại trong R2.
+- ✅ Sửa triệt để lỗi crash do trang chuyển hướng ở các site nhạy cảm như `truyendich.ai`.
+- ✅ Test local với `test_local.py` cho `truyendich.ai` thành công lấy đủ thông tin truyện, danh sách chương và nội dung chương.
 - ✅ Cấu hình CI linh hoạt, chuyển đổi biến `SCRAPER_DIR` qua lại hoàn toàn an toàn và không gây lỗi.
+
 
 
