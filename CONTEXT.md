@@ -1364,3 +1364,18 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 **Kết quả**:
 - ✅ Trạng thái hủy Job được ghi nhận và hiển thị một cách tường minh và đẹp mắt trên toàn hệ thống từ database, backend scraper cho tới frontend client.
 
+---
+
+## 2026-05-19 14:30 - Tăng thời gian chạy tối đa (Timeout Minutes) của GitHub Actions Scraper Job
+
+**Vấn đề**:
+- Khi cào truyện với số lượng chương lớn (hàng trăm chương), tổng thời gian chạy bao gồm: khởi tạo môi trường (2-3 phút), delay ngẫu nhiên chống bot, chờ tải trang qua proxy và các đợt ngủ giãn cách (cool-down) bypass Cloudflare (khoảng 100-120 giây sau mỗi 15 chương).
+- Thời gian chạy tối đa mặc định cho workflow cào truyện trên GitHub Actions đang thiết lập là **30 phút** (`timeout-minutes: 30`). Điều này khiến GitHub Actions tự động gửi tín hiệu hủy và chấm dứt tiến trình khi đang ngủ cooldown (xuất hiện lỗi `Error: The operation was canceled.` mà không có log lỗi từ Python).
+
+**Giải pháp đã thực hiện**:
+- Cập nhật tệp cấu hình GitHub Actions [.github/workflows/scraper.yml](file:///e:/projects_window/reader-hub/.github/workflows/scraper.yml#L49) để tăng thời gian timeout tối đa của job `scrape` từ **`30` phút lên `180` phút (3 tiếng)**.
+- Thời gian 3 tiếng là hoàn toàn đủ để tiến trình thực hiện cào hàng trăm chương kèm các khoảng nghỉ giãn cách bypass Cloudflare một cách trọn vẹn và an toàn.
+
+**Kết quả**:
+- ✅ Khắc phục tình trạng job cào truyện lớn bị hủy ngắt quãng do timeout của GitHub Actions.
+

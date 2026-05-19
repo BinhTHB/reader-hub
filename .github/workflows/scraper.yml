@@ -46,7 +46,7 @@ jobs:
       github.event.action == 'scrape-story' ||
       (github.event_name == 'workflow_dispatch' && github.event.inputs.mode == 'scrape')
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 180
 
     steps:
       - uses: actions/checkout@v4

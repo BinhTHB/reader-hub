@@ -195,7 +195,7 @@ export function LibraryScreen({ onNavigate, user }: LibraryScreenProps) {
         </p>
       </div>
 
-      <div className="px-4 space-y-6 -mt-6">
+      <div className="px-4 space-y-6 mt-6">
         {/* Bookmarks */}
         <section>
           <div className="flex items-center justify-between mb-4">

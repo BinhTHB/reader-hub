@@ -19,6 +19,17 @@ interface ProfileScreenProps {
 }
 
 export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode, user, onLogout }: ProfileScreenProps) {
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    const timeoutId = (window as any)._toastTimeout;
+    if (timeoutId) clearTimeout(timeoutId);
+    (window as any)._toastTimeout = setTimeout(() => {
+      setToastMessage(null);
+    }, 2000);
+  };
+
   const menuItems = [
     { icon: Settings, label: "Cài đặt ứng dụng", action: "settings" },
     { icon: HelpCircle, label: "Trợ giúp & Hỗ trợ", action: "help" },
@@ -121,8 +132,7 @@ export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode
               <button
                 key={index}
                 onClick={() => {
-                  // Handle menu item click
-                  console.log('Menu item clicked:', item.action);
+                  showToast("Tính năng chưa được triển khai");
                 }}
                 className={`w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors ${
                   index !== menuItems.length - 1 ? "border-b border-border" : ""
@@ -144,6 +154,12 @@ export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode
           <p className="mt-1">React Web App + Capacitor</p>
           <p className="mt-1 text-xs">© 2026 Reader Hub Team</p>
         </div>
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-900/90 text-white text-sm px-4 py-2.5 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 z-50 flex items-center gap-2">
+          <span>{toastMessage}</span>
+        </div>
+      )}
       </div>
     </div>
   );
