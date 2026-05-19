@@ -61,8 +61,13 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r ${{ env.SCRAPER_DIR }}/requirements.txt
-          python -m rebrowser_playwright install chromium
-          playwright install-deps chromium
+          if python -c "import rebrowser_playwright" 2>/dev/null; then
+            python -m rebrowser_playwright install chromium
+            python -m rebrowser_playwright install-deps chromium
+          else
+            playwright install chromium
+            playwright install-deps chromium
+          fi
 
       - name: Run scraper
         working-directory: ${{ env.SCRAPER_DIR }}
@@ -102,8 +107,13 @@ jobs:
       - name: Install dependencies
         run: |
           pip install -r ${{ env.SCRAPER_DIR }}/requirements.txt
-          playwright install chromium
-          playwright install-deps chromium
+          if python -c "import rebrowser_playwright" 2>/dev/null; then
+            python -m rebrowser_playwright install chromium
+            python -m rebrowser_playwright install-deps chromium
+          else
+            playwright install chromium
+            playwright install-deps chromium
+          fi
 
       - name: Run multi-source search
         working-directory: ${{ env.SCRAPER_DIR }}
