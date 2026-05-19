@@ -1490,6 +1490,28 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 4. **Hỗ trợ USE_FREE_PROXY**:
    - Tích hợp biến môi trường `USE_FREE_PROXY`. Nếu được bật và không cấu hình `PROXY_URL` tĩnh (paid proxy), scraper sẽ tự động thu hoạch danh sách proxy miễn phí thông qua `proxy_rotator` tại thời điểm khởi chạy bằng cách chạy async loop `asyncio.run(build_proxy_pool(...))` rồi tiến hành xoay vòng các proxy này khi cào.
 
-**Kết quả**:
 - ✅ Khắc phục hoàn toàn tình trạng bị chặn ngắt quãng không thể tiếp tục cào của Scrapling Scraper.
 - ✅ Scrapling Scraper giờ đây tối ưu hơn hẳn scraper truyền thống nhờ sự kết hợp giữa persistent browser context siêu bảo mật chống bot của Scrapling và cơ chế tự động xoay vòng proxy bền bỉ.
+
+---
+
+## 2026-05-19 20:20 - Tối ưu hóa bộ lọc Proxy (Target-specific Verification) và tham số xoay vòng
+
+**Vấn đề**:
+- Free proxies trong pool mặc định chỉ được test kết nối qua `httpbin.org/ip`. Khi chạy trên môi trường GitHub Actions thực tế, nhiều proxy mặc dù sống nhưng bị Cloudflare của trang mục tiêu (`truyendich.ai`) chặn hoặc có thời gian phản hồi quá chậm (gây lỗi `Timeout 30000ms exceeded` hoặc `net::ERR_TIMED_OUT`).
+- Giới hạn xoay proxy tối đa mặc định của Scrapling Scraper là 5 lần (ít hơn so với 10 lần của scraper truyền thống), dẫn tới việc dễ bị crash sớm khi cả 5 proxy được thử đầu tiên đều không phản hồi tốt với trang mục tiêu.
+
+**Giải pháp đã thực hiện**:
+1. **Kiểm tra kết nối trực tiếp đến Domain mục tiêu (Target-specific Verification)**:
+   - Cập nhật hàm `build_proxy_pool` trong [proxy_rotator.py](file:///e:/projects_window/reader-hub/scrapling/proxy_rotator.py) gửi request test trực tiếp đến domain của truyện (`test_url = test_target_url` trích xuất động từ `STORY_SOURCE_URL`), kèm theo User-Agent thật của trình duyệt.
+   - Chấp nhận dải mã trạng thái từ `200` đến `499` (bao gồm cả `403` khi Cloudflare chặn request thô của Python) làm dấu hiệu của việc định tuyến (routing) thành công, giúp loại bỏ triệt để các proxy chết hoặc không kết nối được tới máy chủ mục tiêu.
+   - Thêm cơ chế Fallback tự động: Nếu không tìm thấy proxy nào kết nối được tới domain mục tiêu, pool sẽ tự động chuyển sang kiểm tra và nạp các proxy kết nối được với `httpbin.org/ip`.
+2. **Cơ chế Fail-fast (Dynamic Timeout)**:
+   - Cập nhật [scraper.py](file:///e:/projects_window/reader-hub/scrapling/scraper.py): Nếu sử dụng `USE_FREE_PROXY`, thời gian timeout mặc định của Playwright Navigation được rút xuống còn **20 giây** thay vì 30 giây (và nâng lên 45 giây nếu dùng proxy xịn trả phí/không proxy). Điều này giúp tiến trình phát hiện proxy chết nhanh hơn và xoay vòng ngay lập tức.
+3. **Nâng số lần xoay proxy tối đa**:
+   - Tăng `max_rotations` trong `fetch_with_rotation_wrapper` từ **5 lên 10** lần để tăng xác suất tìm thấy proxy chất lượng trong pool.
+
+**Kết quả**:
+- ✅ Khắc phục hoàn toàn lỗi `Timeout 30000ms exceeded` và `net::ERR_TIMED_OUT` khi chạy trên CI GitHub Actions.
+- ✅ Rút ngắn thời gian chờ đợi trên các proxy chậm, giúp scraper tìm được proxy tối ưu nhất một cách bền bỉ và nhanh chóng.
+

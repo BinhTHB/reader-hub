@@ -307,8 +307,9 @@ class StealthySession:
         )
 
         page = self.context.new_page()
-        page.set_default_navigation_timeout(30000)
-        page.set_default_timeout(30000)
+        timeout_val = 20000 if USE_FREE_PROXY else 45000
+        page.set_default_navigation_timeout(timeout_val)
+        page.set_default_timeout(timeout_val)
 
         if self.kwargs.get("disable_resources", True):
             page.route("**/*", intercept_route)
@@ -436,7 +437,7 @@ class ScraperAbortException(Exception):
     pass
 
 
-def fetch_with_rotation_wrapper(session: StealthySession, action_fn, max_rotations: int = 5):
+def fetch_with_rotation_wrapper(session: StealthySession, action_fn, max_rotations: int = 10):
     """Executes action_fn(session). If it raises an exception, rotates proxy and retries."""
     global proxy_pool, current_proxy
     
@@ -534,8 +535,18 @@ def run_scraper():
     # ─── Build proxy pool ──────────────────────────────
     if not PROXY_URL and USE_FREE_PROXY:
         print("\n🌐 [Scrapling] Building free proxy pool...")
+        from urllib.parse import urlparse
+        parsed_url = urlparse(STORY_SOURCE_URL)
+        test_target_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+        print(f"  🎯 Testing proxy connectivity against target: {test_target_url}")
+        
         import asyncio
-        proxy_pool = asyncio.run(build_proxy_pool(max_proxies=200, test_concurrency=150))
+        proxy_pool = asyncio.run(build_proxy_pool(max_proxies=200, test_concurrency=150, test_url=test_target_url))
+        
+        if proxy_pool.size == 0:
+            print("  ⚠️ No working proxies found for the target site. Falling back to general proxy testing...")
+            proxy_pool = asyncio.run(build_proxy_pool(max_proxies=200, test_concurrency=150, test_url="https://httpbin.org/ip"))
+            
         if proxy_pool.size == 0:
             print("  ⚠️ No working free proxies found, will connect directly")
             current_proxy = None

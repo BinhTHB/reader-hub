@@ -96,16 +96,29 @@ async def _fetch_proxy_list(session: aiohttp.ClientSession, url: str) -> list[Pr
 
 async def _test_proxy(proxy: ProxyInfo, test_url: str = "https://httpbin.org/ip", timeout: int = 8) -> bool:
     """Test if a proxy is working by making a request through it."""
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "vi-VN,vi;q=0.9,en-US;q=0.8,en;q=0.7",
+    }
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(
                 test_url,
                 proxy=proxy.url,
+                headers=headers,
                 timeout=aiohttp.ClientTimeout(total=timeout),
+                allow_redirects=True
             ) as resp:
-                if resp.status == 200:
-                    proxy.last_checked = time.time()
-                    return True
+                if "httpbin.org" in test_url:
+                    if resp.status == 200:
+                        proxy.last_checked = time.time()
+                        return True
+                else:
+                    # For target websites, any status between 200 and 499 shows successful routing.
+                    if 200 <= resp.status < 500:
+                        proxy.last_checked = time.time()
+                        return True
     except Exception:
         pass
 
