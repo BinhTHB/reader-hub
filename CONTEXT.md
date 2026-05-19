@@ -1512,6 +1512,23 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
    - Tăng `max_rotations` trong `fetch_with_rotation_wrapper` từ **5 lên 10** lần để tăng xác suất tìm thấy proxy chất lượng trong pool.
 
 **Kết quả**:
-- ✅ Khắc phục hoàn toàn lỗi `Timeout 30000ms exceeded` và `net::ERR_TIMED_OUT` khi chạy trên CI GitHub Actions.
+- ✅ Khắc phục hoàn toàn lỗi `Timeout 30000ms exceeded` và `net::ERR_TIMED_OUT` when running on CI GitHub Actions.
 - ✅ Rút ngắn thời gian chờ đợi trên các proxy chậm, giúp scraper tìm được proxy tối ưu nhất một cách bền bỉ và nhanh chóng.
+
+---
+
+## 2026-05-19 21:00 - Thay đổi cơ chế Cập nhật chương truyện (Scraping từ chương 1)
+
+**Vấn đề**:
+- Trước đây, khi click nút "Cập nhật" truyện tại giao diện chi tiết truyện (`DetailScreen.tsx`), hệ thống sẽ tính toán chương lớn nhất hiện có trong database (`maxChapterNumber`) và gọi scraper cào từ `maxChapterNumber + 1`.
+- Nhược điểm: Nếu trong quá trình cào trước đó có một số chương ở giữa bị lỗi/bỏ sót (ví dụ: cào được chương 1-10 và 12-15, nhưng chương 11 bị lỗi và thiếu), thì việc cào từ `maxChapterNumber + 1` (chương 16) sẽ bỏ qua hoàn toàn và không bao giờ cào lại chương 11 bị thiếu.
+
+**Giải pháp đã thực hiện**:
+1. **Scrape từ chương 1**:
+   - Thay đổi tham số `chapter_start` truyền vào Edge Function `trigger-scraper` từ `maxChapterNumber + 1` thành `1` trong [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx).
+   - Nhờ cơ chế kiểm tra file tồn tại trên R2 (`get_existing_chapters` trong python scraper), những chương đã cào thành công sẽ được bỏ qua tự động cực kỳ nhanh chóng. Hệ thống sẽ quét toàn bộ và chỉ tải lại những chương bị thiếu hoặc cào thêm những chương mới xuất hiện.
+
+**Kết quả**:
+- ✅ Đảm bảo tính toàn vẹn dữ liệu truyện, tự động vá (fill) các chương bị thiếu ở giữa khi người dùng nhấn cập nhật.
+
 

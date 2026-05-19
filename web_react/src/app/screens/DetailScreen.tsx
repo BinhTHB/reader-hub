@@ -43,19 +43,17 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
     setIsUpdating(true);
     setUpdateMessage(null);
     try {
-      const maxChapterNumber = chapters.length > 0 ? Math.max(...chapters.map(ch => ch.chapter_number)) : 0;
-      
       const { data, error } = await supabase.functions.invoke('trigger-scraper', {
         body: {
           story_id: bookData.id,
           source_url: bookData.source_url,
-          chapter_start: maxChapterNumber + 1,
+          chapter_start: 1,
           chapter_limit: 0
         }
       });
 
       if (error) throw error;
-      setUpdateMessage("Đã gửi yêu cầu cập nhật thành công! Hệ thống đang tải các chương mới từ chương " + (maxChapterNumber + 1) + ".");
+      setUpdateMessage("Đã gửi yêu cầu cập nhật thành công! Hệ thống đang kiểm tra và tải các chương từ chương 1.");
     } catch (err: any) {
       console.error('Failed to trigger update:', err);
       setUpdateMessage(`Lỗi: ${err.message || 'Không thể gửi yêu cầu cập nhật'}`);
