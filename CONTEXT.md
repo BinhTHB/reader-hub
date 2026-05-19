@@ -971,7 +971,7 @@ TruyenDich: 200 OK ✅
 
 ### 2. Lưu Supabase Access Token ✅
 - Thêm `SUPABASE_ACCESS_TOKEN` vào `.env`
-- Token: `sbp_e4dfd232e03eda6438e048123b0482436e661c2e`
+- Token: `<REDACTED_SUPABASE_PAT>`
 
 ### 3. Deploy Edge Function ✅
 ```bash
