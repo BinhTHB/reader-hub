@@ -1239,5 +1239,6 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 1. **Dọn dẹp mã nguồn**: Các file python test (`check_schema.py`, `check_chapters.py`, v.v.) đã được xóa sạch hoàn toàn khỏi working tree hiện tại và commit loại bỏ chính thức.
 2. **Loại bỏ PAT**: Đã xóa token `sbp_e4df...` nhạy cảm khỏi dòng 974 trong `CONTEXT.md`, thay bằng placeholder bảo mật `<REDACTED_SUPABASE_PAT>`.
 3. **Giải thích bảo mật**: Phân biệt và làm rõ cho người dùng giữa khóa `service_role` (phải xoay ngay lập tức) và khóa `anon` (an toàn, chỉ cần ẩn cảnh báo trong dashboard GitGuardian).
-4. **Kế hoạch ứng phó**: Cập nhật tài liệu khắc phục chi tiết `supabase_leak_remediation_plan.md` làm cẩm nang hướng dẫn người dùng tự xoay khóa trên Supabase Dashboard và cập nhật GitHub Secrets.
+4. **Kế hoạch ứng phó**: Cập nhật tài liệu khắc phục chi tiết `supabase_leak_remediation_plan.md` làm cẩm nang hướng dẫn người dùng cách đổi **JWT Secret** để tự động xoay cả khóa `service_role` và khóa `anon` trên Supabase Dashboard và cập nhật GitHub Secrets.
+
 
