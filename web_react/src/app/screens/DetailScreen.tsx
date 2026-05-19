@@ -47,13 +47,13 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
         body: {
           story_id: bookData.id,
           source_url: bookData.source_url,
-          chapter_start: 1,
+          chapter_start: 0,
           chapter_limit: 0
         }
       });
 
       if (error) throw error;
-      setUpdateMessage("Đã gửi yêu cầu cập nhật thành công! Hệ thống đang kiểm tra và tải các chương từ chương 1.");
+      setUpdateMessage("Đã gửi yêu cầu cập nhật thành công!");
     } catch (err: any) {
       console.error('Failed to trigger update:', err);
       setUpdateMessage(`Lỗi: ${err.message || 'Không thể gửi yêu cầu cập nhật'}`);
@@ -104,10 +104,10 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
 
     const saved = localStorage.getItem('reading_history');
     if (!saved) return null;
-    
+
     const history = JSON.parse(saved);
     const lastRead = history.find((h: any) => h.story_id === book?.id);
-    
+
     if (lastRead) {
       return chapters.find(ch => ch.id === lastRead.chapter_id) || null;
     }
@@ -165,7 +165,7 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
     } else {
       const saved = localStorage.getItem('bookmarks');
       const bookmarkIds = saved ? JSON.parse(saved) : [];
-      
+
       if (bookmarkIds.includes(book.id)) {
         // Remove bookmark
         const newBookmarks = bookmarkIds.filter((id: number) => id !== book.id);
@@ -244,9 +244,8 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
             className="p-2 hover:bg-muted rounded-full transition-colors"
           >
             <Heart
-              className={`w-5 h-5 ${
-                isFavorite ? "fill-red-500 text-red-500" : ""
-              }`}
+              className={`w-5 h-5 ${isFavorite ? "fill-red-500 text-red-500" : ""
+                }`}
             />
           </button>
           <button className="p-2 hover:bg-muted rounded-full transition-colors">
@@ -332,9 +331,8 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
             <h2 className="text-lg font-medium mb-3">Mô tả</h2>
             <div className="bg-card rounded-xl p-4 border border-border/50">
               <p
-                className={`text-sm text-muted-foreground leading-relaxed ${
-                  !showFullDescription ? "line-clamp-3" : ""
-                }`}
+                className={`text-sm text-muted-foreground leading-relaxed ${!showFullDescription ? "line-clamp-3" : ""
+                  }`}
               >
                 {bookData.description}
               </p>

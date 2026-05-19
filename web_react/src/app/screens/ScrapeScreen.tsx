@@ -83,23 +83,13 @@ const renderJobProgressText = (job: ScrapeJob) => {
   }
   
   const endCh = startCh + scrapedCount - 1;
-  const remaining = totalCh > endCh ? totalCh - endCh : 0;
+  const maxCh = totalCh || job.chapter_end || 0;
   
   return (
     <div className="text-xs space-y-1 mt-1">
       <p className="text-muted-foreground">
-        Đã cào: từ chương <span className="font-semibold text-primary">{startCh}</span> đến <span className="font-semibold text-primary">{endCh}</span>
+        Tiến độ: chương <span className="font-semibold text-primary">{endCh}</span>/<span className="font-semibold text-primary">{maxCh}</span>
       </p>
-      {totalCh > 0 && (
-        <p className="text-muted-foreground">
-          Chương mới nhất trên nguồn: <span className="font-medium text-foreground">{totalCh}</span> 
-          {remaining > 0 ? (
-            <span> (Còn lại <span className="font-semibold text-amber-600">{remaining}</span> chương chưa cào)</span>
-          ) : (
-            <span className="text-green-600 font-medium"> (Đã cào hết)</span>
-          )}
-        </p>
-      )}
     </div>
   );
 };
@@ -268,7 +258,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
       const { data, error } = await supabase.functions.invoke('trigger-scraper', {
         body: {
           source_url: result.url,
-          chapter_start: 1,
+          chapter_start: 0,
           chapter_limit: 0
         }
       });

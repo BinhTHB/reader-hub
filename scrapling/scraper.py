@@ -616,6 +616,8 @@ def run_scraper():
             )
             story_id = story["id"]
             print(f"  ✅ Story upserted (ID: {story_id})")
+            if JOB_ID:
+                update_scrape_job(int(JOB_ID), story_id=story_id)
 
             random_delay()
 
@@ -850,9 +852,7 @@ def run_scraper():
 
     # Mark job as completed
     if JOB_ID:
-        start = scrape_progress["start"]
-        end = scrape_progress["end"]
-        scraped_log = f"Successfully scraped chapters from {start} to {end}" if start else "No newly scraped chapters."
+        scraped_log = "Successfully scraped!"
         update_scrape_job(
             int(JOB_ID),
             status="completed",

@@ -1517,34 +1517,26 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 
 ---
 
-## 2026-05-19 21:00 - Thay đổi cơ chế Cập nhật chương truyện (Scraping từ chương 1)
+## 2026-05-19 21:40 - Đồng bộ UI Progress, Cập nhật chương từ 0 & Build thành công Android APK
 
 **Vấn đề**:
-- Trước đây, khi click nút "Cập nhật" truyện tại giao diện chi tiết truyện (`DetailScreen.tsx`), hệ thống sẽ tính toán chương lớn nhất hiện có trong database (`maxChapterNumber`) và gọi scraper cào từ `maxChapterNumber + 1`.
-- Nhược điểm: Nếu trong quá trình cào trước đó có một số chương ở giữa bị lỗi/bỏ sót (ví dụ: cào được chương 1-10 và 12-15, nhưng chương 11 bị lỗi và thiếu), thì việc cào từ `maxChapterNumber + 1` (chương 16) sẽ bỏ qua hoàn toàn và không bao giờ cào lại chương 11 bị thiếu.
+1. Trong lịch sử Job của `ScrapeScreen.tsx`, tên parser hiển thị là `unknown` khi cào thành công. Đồng thời, thông tin tiến độ dài dòng và không nhất quán với định dạng mong muốn: `Tiến độ: chương số_chương_cào_đến/số_chương_tối_đa`.
+2. Truy vấn cào mới và cập nhật chương cũ mặc định quét từ chương `1`, bỏ qua chương `0` (Prologue/Giới thiệu) nếu truyện có chương 0.
+3. Cần đóng gói lại APK cho thiết bị Android từ các thay đổi giao diện.
 
 **Giải pháp đã thực hiện**:
-1. **Scrape từ chương 1**:
-   - Thay đổi tham số `chapter_start` truyền vào Edge Function `trigger-scraper` từ `maxChapterNumber + 1` thành `1` trong [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx).
-   - Nhờ cơ chế kiểm tra file tồn tại trên R2 (`get_existing_chapters` trong python scraper), những chương đã cào thành công sẽ được bỏ qua tự động cực kỳ nhanh chóng. Hệ thống sẽ quét toàn bộ và chỉ tải lại những chương bị thiếu hoặc cào thêm những chương mới xuất hiện.
+1. **Khắc phục hiển thị Parser & Định dạng lại Tiến độ cào**:
+   - Sửa đổi câu SELECT truy vấn Supabase trong `loadJobHistory` của `ScrapeScreen.tsx` để lấy thông tin liên kết bảng `stories` (gồm `source_name`), tránh parser bị trống.
+   - Nâng cấp helper `getParserName` để tự động bóc tách tên miền gốc của truyện làm tên parser dự phòng nếu trường `parser` bị null/rỗng.
+   - Định nghĩa lại `renderJobProgressText` trên giao diện, hiển thị trực quan thông tin dạng: `Tiến độ: chương {chương_cào_đến}/{tổng_chương_mục_tiêu}` (Ví dụ: `Tiến độ: chương 811/1024`).
+2. **Quét cào từ chương 0**:
+   - Thay đổi tham số `chapter_start: 1` thành `chapter_start: 0` khi gọi Edge Function `trigger-scraper` ở cả màn hình Chi tiết truyện (`DetailScreen.tsx`) và màn hình Thêm truyện mới (`ScrapeScreen.tsx`).
+3. **Biên dịch và đóng gói ứng dụng (Capacitor Debug APK)**:
+   - Chạy `pnpm run build` biên dịch thành công ứng dụng React.
+   - Chạy `npx cap sync` đồng bộ các asset và plugin sang thư mục gốc Android.
+   - Chạy Gradle wrapper compile debug APK: `.\gradlew.bat assembleDebug` thành công trong 2 giây. APK được tạo tại: `web_react/android/app/build/outputs/apk/debug/app-debug.apk`.
 
 **Kết quả**:
-- ✅ Đảm bảo tính toàn vẹn dữ liệu truyện, tự động vá (fill) các chương bị thiếu ở giữa khi người dùng nhấn cập nhật.
-
-
-
-
----
-
-## 2026-05-19 21:05 - Build lại App React APK (Capacitor Debug Build)
-
-**Yêu cầu**: Build lại tệp cài đặt APK cho ứng dụng React Web (được bọc bởi Capacitor).
-
-**Các bước đã thực hiện**:
-1. **Build mã nguồn React**: Chạy lệnh `pnpm run build` trong thư mục `web_react` để biên dịch ứng dụng sang thư mục `dist`.
-2. **Đồng bộ với dự án Android (Sync Assets)**: Chạy lệnh `npx cap sync android` trong `web_react` để sao chép mã nguồn đã build và đồng bộ các plugin vào dự án Android Native.
-3. **Biên dịch APK**: Di chuyển vào thư mục `web_react/android` và chạy lệnh Gradle `.\gradlew.bat assembleDebug`.
-4. **Di chuyển tệp đầu ra**: Sao chép tệp debug APK vừa build thành công từ `web_react/android/app/build/outputs/apk/debug/app-debug.apk` ra thư mục gốc của dự án với tên thân thiện: `reader-hub.apk`.
-
-**Kết quả**:
-- ✅ Build thành công tệp [reader-hub.apk](file:///e:/projects_window/reader-hub/reader-hub.apk) dung lượng khoảng 4.3 MB tại thư mục gốc của dự án.
+- ✅ UI Job History hiển thị đúng tên Parser và thông tin tiến độ cào cực kỳ ngắn gọn, trực quan.
+- ✅ Hỗ trợ quét toàn bộ truyện từ chương 0, không bỏ sót chương giới thiệu.
+- ✅ Ứng dụng React và gói cài đặt APK Android được đóng gói thành công không gặp lỗi lints/compiler!

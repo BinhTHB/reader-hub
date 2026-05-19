@@ -154,6 +154,8 @@ def update_scrape_job(
     error_message: str = None,
     github_run_id: str = None,
     chapter_end: int = None,
+    story_id: int = None,
+    **kwargs,
 ):
     """Update a scrape job's status and progress."""
     client = get_supabase_client()
@@ -173,6 +175,12 @@ def update_scrape_job(
         data["github_run_id"] = github_run_id
     if chapter_end is not None:
         data["chapter_end"] = chapter_end
+    if story_id is not None:
+        data["story_id"] = story_id
+    
+    # Also support other kwargs for flexibility
+    for k, v in kwargs.items():
+        data[k] = v
 
     if data:
         client.table("scrape_jobs").update(data).eq("id", job_id).execute()
