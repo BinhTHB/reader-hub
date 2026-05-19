@@ -1418,5 +1418,31 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
   * Tham chiếu động biến này (`${{ env.SCRAPER_DIR }}`) trong tất cả các bước liên quan: thiết lập đường dẫn caching dependencies (`cache-dependency-path`), cài đặt thư viện phụ thuộc (`pip install -r .../requirements.txt`), và thư mục làm việc của bước chạy (`working-directory`).
 - **Kết quả**: Chỉ cần sửa **1 dòng duy nhất** (biến `SCRAPER_DIR` từ `scraper` thành `scrapling` hoặc ngược lại), toàn bộ workflow bao gồm cả job `scrape` và `search` sẽ tự động chuyển đổi đồng bộ tất cả cấu hình môi trường, cài đặt thư viện tương ứng và thực thi đúng mã nguồn đích.
 
+---
+
+## 2026-05-19 18:50 - Fix Scrapling text extraction và CI deployment
+
+**Vấn đề**:
+- `css("::text").get()` trong Scrapling trả về kết quả không nhất quán (có khi trả về `list` thay vì `TextHandlers`), đặc biệt ở trang chương thứ 2+.
+- `Adaptor` dùng `__slots__` nên không thể override property `.text` trực tiếp trên class.
+- GitHub Actions fail do: (1) `playwright install` cài browser cho `playwright` nhưng scrapling dùng `rebrowser_playwright`, (2) `chromium_sandbox=True` hardcoded trong scrapling nhưng Ubuntu runner không hỗ trợ sandboxing, (3) thiếu file bypass JS.
+
+**Giải pháp đã thực hiện**:
+1. **Helper `get_text()` thay thế `css("::text").get()`** ([parsers.py](file:///e:/projects_window/reader-hub/scrapling/parsers.py)):
+   - Tạo hàm `get_text(el)` sử dụng `lxml.text_content()` trực tiếp để lấy toàn bộ text bao gồm cả text trong các phần tử con lồng nhau.
+   - Thay thế toàn bộ 33 lần sử dụng `.css("::text").get()` bằng `get_text()`.
+   - Thay thế 4 patterns genre extraction từ `css("::text").getall()` thành iterate qua elements + `get_text()`.
+   - Loại bỏ hoàn toàn pseudo-selector `::text` khỏi parsers.py.
+2. **Deduplication chapter list**: Thêm `seen` set để loại bỏ chapter trùng lặp do CSS selectors chồng chéo (`#list-chapter a` vs `ul.list-chapter li a`).
+3. **Loại bỏ SL monkeypatch** trong [scraper.py](file:///e:/projects_window/reader-hub/scrapling/scraper.py): Không còn cần thiết sau khi loại bỏ `::text`.
+4. **Fix CI (GitHub Actions)**:
+   - Đổi `playwright install chromium` → `python -m rebrowser_playwright install chromium` trong workflow.
+   - Monkeypatch `PlaywrightEngine.fetch` để set `chromium_sandbox=False` khi detect môi trường CI (`CI` hoặc `GITHUB_ACTIONS` env var).
+   - Thêm thư mục `scrapling/bypasses/` (7 file JS stealth bypass) vào git tracking.
+
+**Kết quả**:
+- ✅ GitHub Actions workflow pass thành công (run #26095155961).
+- ✅ Scrape đúng title "Đấu La Đại Lục", author "Đường Gia Tam Thiếu", 50 chapters/page (không trùng lặp).
+- ✅ 5 chapters targeted đúng, skip những chapter đã tồn tại trong R2.
 
 
