@@ -79,28 +79,75 @@ export default function App() {
   const syncLocalReadingHistory = async (userId: string) => {
     try {
       const saved = localStorage.getItem('reading_history');
-      if (saved) {
-        const history = JSON.parse(saved);
-        if (history.length > 0) {
-          console.log('Syncing local history for user:', userId);
-          const historyInserts = history.map((h: any) => ({
-            user_id: userId,
-            story_id: h.story_id,
-            last_chapter_number: h.chapter_number,
-            last_read_at: h.last_read,
-          }));
+      const localHistory = saved ? JSON.parse(saved) : [];
 
-          const { error } = await supabase
-            .from('reading_history')
-            .upsert(historyInserts, { onConflict: 'user_id,story_id' });
+      // 1. Fetch remote history from Supabase
+      const { data: remoteHistory, error: fetchError } = await supabase
+        .from('reading_history')
+        .select('story_id, last_chapter_number, last_read_at')
+        .eq('user_id', userId);
 
-          if (error) throw error;
-          localStorage.removeItem('reading_history');
-          console.log('Local reading history synced');
+      if (fetchError) throw fetchError;
+
+      // 2. Merge history mapping by story_id
+      const mergedMap = new Map<number, any>();
+
+      // Load remote history first
+      if (remoteHistory) {
+        for (const item of remoteHistory) {
+          mergedMap.set(item.story_id, {
+            story_id: item.story_id,
+            chapter_number: item.last_chapter_number,
+            last_read: item.last_read_at,
+            source: 'remote'
+          });
         }
       }
+
+      // Merge local history, prioritizing the most recent read time
+      for (const item of localHistory) {
+        const existing = mergedMap.get(item.story_id);
+        if (!existing || new Date(item.last_read).getTime() > new Date(existing.last_read).getTime()) {
+          mergedMap.set(item.story_id, {
+            story_id: item.story_id,
+            chapter_id: item.chapter_id,
+            chapter_number: item.chapter_number,
+            last_read: item.last_read,
+            source: 'local'
+          });
+        }
+      }
+
+      const mergedList = Array.from(mergedMap.values());
+
+      // 3. Save the merged list back to localStorage so it's available offline
+      localStorage.setItem('reading_history', JSON.stringify(mergedList.map(item => ({
+        story_id: item.story_id,
+        chapter_id: item.chapter_id,
+        chapter_number: item.chapter_number,
+        last_read: item.last_read
+      })).slice(0, 50)));
+
+      // 4. Push local changes that are newer or not in the DB to Supabase
+      const localToPush = mergedList.filter(item => item.source === 'local');
+      if (localToPush.length > 0) {
+        console.log('Syncing local-only reading history to DB:', localToPush.length);
+        const historyInserts = localToPush.map((h: any) => ({
+          user_id: userId,
+          story_id: h.story_id,
+          last_chapter_number: h.chapter_number,
+          last_read_at: h.last_read,
+        }));
+
+        const { error: uploadError } = await supabase
+          .from('reading_history')
+          .upsert(historyInserts, { onConflict: 'user_id,story_id' });
+
+        if (uploadError) throw uploadError;
+      }
+      console.log('Bidirectional reading history synced successfully');
     } catch (err) {
-      console.error('Failed to sync local reading history:', err);
+      console.error('Failed to sync bidirectional reading history:', err);
     }
   };
 

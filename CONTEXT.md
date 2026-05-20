@@ -1540,3 +1540,34 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ UI Job History hiển thị đúng tên Parser và thông tin tiến độ cào cực kỳ ngắn gọn, trực quan.
 - ✅ Hỗ trợ quét toàn bộ truyện từ chương 0, không bỏ sót chương giới thiệu.
 - ✅ Ứng dụng React và gói cài đặt APK Android được đóng gói thành công không gặp lỗi lints/compiler!
+
+---
+
+## 2026-05-20 18:40 - Đồng bộ lịch sử đọc 2 chiều, Check chương mới & Cào chọn lọc, Đảo ngược mục lục & Chạy nền Silent Audio
+
+**Vấn đề**:
+1. Lịch sử đọc không đồng bộ đúng giữa tài khoản Supabase (database) và LocalStorage (local). Khi người dùng thay đổi thiết bị hoặc đăng nhập/đăng xuất, dữ liệu đọc dở bị ghi đè hoặc biến mất.
+2. Nút "Cập nhật" ở DetailScreen tự động kích hoạt cào toàn bộ truyện mà không thông báo số chương mới của nguồn, làm tăng lưu lượng tải không cần thiết và người dùng không có quyền quyết định.
+3. Phần mục lục chỉ hiển thị một chiều (cũ nhất trước), gây khó khăn cho truyện dài khi người dùng muốn đọc các chương mới nhất.
+4. Trên môi trường trình duyệt Web (PWA), việc phát audio/TTS (Web Speech API) bị hệ điều hành tắt hoặc hạn chế khi tab chạy nền (minimize) hoặc khóa màn hình, dẫn đến việc không thể phát nền ổn định.
+
+**Giải pháp đã thực hiện**:
+1. **Đồng bộ 2 chiều (Bidirectional Sync) lịch sử đọc**:
+   - Nâng cấp hàm `syncLocalReadingHistory` trong [App.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/App.tsx#L79-L150) thành cơ chế đồng bộ 2 chiều. Nó kéo lịch sử từ database Supabase về gộp với LocalStorage theo mốc thời gian đọc mới nhất (`last_read_at`), sau đó đẩy các thay đổi cục bộ chưa có trên DB lên lại Supabase.
+   - Thêm cơ chế khôi phục vị trí đọc từ DB (`restoreReadingPositionFromDB`) trong [ReadingScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ReadingScreen.tsx#L292-L358) khi người dùng mở chương truyện trên thiết bị mới mà không có LocalStorage.
+2. **Quy trình Cập nhật truyện 2 bước (Check chương → Xác nhận cào)**:
+   - Thay thế nút cập nhật cũ trong [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx#L37-L100) bằng quy trình 2 bước:
+     * **Bước 1 (Cập nhật)**: Gọi action `check_latest` lên Edge Function `trigger-scraper` để lấy số chương mới nhất trên website nguồn và so sánh với số chương hiện có của truyện trong database.
+     * **Bước 2 (Cào)**: Hiển thị kết quả chương mới và xuất hiện nút **Cào** bên cạnh để người dùng quyết định. Khi bấm cào, hệ thống chỉ cào các chương mới (`chapter_start = currentTotal + 1`) thay vì cào lại toàn bộ truyện.
+3. **Đảo ngược mục lục**:
+   - Thêm nút đảo ngược danh sách chương ("Mới nhất trước" / "Cũ nhất trước") bằng cách quản lý state `isDescending` trong [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx#L389-L430), giúp người dùng dễ dàng chuyển đổi hướng hiển thị mục lục.
+4. **Phát nền Web PWA (Silent Audio Keep-Alive & Ref Callbacks)**:
+   - Tích hợp một đối tượng `silentAudio` (Base64 silent WAV) trong [mediaService.ts](file:///e:/projects_window/reader-hub/web_react/src/lib/mediaService.ts) để phát lặp vô hạn ở chế độ volume cực thấp khi TTS hoạt động. Điều này đánh lừa trình duyệt rằng tab đang phát media, ngăn trình duyệt sleep tab và giữ cho luồng TTS tiếp tục chạy khi tắt màn hình/minimize app.
+   - Giải quyết lỗi Closure trong React Callback bằng cách lưu trữ các hàm điều khiển `handlePlayPause`, `goToNextChapter`, `goToPreviousChapter` vào `useRef` tại [ReadingScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ReadingScreen.tsx#L93-L104), đảm bảo Media Session API của hệ điều hành nhận đúng các handler mới nhất và điều khiển mượt mà từ Lockscreen/Notification Bar.
+
+**Kết quả**:
+- ✅ Lịch sử đọc và tiến độ đọc (paragraph cụ thể) được đồng bộ hóa hoàn hảo trên mọi thiết bị khi đăng nhập tài khoản.
+- ✅ Quy trình cập nhật chương thông minh giúp tiết kiệm tài nguyên hệ thống và cho phép người dùng quyết định khi có chương mới.
+- ✅ Người dùng có thể đảo chiều mục lục truyện linh hoạt.
+- ✅ Tính năng phát âm thanh chạy nền hoạt động cực kỳ ổn định trên cả Web và Android, hỗ trợ đầy đủ bộ điều khiển Lockscreen/Notification.
+- ✅ Vite build thành công không lỗi cú pháp hay TypeScript.

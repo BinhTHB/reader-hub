@@ -93,6 +93,16 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
   const [shouldAutoResume, setShouldAutoResume] = useState(false);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const isPlayingRef = React.useRef(isPlaying);
+  const handlePlayPauseRef = React.useRef<any>(null);
+  const goToNextChapterRef = React.useRef<any>(null);
+  const goToPreviousChapterRef = React.useRef<any>(null);
+
+  // Keep ref callbacks up to date on every render to prevent closures in Media Session handlers
+  useEffect(() => {
+    handlePlayPauseRef.current = handlePlayPause;
+    goToNextChapterRef.current = goToNextChapter;
+    goToPreviousChapterRef.current = goToPreviousChapter;
+  });
 
   // Auto-scroll to current paragraph
   useEffect(() => {
@@ -144,90 +154,97 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     }
   }, [chapter?.story_id]);
 
-   // Initialize Media Session and set up handlers
+    // Initialize Media Session and set up handlers
+    useEffect(() => {
+      if (chapter && story) {
+        const coverUrl = story.cover_url?.startsWith('http') 
+          ? story.cover_url 
+          : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`;
+        
+        console.log('[ReadingScreen] Initializing media session for:', chapter.title);
+        console.log('[ReadingScreen] Capacitor platform:', Capacitor.getPlatform());
+        console.log('[ReadingScreen] Is native:', Capacitor.isNativePlatform());
+        
+        mediaService.initMediaSession(chapter, story.title, coverUrl);
+        
+        mediaService.setMediaSessionHandlers({
+          play: () => handlePlayPauseRef.current?.(),
+          pause: () => handlePlayPauseRef.current?.(),
+          nexttrack: () => goToNextChapterRef.current?.(),
+          previoustrack: () => goToPreviousChapterRef.current?.(),
+        });
+
+        // Start foreground service on Android only
+        if (Capacitor.isNativePlatform() && AudioService) {
+          console.log('[ReadingScreen] Starting audio service...');
+          
+          AudioService.startService({
+            title: chapter?.title || `Chương ${chapter?.chapter_number}`,
+            artist: story.title,
+            coverUrl: coverUrl,
+          }).then(() => {
+            console.log('[ReadingScreen] Audio service started successfully');
+          }).catch(err => {
+            console.error('[ReadingScreen] Failed to start audio service:', err);
+          });
+        } else {
+          console.log('[ReadingScreen] Skipping audio service (web platform or service unavailable)');
+        }
+      }
+    }, [chapter, story]);
+
+    // Update playback state and manage Wake Lock & Silent Audio
+    useEffect(() => {
+      if (content) {
+        mediaService.updatePlaybackState(isPlaying, currentParagraphIndex, content.paragraphs.length);
+        mediaService.ensureWakeLock(isPlaying);
+
+        if (isPlaying) {
+          mediaService.playSilentAudio();
+        } else {
+          mediaService.pauseSilentAudio();
+        }
+
+        // Update foreground service on Android only
+        if (Capacitor.isNativePlatform() && AudioService) {
+          AudioService.updatePlaybackState({
+            isPlaying: isPlaying,
+          }).catch(err => console.error('Failed to update playback state:', err));
+        }
+      }
+    }, [isPlaying, currentParagraphIndex, content]);
+
+   // Load story details for Media Session
    useEffect(() => {
-     if (chapter && story) {
-       const coverUrl = story.cover_url?.startsWith('http') 
-         ? story.cover_url 
-         : `https://${R2_PUBLIC_DOMAIN}/${story.cover_url}`;
-       
-       console.log('[ReadingScreen] Initializing media session for:', chapter.title);
-       console.log('[ReadingScreen] Capacitor platform:', Capacitor.getPlatform());
-       console.log('[ReadingScreen] Is native:', Capacitor.isNativePlatform());
-       
-       mediaService.initMediaSession(chapter, story.title, coverUrl);
-       
-       mediaService.setMediaSessionHandlers({
-         play: handlePlayPause,
-         pause: handlePlayPause,
-         nexttrack: goToNextChapter,
-         previoustrack: goToPreviousChapter,
-       });
+     if (chapter?.story_id) {
+       const loadStory = async () => {
+         try {
+           const { data, error } = await supabase
+             .from('stories')
+             .select('id, title, cover_url')
+             .eq('id', chapter.story_id)
+             .single();
 
-       // Start foreground service on Android only
-       if (Capacitor.isNativePlatform() && AudioService) {
-         console.log('[ReadingScreen] Starting audio service...');
-         
-         AudioService.startService({
-           title: chapter?.title || `Chương ${chapter?.chapter_number}`,
-           artist: story.title,
-           coverUrl: coverUrl,
-         }).then(() => {
-           console.log('[ReadingScreen] Audio service started successfully');
-         }).catch(err => {
-           console.error('[ReadingScreen] Failed to start audio service:', err);
-         });
-       } else {
-         console.log('[ReadingScreen] Skipping audio service (web platform or service unavailable)');
-       }
+           if (error) throw error;
+           setStory(data);
+         } catch (err) {
+           console.error('Failed to load story:', err);
+         }
+       };
+       loadStory();
      }
-   }, [chapter, story]);
+   }, [chapter?.story_id]);
 
-   // Update playback state and manage Wake Lock
-   useEffect(() => {
-     if (content) {
-       mediaService.updatePlaybackState(isPlaying, currentParagraphIndex, content.paragraphs.length);
-       mediaService.ensureWakeLock(isPlaying);
-
-       // Update foreground service on Android only
-       if (Capacitor.isNativePlatform() && AudioService) {
-         AudioService.updatePlaybackState({
-           isPlaying: isPlaying,
-         }).catch(err => console.error('Failed to update playback state:', err));
-       }
-     }
-   }, [isPlaying, currentParagraphIndex, content]);
-
-  // Load story details for Media Session
-  useEffect(() => {
-    if (chapter?.story_id) {
-      const loadStory = async () => {
-        try {
-          const { data, error } = await supabase
-            .from('stories')
-            .select('id, title, cover_url')
-            .eq('id', chapter.story_id)
-            .single();
-
-          if (error) throw error;
-          setStory(data);
-        } catch (err) {
-          console.error('Failed to load story:', err);
+    // Cleanup: Release Wake Lock, stop silent audio and stop service on unmount
+    useEffect(() => {
+      return () => {
+        mediaService.releaseWakeLock();
+        mediaService.pauseSilentAudio();
+        if (Capacitor.isNativePlatform() && AudioService) {
+          AudioService.stopService().catch(err => console.error('Failed to stop audio service:', err));
         }
       };
-      loadStory();
-    }
-  }, [chapter?.story_id]);
-
-   // Cleanup: Release Wake Lock and stop service on unmount
-   useEffect(() => {
-     return () => {
-       mediaService.releaseWakeLock();
-       if (Capacitor.isNativePlatform() && AudioService) {
-         AudioService.stopService().catch(err => console.error('Failed to stop audio service:', err));
-       }
-     };
-   }, []);
+    }, []);
 
   useEffect(() => {
     if (chapter?.text_r2_url) {
@@ -292,6 +309,70 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     };
   }, [chapter?.id, currentParagraphIndex, isPlaying, user, content]);
 
+  const restoreReadingPositionFromDB = async () => {
+    if (!user || !chapter?.story_id || !content) return;
+    try {
+      const { data, error } = await supabase
+        .from('reading_history')
+        .select('scroll_position, last_chapter_number')
+        .eq('user_id', user.id)
+        .eq('story_id', chapter.story_id)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data && data.last_chapter_number === chapter.chapter_number && data.scroll_position > 0) {
+        const paragraphIndex = Math.floor(data.scroll_position * content.paragraphs.length);
+        if (paragraphIndex >= 0 && paragraphIndex < content.paragraphs.length) {
+          console.log('[ReadingScreen] Restored scroll position from DB:', paragraphIndex);
+          setCurrentParagraphIndex(paragraphIndex);
+          
+          // Save back to local storage positions so we don't fetch DB repeatedly
+          const positions = localStorage.getItem('reading_positions') || '{}';
+          const positionsMap = JSON.parse(positions);
+          positionsMap[chapter.id] = {
+            paragraphIndex: paragraphIndex,
+            isPlaying: false,
+            timestamp: new Date().toISOString(),
+          };
+          localStorage.setItem('reading_positions', JSON.stringify(positionsMap));
+
+          // Auto-scroll to restored paragraph index
+          setTimeout(() => {
+            if (contentRef.current) {
+              const paragraphElement = contentRef.current.querySelector(`[data-paragraph-index="${paragraphIndex}"]`);
+              if (paragraphElement) {
+                paragraphElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
+            }
+          }, 150);
+
+          if (shouldAutoResume) {
+            setShouldAutoResume(false);
+            setIsPlaying(true);
+            setTimeout(() => {
+              speakParagraph(paragraphIndex);
+            }, 50);
+          }
+        }
+      } else if (shouldAutoResume) {
+        setShouldAutoResume(false);
+        setIsPlaying(true);
+        setTimeout(() => {
+          speakParagraph(0);
+        }, 50);
+      }
+    } catch (err) {
+      console.error('Failed to restore reading position from DB:', err);
+      if (shouldAutoResume) {
+        setShouldAutoResume(false);
+        setIsPlaying(true);
+        setTimeout(() => {
+          speakParagraph(0);
+        }, 50);
+      }
+    }
+  };
+
   // Restore reading position when content loads
   useEffect(() => {
     if (content && content.paragraphs.length > 0) {
@@ -310,6 +391,18 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
             speakParagraph(restored.paragraphIndex);
           }, 50);
         }
+        // Force scroll even if not playing, to restore scroll view
+        setTimeout(() => {
+          if (contentRef.current) {
+            const paragraphElement = contentRef.current.querySelector(`[data-paragraph-index="${restored.paragraphIndex}"]`);
+            if (paragraphElement) {
+              paragraphElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+          }
+        }, 150);
+      } else if (user) {
+        // No local positions, fetch from Supabase DB
+        restoreReadingPositionFromDB();
       } else if (shouldAutoResume) {
         // No saved position, but auto-resume requested (chapter change)
         console.log('No saved position, starting from 0');

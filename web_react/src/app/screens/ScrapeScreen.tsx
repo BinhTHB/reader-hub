@@ -321,7 +321,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                       : 10,
                 currentStep: mappedStatus === 'completed' ? 'Hoàn tất!' : mappedStatus === 'failed' ? 'Thất bại' : mappedStatus === 'canceled' ? 'Đã hủy' : 'Đang cào...',
                 chapters_scraped: updatedJob.chapters_scraped || 0,
-                total_chapters: updatedJob.chapter_end || 50,
+                total_chapters: updatedJob.chapter_end || 0,
                 chapter_start: updatedJob.chapter_start || 1,
                 chapter_end: updatedJob.chapter_end || 0,
                 logs: [`[${new Date().toLocaleTimeString()}] Status: ${mappedStatus}`],
@@ -544,7 +544,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                     Đang cào chương...
                   </span>
                   <span className="text-blue-700 dark:text-blue-300 font-medium">
-                    Chương {activeJob.chapter_start} - {activeJob.chapter_end} ({activeJob.chapters_scraped} / {activeJob.chapter_end && activeJob.chapter_start ? (activeJob.chapter_end - activeJob.chapter_start + 1) : (activeJob.total_chapters || 50)})
+                    Chương {activeJob.chapter_start} - {activeJob.chapter_end || '?'} ({activeJob.chapters_scraped} / {activeJob.chapter_end && activeJob.chapter_start ? (activeJob.chapter_end - activeJob.chapter_start + 1) : (activeJob.metadata?.total_chapters || activeJob.total_chapters || 'Tất cả')})
                   </span>
                 </div>
               </div>

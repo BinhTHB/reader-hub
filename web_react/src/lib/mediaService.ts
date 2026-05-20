@@ -2,6 +2,21 @@
 // Cho phép control audio từ notification/lock screen và giữ app hoạt động khi màn hình tắt
 
 let wakeLock: WakeLockSentinel | null = null;
+let silentAudio: HTMLAudioElement | null = null;
+
+// Khởi tạo silent audio câm để keep-alive background audio trên web di động
+const initSilentAudio = () => {
+  if (!silentAudio && typeof window !== 'undefined') {
+    try {
+      // 1-second silent WAV base64
+      silentAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+      silentAudio.loop = true;
+      silentAudio.volume = 0.01; // Gần như không nghe thấy để bypass chính sách sleep của trình duyệt
+    } catch (e) {
+      console.error('Failed to initialize silent audio:', e);
+    }
+  }
+};
 
 export const mediaService = {
   // Khởi tạo Media Session
@@ -74,6 +89,26 @@ export const mediaService = {
     }
   },
 
+  // Phát Silent Audio để giữ tiến trình hoạt động khi chạy nền
+  playSilentAudio: () => {
+    initSilentAudio();
+    if (silentAudio) {
+      silentAudio.play().then(() => {
+        console.log('[MediaService] Silent audio playing (keep-alive)');
+      }).catch(err => {
+        console.warn('[MediaService] Failed to play silent audio:', err);
+      });
+    }
+  },
+
+  // Tạm dừng Silent Audio
+  pauseSilentAudio: () => {
+    if (silentAudio) {
+      silentAudio.pause();
+      console.log('[MediaService] Silent audio paused');
+    }
+  },
+
   // Request Wake Lock (giữ CPU hoạt động khi màn hình tắt)
   requestWakeLock: async () => {
     if (!('wakeLock' in navigator)) {
@@ -82,15 +117,19 @@ export const mediaService = {
     }
 
     try {
+      if (wakeLock) {
+        return;
+      }
       wakeLock = await navigator.wakeLock.request('screen');
       console.log('Wake Lock acquired');
 
       // Release wake lock khi visibility thay đổi
       document.addEventListener('visibilitychange', () => {
         if (document.hidden && wakeLock) {
-          wakeLock.release();
-          wakeLock = null;
-          console.log('Wake Lock released (page hidden)');
+          wakeLock.release().then(() => {
+            wakeLock = null;
+            console.log('Wake Lock released (page hidden)');
+          }).catch(e => console.error(e));
         }
       });
     } catch (error) {

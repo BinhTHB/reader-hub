@@ -1,0 +1,5 @@
+(app dùng là web_react)
+1. sửa đồng bộ lịch sử đọc truyện không đồng bộ với tài khoản.
+2. sửa lại nút "Cập nhật" bên cạnh nút "Bắt đầu đọc" ở DetailScreen để khi bấm vào cho ra kết quả là "số chương cuối cùng và nút Cào" để user quyết định có Cào không.
+3. phần mục lục trang DetailScreen thêm nút đảo ngược danh sách từ cuối về đầu thay vì chỉ list từ đầu đến cuối.
+4. thêm tính năng phát trong nền cho app react (khi thoát app ra có thông báo đang phát audio trên thanh thông báo và trình phát của thiết bị)

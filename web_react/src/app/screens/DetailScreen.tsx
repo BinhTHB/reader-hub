@@ -37,26 +37,67 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
   const [isUpdating, setIsUpdating] = useState(false);
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const [lastReadChapterId, setLastReadChapterId] = useState<number | null>(null);
+  const [latestChapterInfo, setLatestChapterInfo] = useState<{ chapter_number: number; title: string } | null>(null);
+  const [showScrapeConfirm, setShowScrapeConfirm] = useState(false);
+  const [isDescending, setIsDescending] = useState(false);
 
-  const handleUpdateChapters = async () => {
+  const handleCheckLatest = async () => {
     if (!bookData.source_url) return;
     setIsUpdating(true);
     setUpdateMessage(null);
+    setLatestChapterInfo(null);
+    setShowScrapeConfirm(false);
     try {
       const { data, error } = await supabase.functions.invoke('trigger-scraper', {
         body: {
-          story_id: bookData.id,
           source_url: bookData.source_url,
-          chapter_start: 0,
-          chapter_limit: 0
+          action: 'check_latest'
         }
       });
 
       if (error) throw error;
-      setUpdateMessage("Đã gửi yêu cầu cập nhật thành công!");
+      if (data && data.success && data.latest) {
+        setLatestChapterInfo(data.latest);
+        setShowScrapeConfirm(true);
+        const currentTotal = chapters.length; // Lấy tổng chương thực tế từ DB
+        if (data.latest.chapter_number > currentTotal) {
+          setUpdateMessage(`Phát hiện chương mới! Nguồn có ${data.latest.chapter_number} chương (Hiện tại bạn có ${currentTotal} chương).`);
+        } else {
+          setUpdateMessage(`Truyện đã cập nhật đầy đủ (Nguồn có ${data.latest.chapter_number} chương, hiện tại bạn có ${currentTotal} chương).`);
+        }
+      } else {
+        throw new Error("Không lấy được thông tin chương mới");
+      }
     } catch (err: any) {
-      console.error('Failed to trigger update:', err);
-      setUpdateMessage(`Lỗi: ${err.message || 'Không thể gửi yêu cầu cập nhật'}`);
+      console.error('Failed to check latest chapter:', err);
+      setUpdateMessage(`Lỗi: ${err.message || 'Không thể kiểm tra chương mới'}`);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleStartScrape = async () => {
+    if (!bookData.source_url) return;
+    setIsUpdating(true);
+    setUpdateMessage(null);
+    try {
+      const currentTotal = chapters.length; // Dựa vào số chương thực tế
+      const { data, error } = await supabase.functions.invoke('trigger-scraper', {
+        body: {
+          story_id: bookData.id,
+          source_url: bookData.source_url,
+          chapter_start: currentTotal + 1,
+          chapter_limit: 0,
+          action: 'scrape'
+        }
+      });
+
+      if (error) throw error;
+      setUpdateMessage("Đã gửi yêu cầu cào chương mới thành công! Hệ thống đang tiến hành cào trong nền...");
+      setShowScrapeConfirm(false);
+    } catch (err: any) {
+      console.error('Failed to trigger scrape:', err);
+      setUpdateMessage(`Lỗi: ${err.message || 'Không thể bắt đầu cào'}`);
     } finally {
       setIsUpdating(false);
     }
@@ -291,7 +332,7 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
         </div>
 
         {/* Action Buttons */}
-        <div className="mb-6 flex gap-3">
+        <div className="mb-6 flex gap-3 flex-wrap">
           <button
             onClick={() => {
               if (chapters.length > 0) {
@@ -300,21 +341,37 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
               }
             }}
             disabled={chapters.length === 0}
-            className="flex-1 py-3 bg-primary text-white rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-primary text-white rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 min-w-[140px]"
           >
             <BookOpen className="w-5 h-5" />
-            {chapters.length > 0 ? 'Bắt đầu đọc' : 'Chưa có chương'}
+            {chapters.length === 0 
+              ? 'Chưa có chương' 
+              : getLastReadChapter() 
+                ? `Đọc tiếp C.${getLastReadChapter()?.chapter_number}` 
+                : 'Bắt đầu đọc'}
           </button>
 
           {chapters.length > 0 && bookData.source_url && (
-            <button
-              onClick={handleUpdateChapters}
-              disabled={isUpdating}
-              className="px-5 py-3 border border-primary text-primary bg-transparent rounded-full font-medium hover:bg-primary/5 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
-            >
-              <RefreshCw className={`w-5 h-5 ${isUpdating ? 'animate-spin' : ''}`} />
-              {isUpdating ? 'Đang gửi...' : 'Cập nhật'}
-            </button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={handleCheckLatest}
+                disabled={isUpdating}
+                className="px-5 py-3 border border-primary text-primary bg-transparent rounded-full font-medium hover:bg-primary/5 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+              >
+                <RefreshCw className={`w-5 h-5 ${isUpdating && !showScrapeConfirm ? 'animate-spin' : ''}`} />
+                {isUpdating && !showScrapeConfirm ? 'Đang check...' : 'Cập nhật'}
+              </button>
+
+              {showScrapeConfirm && (
+                <button
+                  onClick={handleStartScrape}
+                  disabled={isUpdating}
+                  className="px-6 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+                >
+                  {isUpdating && showScrapeConfirm ? 'Đang cào...' : 'Cào'}
+                </button>
+              )}
+            </div>
           )}
         </div>
 
@@ -350,13 +407,27 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
 
         {/* Chapter List */}
         <section className="mb-6">
-          <button
+          <div
             onClick={() => setExpandedChapters(!expandedChapters)}
-            className="w-full flex items-center justify-between mb-3"
+            className="w-full flex items-center justify-between mb-3 cursor-pointer"
           >
-            <h2 className="text-lg font-medium">
-              Danh sách chương ({chapters.length})
-            </h2>
+            <div className="flex items-center gap-4">
+              <h2 className="text-lg font-medium">
+                Danh sách chương ({chapters.length})
+              </h2>
+              {chapters.length > 0 && (
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsDescending(!isDescending);
+                  }}
+                  className="text-xs px-2.5 py-1 border border-border rounded-md hover:bg-muted text-muted-foreground transition-colors flex items-center gap-1"
+                >
+                  {isDescending ? "Mới nhất trước" : "Cũ nhất trước"}
+                </button>
+              )}
+            </div>
             <div className="flex items-center gap-2">
               {isLoadingChapters && <RefreshCw className="w-4 h-4 animate-spin text-primary" />}
               {expandedChapters ? (
@@ -365,7 +436,7 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
                 <ChevronDown className="w-5 h-5" />
               )}
             </div>
-          </button>
+          </div>
           {expandedChapters && (
             <>
               {isLoadingChapters ? (
@@ -378,7 +449,7 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
                 </div>
               ) : (
                 <div className="space-y-2 max-h-96 overflow-y-auto">
-                  {chapters.map((chapter) => (
+                  {(isDescending ? [...chapters].reverse() : chapters).map((chapter) => (
                     <div
                       key={chapter.id}
                       onClick={() => onStartReading(chapter)}
