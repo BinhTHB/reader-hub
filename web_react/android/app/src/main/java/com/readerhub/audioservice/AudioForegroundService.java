@@ -25,6 +25,17 @@ public class AudioForegroundService extends Service {
     private String currentCoverUrl = "";
     private boolean isPlaying = false;
 
+    public interface ServiceListener {
+        void onMediaAction(String action);
+        void onParagraphChanged(int index);
+    }
+
+    private static ServiceListener listener;
+
+    public static void setListener(ServiceListener l) {
+        listener = l;
+    }
+
     @Override
     public void onCreate() {
         super.onCreate();
@@ -57,6 +68,11 @@ public class AudioForegroundService extends Service {
                  android.util.Log.d("AudioForegroundService", "Playback state: " + isPlaying);
                  updateNotification();
                  return START_STICKY;
+             } else if ("PREVIOUS".equals(action) || "PLAY_PAUSE".equals(action) || "NEXT".equals(action)) {
+                 android.util.Log.d("AudioForegroundService", "Media action received in service: " + action);
+                 if (listener != null) {
+                     listener.onMediaAction(action);
+                 }
              }
          }
 

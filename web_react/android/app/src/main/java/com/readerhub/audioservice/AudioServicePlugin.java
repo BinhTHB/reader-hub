@@ -1,35 +1,42 @@
 package com.readerhub.audioservice;
 
-import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.os.Build;
-import androidx.core.app.NotificationCompat;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.Plugin;
 import com.getcapacitor.PluginCall;
 import com.getcapacitor.PluginMethod;
 import com.getcapacitor.annotation.CapacitorPlugin;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 @CapacitorPlugin(name = "AudioService")
 public class AudioServicePlugin extends Plugin {
 
     private static final String CHANNEL_ID = "audio_playback_channel";
-    private static final int NOTIFICATION_ID = 1001;
     private NotificationManager notificationManager;
 
     @Override
     public void load() {
         super.load();
         createNotificationChannel();
+        AudioForegroundService.setListener(new AudioForegroundService.ServiceListener() {
+            @Override
+            public void onMediaAction(String action) {
+                JSObject data = new JSObject();
+                data.put("action", action);
+                notifyListeners("mediaAction", data);
+            }
+
+            @Override
+            public void onParagraphChanged(int index) {
+                JSObject data = new JSObject();
+                data.put("index", index);
+                notifyListeners("paragraphChanged", data);
+            }
+        });
     }
 
     @PluginMethod
@@ -37,12 +44,32 @@ public class AudioServicePlugin extends Plugin {
         String title = call.getString("title", "Unknown Title");
         String artist = call.getString("artist", "Unknown Artist");
         String coverUrl = call.getString("coverUrl", "");
+        
+        List<String> paragraphsList = new ArrayList<>();
+        try {
+            com.getcapacitor.JSArray paragraphsArray = call.getArray("paragraphs");
+            if (paragraphsArray != null) {
+                for (int i = 0; i < paragraphsArray.length(); i++) {
+                    paragraphsList.add(paragraphsArray.getString(i));
+                }
+            }
+        } catch (Exception e) {
+            android.util.Log.e("AudioService", "Error parsing paragraphs", e);
+        }
+
+        int startIndex = call.getInt("startIndex", 0);
+        float speechRate = call.getFloat("speechRate", 1.0f);
+        float speechPitch = call.getFloat("speechPitch", 1.0f);
 
         try {
             Intent serviceIntent = new Intent(getContext(), AudioForegroundService.class);
             serviceIntent.putExtra("title", title);
             serviceIntent.putExtra("artist", artist);
             serviceIntent.putExtra("coverUrl", coverUrl);
+            serviceIntent.putStringArrayListExtra("paragraphs", new ArrayList<>(paragraphsList));
+            serviceIntent.putExtra("startIndex", startIndex);
+            serviceIntent.putExtra("speechRate", speechRate);
+            serviceIntent.putExtra("speechPitch", speechPitch);
             
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 getContext().startForegroundService(serviceIntent);
@@ -50,7 +77,7 @@ public class AudioServicePlugin extends Plugin {
                 getContext().startService(serviceIntent);
             }
             
-            android.util.Log.d("AudioService", "Service started: " + title);
+            android.util.Log.d("AudioService", "Service started successfully");
             call.resolve();
         } catch (Exception e) {
             android.util.Log.e("AudioService", "Failed to start service", e);
@@ -116,6 +143,26 @@ public class AudioServicePlugin extends Plugin {
         } catch (Exception e) {
             android.util.Log.e("AudioService", "Failed to update playback state", e);
             call.reject("Failed to update playback state: " + e.getMessage());
+        }
+    }
+
+    @PluginMethod
+    public void seekTo(PluginCall call) {
+        int index = call.getInt("index", 0);
+        try {
+            Intent intent = new Intent(getContext(), AudioForegroundService.class);
+            intent.setAction("SEEK_TO");
+            intent.putExtra("targetIndex", index);
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                getContext().startForegroundService(intent);
+            } else {
+                getContext().startService(intent);
+            }
+            call.resolve();
+        } catch (Exception e) {
+            android.util.Log.e("AudioService", "Failed to seekTo", e);
+            call.reject("Failed to seekTo: " + e.getMessage());
         }
     }
 

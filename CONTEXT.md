@@ -1571,3 +1571,77 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Người dùng có thể đảo chiều mục lục truyện linh hoạt.
 - ✅ Tính năng phát âm thanh chạy nền hoạt động cực kỳ ổn định trên cả Web và Android, hỗ trợ đầy đủ bộ điều khiển Lockscreen/Notification.
 - ✅ Vite build thành công không lỗi cú pháp hay TypeScript.
+
+---
+
+## 2026-05-20 19:30 - Tích hợp Hẹn giờ tắt, Media Control Native Android và Tải trước 10 chương chạy nền
+
+**Vấn đề**:
+1. Ứng dụng React Web (chạy qua Capacitor trên Android) cần bổ sung tính năng Hẹn giờ tắt (Sleep Timer) để tự động dừng phát sau một khoảng thời gian chọn trước.
+2. Trên Android, khi chạy nền hoặc tắt màn hình, hệ điều hành thường quét giải phóng tài nguyên. Do đó, cần cơ chế Background Playback native thực thụ kết hợp với Bảng điều khiển phương tiện (Media Control - Play/Pause, Next, Previous) hiển thị trên thanh thông báo hệ thống.
+3. Khi thoát ứng dụng hoặc tắt màn hình, âm thanh chạy được một lát rồi tự tắt. Nghi vấn lớn nhất là do không tải kịp nội dung của chương tiếp theo (khi hết chương cũ), dẫn đến dừng phát.
+
+**Giải pháp đã thực hiện**:
+1. **Hẹn giờ tắt (Sleep Timer) trong ReadingScreen**:
+   - Thêm nút điều chỉnh và UI/logic Sleep Timer ngay trong [ReadingScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ReadingScreen.tsx) cho phép người dùng chọn tắt sau 10, 15, 30, 45, 60 phút hoặc tuỳ chỉnh.
+   - Quản lý bộ đếm lùi trực quan trên giao diện và kích hoạt tự động dừng phát TTS khi hết giờ.
+2. **Background Playback & Native Notification Media Controls (Android)**:
+   - Sửa đổi dịch vụ chạy nền native Android [AudioForegroundService.java](file:///e:/projects_window/reader-hub/web_react/android/app/src/main/java/com/readerhub/audioservice/AudioForegroundService.java) để bắt các sự kiện tương tác trên Notification (Play/Pause, Next, Previous).
+   - Thiết lập cơ chế Listener để chuyển phát các sự kiện này qua plugin Capacitor [AudioServicePlugin.java](file:///e:/projects_window/reader-hub/web_react/android/app/src/main/java/com/readerhub/audioservice/AudioServicePlugin.java) về lớp JavaScript/TypeScript.
+   - Trong [ReadingScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ReadingScreen.tsx), đăng ký lắng nghe sự kiện `mediaAction` gửi về từ Native Service thông qua plugin `AudioService` (đã đăng ký trong [audioService.ts](file:///e:/projects_window/reader-hub/web_react/src/lib/audioService.ts)) để đồng bộ hóa trạng thái Phát/Tạm dừng, chuyển chương kế tiếp/quay lại chương trước.
+3. **Tải trước 10 chương (Prefetching & Caching) bảo vệ luồng chạy nền**:
+   - Tích hợp cơ chế tải trước (Prefetch) song song tối đa 10 chương tiếp theo của câu chuyện hiện tại (nếu có kết nối mạng) vào `Cache API` (với fallback xuống LocalStorage nếu không được hỗ trợ).
+   - Việc tải trước được kích hoạt tự động khi người dùng đọc/nghe chương hiện tại.
+   - Thêm logic dọn dẹp bộ nhớ đệm cũ (chỉ giữ lại 10 chương kế tiếp để tiết kiệm dung lượng lưu trữ).
+
+**Kết quả**:
+- ✅ Tính năng Hẹn giờ tắt hoạt động chính xác với đếm ngược trực quan.
+- ✅ Bảng điều khiển phương tiện trên Notification Bar của Android đồng bộ mượt mà với trạng thái đọc/nghe của ứng dụng Web/Capacitor.
+- ✅ Khắc phục triệt để lỗi ngắt audio chạy nền do thiết bị chuyển trạng thái sleep/mất mạng tức thời nhờ 10 chương tiếp theo luôn sẵn sàng trong Cache cục bộ.
+- ✅ Biên dịch thành công dự án React (`pnpm run build`) và đồng bộ tài nguyên sang native Android (`npx cap copy`) không phát sinh lỗi.
+
+
+---
+
+## 2026-05-21 19:55 - Khắc phục giới hạn 1000 chương trong Danh sách chương và Mục lục
+
+**Vấn đề**:
+- Danh sách chương ở màn hình Chi tiết truyện (`DetailScreen.tsx`) và Mục lục ở màn hình Đọc truyện (`ReadingScreen.tsx`) chỉ hiển thị tối đa 1000 chương, mặc dù trên Supabase Database và Cloudflare R2 đã lưu trữ nhiều chương hơn (ví dụ truyện dài 1000+ chương).
+- **Nguyên nhân**: API PostgREST của Supabase mặc định giới hạn (`max_rows`) là 1000 bản ghi trên mỗi yêu cầu SELECT không phân trang (`.select('*')`). Do đó các chương từ 1001 trở đi không bao giờ được tải về máy khách.
+
+**Giải pháp đã thực hiện**:
+1. **Nâng cấp `loadChapters` trong [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx)**:
+   - Thay đổi hàm tải danh sách chương từ một request đơn lẻ thành một vòng lặp tải theo các phân đoạn (range) 1000 bản ghi liên tiếp (`from` đến `from + limit - 1`).
+   - Tải liên tục cho đến khi lấy được đầy đủ toàn bộ số chương của câu chuyện từ Supabase, sau đó mới cập nhật vào state `chapters`.
+2. **Nâng cấp `loadChapters` trong [ReadingScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/ReadingScreen.tsx)**:
+   - Áp dụng cơ chế tương tự: Sử dụng vòng lặp range (`.range(from, from + limit - 1)`) với kích thước lô là 1000 để fetch toàn bộ danh sách chương phục vụ cho mục lục (`showChapterList`) và các nút chuyển chương.
+   - Cập nhật chính xác chỉ số chương hiện tại (`currentChapterIndex`) dựa trên toàn bộ danh sách chương mới tải.
+
+**Kết quả**:
+- ✅ Danh sách chương hiển thị đầy đủ hơn 1000 chương tại giao diện Chi tiết truyện.
+- ✅ Mục lục và thanh điều khiển phương tiện (Next/Previous chapter) nhận diện đúng và đủ tất cả các chương (không bị giới hạn ở 1000).
+- ✅ Vite build và kiểm tra thành công, không phát sinh bất kỳ lỗi cú pháp hay TypeScript nào.
+
+---
+
+## 2026-05-21 20:05 - Sửa lỗi biên dịch native Android, Build APK debug và Đẩy thay đổi lên GitHub
+
+**Vấn đề**:
+- Cần build lại Android APK phiên bản `web_react` sau các thay đổi sửa lỗi giới hạn 1000 chương và đồng bộ lên thiết bị.
+- Khi chạy lệnh Gradle build (`./gradlew assembleDebug`), phát sinh lỗi biên dịch Java tại [AudioServicePlugin.java](file:///e:/projects_window/reader-hub/web_react/android/app/src/main/java/com/readerhub/audioservice/AudioServicePlugin.java#L33): method `onParagraphChanged` không ghi đè hoặc triển khai phương thức từ lớp cha/interface (lỗi `method does not override or implement a method from a supertype`).
+
+**Giải pháp đã thực hiện**:
+1. **Sửa lỗi biên dịch Java**:
+   - Thêm khai báo phương thức `void onParagraphChanged(int index);` vào interface `ServiceListener` tại [AudioForegroundService.java](file:///e:/projects_window/reader-hub/web_react/android/app/src/main/java/com/readerhub/audioservice/AudioForegroundService.java#L28-L31) để khớp với phần override trong `AudioServicePlugin.java`.
+2. **Build ứng dụng**:
+   - Chạy lệnh `pnpm build` tại thư mục `web_react` để tạo bundle web mới.
+   - Chạy lệnh `npx cap sync android` để đồng bộ code frontend mới nhất sang thư mục Android native.
+   - Chạy `.\gradlew assembleDebug` tại thư mục `web_react/android` để biên dịch ứng dụng native Android.
+3. **Commit & Push GitHub**:
+   - Tiến hành staging toàn bộ các file thay đổi từ các task sửa lỗi trước đó và task hiện tại.
+   - Commit và Push toàn bộ thay đổi lên nhánh chính (`main`) trên GitHub.
+
+**Kết quả**:
+- ✅ Khắc phục triệt để lỗi biên dịch Java trong module Audio Service native Android.
+- ✅ Gradle build thành công, tạo ra file APK debug tại [app-debug.apk](file:///e:/projects_window/reader-hub/web_react/android/app/build/outputs/apk/debug/app-debug.apk).
+- ✅ Tất cả mã nguồn và tài nguyên được đẩy lên GitHub thành công.

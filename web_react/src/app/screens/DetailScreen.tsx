@@ -239,14 +239,33 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
   const loadChapters = async () => {
     setIsLoadingChapters(true);
     try {
-      const { data, error } = await supabase
-        .from('chapters')
-        .select('*')
-        .eq('story_id', book.id)
-        .order('chapter_number', { ascending: true });
+      let allChapters: Chapter[] = [];
+      let from = 0;
+      const limit = 1000;
+      let hasMore = true;
 
-      if (error) throw error;
-      setChapters(data || []);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('chapters')
+          .select('*')
+          .eq('story_id', book.id)
+          .order('chapter_number', { ascending: true })
+          .range(from, from + limit - 1);
+
+        if (error) throw error;
+        if (data && data.length > 0) {
+          allChapters = [...allChapters, ...data];
+          if (data.length < limit) {
+            hasMore = false;
+          } else {
+            from += limit;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
+
+      setChapters(allChapters);
     } catch (err) {
       console.error('Failed to load chapters:', err);
     } finally {

@@ -1,7 +1,7 @@
 // Capacitor Audio Service Plugin
 // Wrapper cho native Android Foreground Service
 
-import { registerPlugin } from '@capacitor/core';
+import { registerPlugin, type PluginListenerHandle } from '@capacitor/core';
 import { Capacitor } from '@capacitor/core';
 
 export interface AudioServicePlugin {
@@ -9,6 +9,10 @@ export interface AudioServicePlugin {
   stopService(): Promise<void>;
   updateMetadata(options: { title: string; artist: string }): Promise<void>;
   updatePlaybackState(options: { isPlaying: boolean }): Promise<void>;
+  addListener(
+    eventName: 'mediaAction',
+    listenerFunc: (data: { action: string }) => void
+  ): Promise<PluginListenerHandle> & PluginListenerHandle;
 }
 
 console.log('[AudioService] Registering plugin...');

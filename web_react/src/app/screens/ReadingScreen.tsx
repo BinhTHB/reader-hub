@@ -13,6 +13,7 @@ import {
   List,
   SkipForward,
   SkipBack,
+  Clock,
 } from "lucide-react";
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor } from '@capacitor/core';
@@ -48,6 +49,81 @@ interface Chapter {
   title: string;
   text_r2_url: string;
 }
+
+const CACHE_NAME = 'reader-hub-chapters-cache';
+
+const getChapterFromCache = async (chapterId: number): Promise<ChapterContent | null> => {
+  try {
+    if ('caches' in window) {
+      const cache = await caches.open(CACHE_NAME);
+      const response = await cache.match(`chapter-${chapterId}`);
+      if (response) {
+        return await response.json();
+      }
+    }
+  } catch (e) {
+    console.error('Failed to get from Cache API:', e);
+  }
+  // Fallback to localStorage
+  try {
+    const data = localStorage.getItem(`chapter_cache_${chapterId}`);
+    if (data) return JSON.parse(data);
+  } catch (e) {
+    console.error('Failed to get from localStorage cache:', e);
+  }
+  return null;
+};
+
+const saveChapterToCache = async (chapterId: number, data: ChapterContent): Promise<void> => {
+  try {
+    if ('caches' in window) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(`chapter-${chapterId}`, new Response(JSON.stringify(data)));
+      return;
+    }
+  } catch (e) {
+    console.error('Failed to save to Cache API:', e);
+  }
+  // Fallback to localStorage
+  try {
+    localStorage.setItem(`chapter_cache_${chapterId}`, JSON.stringify(data));
+  } catch (e) {
+    console.error('Failed to save to localStorage cache:', e);
+  }
+};
+
+const cleanChapterCache = async (keepIds: number[]) => {
+  try {
+    // local storage cleanup
+    const keys = Object.keys(localStorage);
+    for (const key of keys) {
+      if (key.startsWith('chapter_cache_')) {
+        const id = parseInt(key.replace('chapter_cache_', ''), 10);
+        if (!keepIds.includes(id)) {
+          localStorage.removeItem(key);
+        }
+      }
+    }
+    
+    // cache API cleanup
+    if ('caches' in window) {
+      const cache = await caches.open(CACHE_NAME);
+      const cachedRequests = await cache.keys();
+      for (const req of cachedRequests) {
+        const url = req.url;
+        const match = url.match(/chapter-(\d+)$/);
+        if (match) {
+          const id = parseInt(match[1], 10);
+          if (!keepIds.includes(id)) {
+            await cache.delete(req);
+          }
+        }
+      }
+    }
+  } catch (e) {
+    console.error('Error cleaning cache:', e);
+  }
+};
 
 export function ReadingScreen({ chapter: initialChapter, onBack, user }: ReadingScreenProps) {
   const [showSettings, setShowSettings] = useState(false);
@@ -91,6 +167,12 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     return saved !== 'false'; // Default true
   });
   const [shouldAutoResume, setShouldAutoResume] = useState(false);
+  const [sleepTimer, setSleepTimer] = useState<number | null>(() => {
+    const saved = localStorage.getItem('reader_sleepTimer');
+    return saved ? Number(saved) : null;
+  });
+  const [timeLeft, setTimeLeft] = useState<number>(0);
+  const sleepTimerEndTimeRef = React.useRef<number | null>(null);
   const contentRef = React.useRef<HTMLDivElement>(null);
   const isPlayingRef = React.useRef(isPlaying);
   const handlePlayPauseRef = React.useRef<any>(null);
@@ -252,6 +334,128 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
       saveReadingHistory();
     }
   }, [chapter?.text_r2_url]);
+
+  // Sleep Timer countdown effect
+  useEffect(() => {
+    if (sleepTimer === null) {
+      return;
+    }
+
+    if (!isPlaying) {
+      // If paused, keep timeLeft but stop interval
+      return;
+    }
+
+    // Initialize or restore endTime
+    const initialSeconds = timeLeft > 0 ? timeLeft : sleepTimer * 60;
+    setTimeLeft(initialSeconds);
+    sleepTimerEndTimeRef.current = Date.now() + initialSeconds * 1000;
+
+    const timerId = setInterval(() => {
+      if (sleepTimerEndTimeRef.current) {
+        const remaining = Math.round((sleepTimerEndTimeRef.current - Date.now()) / 1000);
+        if (remaining <= 0) {
+          console.log('[SleepTimer] Time up! Stopping audio...');
+          setIsPlaying(false);
+          if (Capacitor.isNativePlatform()) {
+            TextToSpeech.stop().catch(err => console.error(err));
+          } else if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+          }
+          stopSleepTimer();
+        } else {
+          setTimeLeft(remaining);
+        }
+      }
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [sleepTimer, isPlaying]);
+
+  // Start sleep timer
+  const startSleepTimer = (minutes: number) => {
+    setSleepTimer(minutes);
+    localStorage.setItem('reader_sleepTimer', minutes.toString());
+    const seconds = minutes * 60;
+    setTimeLeft(seconds);
+    sleepTimerEndTimeRef.current = Date.now() + seconds * 1000;
+  };
+
+  // Stop sleep timer
+  const stopSleepTimer = () => {
+    setSleepTimer(null);
+    localStorage.removeItem('reader_sleepTimer');
+    setTimeLeft(0);
+    sleepTimerEndTimeRef.current = null;
+  };
+
+  const formatTimeLeft = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
+
+  // Prefetching logic for next 10 chapters
+  const prefetchNextChapters = async (currentIndex: number, chaptersList: Chapter[]) => {
+    if (!chaptersList || chaptersList.length === 0) return;
+    const nextChapters = chaptersList.slice(currentIndex + 1, currentIndex + 11);
+    
+    for (const ch of nextChapters) {
+      if (!ch.text_r2_url) continue;
+      
+      const cached = await getChapterFromCache(ch.id);
+      if (cached) continue;
+      
+      try {
+        const url = ch.text_r2_url.startsWith('http') 
+          ? ch.text_r2_url 
+          : `https://${R2_PUBLIC_DOMAIN}/${ch.text_r2_url}`;
+        
+        console.log(`[Prefetch] Fetching chapter ${ch.chapter_number}`);
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          await saveChapterToCache(ch.id, data);
+          console.log(`[Prefetch] Cached chapter ${ch.chapter_number}`);
+        }
+      } catch (err) {
+        console.warn(`[Prefetch] Failed for chapter ${ch.chapter_number}:`, err);
+      }
+    }
+  };
+
+  useEffect(() => {
+    if (chapters.length > 0 && currentChapterIndex !== -1) {
+      prefetchNextChapters(currentChapterIndex, chapters);
+      
+      const keepIds = chapters
+        .slice(Math.max(0, currentChapterIndex - 2), currentChapterIndex + 12)
+        .map(ch => ch.id);
+      cleanChapterCache(keepIds);
+    }
+  }, [currentChapterIndex, chapters]);
+
+  // Listen for media actions from native notification bar controls
+  useEffect(() => {
+    if (Capacitor.isNativePlatform() && AudioService) {
+      console.log('[ReadingScreen] Registering native mediaAction listener');
+      const listener = AudioService.addListener('mediaAction', (data: { action: string }) => {
+        console.log('[ReadingScreen] Received native media action:', data.action);
+        if (data.action === 'PLAY_PAUSE') {
+          handlePlayPauseRef.current?.();
+        } else if (data.action === 'NEXT') {
+          goToNextChapterRef.current?.();
+        } else if (data.action === 'PREVIOUS') {
+          goToPreviousChapterRef.current?.();
+        }
+      });
+
+      return () => {
+        console.log('[ReadingScreen] Removing native mediaAction listener');
+        listener.remove();
+      };
+    }
+  }, []);
 
   // Save reading position periodically and on unmount
   useEffect(() => {
@@ -473,16 +677,34 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
 
   const loadChapters = async () => {
     try {
-      const { data, error } = await supabase
-        .from('chapters')
-        .select('*')
-        .eq('story_id', chapter.story_id)
-        .order('chapter_number', { ascending: true });
+      let allChapters: Chapter[] = [];
+      let from = 0;
+      const limit = 1000;
+      let hasMore = true;
 
-      if (error) throw error;
-      
-      setChapters(data || []);
-      const currentIndex = data?.findIndex(ch => ch.id === chapter.id) || 0;
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('chapters')
+          .select('*')
+          .eq('story_id', chapter.story_id)
+          .order('chapter_number', { ascending: true })
+          .range(from, from + limit - 1);
+
+        if (error) throw error;
+        if (data && data.length > 0) {
+          allChapters = [...allChapters, ...data];
+          if (data.length < limit) {
+            hasMore = false;
+          } else {
+            from += limit;
+          }
+        } else {
+          hasMore = false;
+        }
+      }
+
+      setChapters(allChapters);
+      const currentIndex = allChapters.findIndex(ch => ch.id === chapter.id) || 0;
       setCurrentChapterIndex(currentIndex);
     } catch (err) {
       console.error('Failed to load chapters:', err);
@@ -499,6 +721,14 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
         throw new Error('Chương này chưa có nội dung');
       }
 
+      // Try local cache first
+      const cachedData = await getChapterFromCache(chapter.id);
+      if (cachedData) {
+        console.log(`[Cache] Loaded chapter ${chapter.chapter_number} from local cache`);
+        setContent(cachedData);
+        return;
+      }
+
       const url = r2Url.startsWith('http') ? r2Url : `https://${R2_PUBLIC_DOMAIN}/${r2Url}`;
       
       const response = await fetch(url);
@@ -509,7 +739,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
       const data = await response.json();
       setContent(data);
       
-      // Don't reset paragraph index here, let restoreReadingPosition handle it
+      // Save to cache
+      await saveChapterToCache(chapter.id, data);
     } catch (err: any) {
       console.error('Failed to load chapter content:', err);
       setError(err.message);
@@ -603,6 +834,14 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
   };
 
    const speakParagraph = async (index: number) => {
+     // Check sleep timer expiry
+     if (sleepTimerEndTimeRef.current && Date.now() >= sleepTimerEndTimeRef.current) {
+       console.log('[SleepTimer] Timer expired. Stopping audio playback.');
+       setIsPlaying(false);
+       stopSleepTimer();
+       return;
+     }
+
      if (!content || index >= content.paragraphs.length) {
        // Finished all paragraphs, auto-advance to next chapter if available
        if (currentChapterIndex < chapters.length - 1) {
@@ -1069,6 +1308,50 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
                 >
                 </div>
               </button>
+            </div>
+
+            {/* Sleep Timer */}
+            <div className="border-t border-border my-2" />
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="w-4 h-4 text-primary" />
+                  Hẹn giờ tắt
+                </h4>
+                {sleepTimer !== null && (
+                  <span className="text-xs font-semibold px-2 py-0.5 bg-primary/10 text-primary rounded-full animate-pulse">
+                    Còn {formatTimeLeft(timeLeft)}
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-6 gap-1.5">
+                {[
+                  { label: "Tắt", value: null },
+                  { label: "10p", value: 10 },
+                  { label: "20p", value: 20 },
+                  { label: "30p", value: 30 },
+                  { label: "45p", value: 45 },
+                  { label: "60p", value: 60 },
+                ].map((option) => (
+                  <button
+                    key={option.label}
+                    onClick={() => {
+                      if (option.value === null) {
+                        stopSleepTimer();
+                      } else {
+                        startSleepTimer(option.value);
+                      }
+                    }}
+                    className={`py-2 px-0.5 text-center text-xs font-medium rounded-lg border transition-all ${
+                      (option.value === null && sleepTimer === null) || (option.value !== null && sleepTimer === option.value)
+                        ? "bg-primary text-white border-primary shadow-sm"
+                        : "bg-muted/50 hover:bg-muted border-transparent text-foreground"
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
 
             <button
