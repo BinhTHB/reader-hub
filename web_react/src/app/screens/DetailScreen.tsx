@@ -86,7 +86,7 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
         body: {
           story_id: bookData.id,
           source_url: bookData.source_url,
-          chapter_start: currentTotal + 1,
+          chapter_start: 1,
           chapter_limit: 0,
           action: 'scrape'
         }
@@ -363,10 +363,10 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
             className="flex-1 py-3 bg-primary text-white rounded-full font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2 min-w-[140px]"
           >
             <BookOpen className="w-5 h-5" />
-            {chapters.length === 0 
-              ? 'Chưa có chương' 
-              : getLastReadChapter() 
-                ? `Đọc tiếp C.${getLastReadChapter()?.chapter_number}` 
+            {chapters.length === 0
+              ? 'Chưa có chương'
+              : getLastReadChapter()
+                ? `Đọc tiếp C.${getLastReadChapter()?.chapter_number}`
                 : 'Bắt đầu đọc'}
           </button>
 

@@ -1645,3 +1645,23 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Khắc phục triệt để lỗi biên dịch Java trong module Audio Service native Android.
 - ✅ Gradle build thành công, tạo ra file APK debug tại [app-debug.apk](file:///e:/projects_window/reader-hub/web_react/android/app/build/outputs/apk/debug/app-debug.apk).
 - ✅ Tất cả mã nguồn và tài nguyên được đẩy lên GitHub thành công.
+
+---
+
+## 2026-05-23 21:54 - Điều chỉnh Scraper để cào từ chương đầu tiên và Build APK
+
+**Vấn đề**:
+- Muốn điều chỉnh cơ chế cào chương mới của truyện: cào từ đầu (`chapter_start: 1`) để có thể tự động vá/bù các chương bị lỗi/thiếu ở giữa truyện thay vì chỉ cào từ chương mới nhất (`currentTotal + 1`).
+- Cần thực hiện build lại APK phiên bản debug chứa các thay đổi trên.
+
+**Giải pháp đã thực hiện**:
+1. **Cập nhật UI/UX cào truyện**:
+   - Sửa tham số truyền vào hàm gọi Supabase Edge Function `trigger-scraper` tại [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx#L85-L93) để chuyển `chapter_start` cố định là `1` và `chapter_limit` là `0`. Việc này giúp scraper quét từ chương 1 và bỏ qua các chương đã có trên Cloudflare R2, chỉ cào các chương thực sự còn thiếu.
+2. **Build APK debug**:
+   - Chạy lệnh Gradle build `.\gradlew assembleDebug` từ thư mục dự án Android [web_react/android](file:///e:/projects_window/reader-hub/web_react/android).
+3. **Commit & Push GitHub**:
+   - Commit thay đổi trong file [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx) và [CONTEXT.md](file:///e:/projects_window/reader-hub/CONTEXT.md) rồi push lên GitHub.
+
+**Kết quả**:
+- ✅ Ứng dụng đã được cập nhật logic cào bù chương thiếu.
+- ✅ Gradle build thành công, tạo ra file APK debug mới tại [app-debug.apk](file:///e:/projects_window/reader-hub/web_react/android/app/build/outputs/apk/debug/app-debug.apk).
