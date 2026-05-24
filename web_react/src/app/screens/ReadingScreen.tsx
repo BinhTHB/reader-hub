@@ -634,9 +634,9 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
       const restored = restoreReadingPosition();
       
       if (restored) {
-        console.log('Position restored, paragraphIndex:', restored.paragraphIndex, 'isPlaying:', restored.isPlaying);
+        console.log('Position restored, paragraphIndex:', restored.paragraphIndex, 'isPlaying:', restored.isPlaying, 'shouldAutoResume:', shouldAutoResume, 'pendingAutoResumeRef:', pendingAutoResumeRef.current);
         // Always restore position if found
-        if (shouldAutoResume || pendingAutoResumeRef.current) {
+        if (shouldAutoResume || pendingAutoResumeRef.current || restored.isPlaying) {
           // Auto-resume if was playing or explicitly requested
           pendingAutoResumeRef.current = false;
           console.log('Auto-resuming from paragraph', restored.paragraphIndex);
@@ -841,7 +841,10 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     // Reset paragraph index and content before changing chapter
     setCurrentParagraphIndex(0);
     setContent(null);
-    if (wasPlaying) pendingAutoResumeRef.current = true;
+    if (wasPlaying) {
+      console.log('[changeChapter] Setting pendingAutoResumeRef = true (wasPlaying:', wasPlaying, ')');
+      pendingAutoResumeRef.current = true;
+    }
     setShouldAutoResume(wasPlaying);
     isPositionRestoredRef.current = false;
     
@@ -955,17 +958,22 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
                speakParagraph(index + 1);
              }
            }, 100);
-          } else {
-            // Finished chapter, auto-advance
-            if (currentChapterIndex < chapters.length - 1) {
-               const nextChapter = chapters[currentChapterIndex + 1];
-               pendingAutoResumeRef.current = true;
-               await changeChapter(nextChapter, true);
-             } else {
-               setPlaying(false);
-               setCurrentParagraphIndex(0);
-             }
-           }
+            } else {
+              // Finished chapter, auto-advance
+              if (currentChapterIndex < chapters.length - 1) {
+                 const nextChapter = chapters[currentChapterIndex + 1];
+                 console.log('[onend] Auto-advancing to chapter', nextChapter.chapter_number);
+                 // Pre-save next chapter position in localStorage (survives StrictMode)
+                 const pos = JSON.parse(localStorage.getItem('reading_positions') || '{}');
+                 pos[nextChapter.id] = { paragraphIndex: 0, isPlaying: true, timestamp: new Date().toISOString() };
+                 localStorage.setItem('reading_positions', JSON.stringify(pos));
+                 pendingAutoResumeRef.current = true;
+                await changeChapter(nextChapter, true);
+              } else {
+                setPlaying(false);
+                setCurrentParagraphIndex(0);
+              }
+            }
         } catch (error) {
           console.error('TTS error:', error);
           setPlaying(false);
@@ -998,19 +1006,25 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
                  speakParagraph(index + 1);
                }
              }, 100);
-           } else {
-             // Finished chapter, auto-advance
-             if (currentChapterIndex < chapters.length - 1) {
-                const nextChapter = chapters[currentChapterIndex + 1];
-                await changeChapter(nextChapter, true);
-              } else {
-                setPlaying(false);
-                setCurrentParagraphIndex(0);
-              }
-            }
-          };
+            } else {
+              // Finished chapter, auto-advance
+              if (currentChapterIndex < chapters.length - 1) {
+                 const nextChapter = chapters[currentChapterIndex + 1];
+                 console.log('[onend-web] Auto-advancing to chapter', nextChapter.chapter_number);
+                 // Pre-save next chapter position in localStorage (survives StrictMode)
+                 const pos = JSON.parse(localStorage.getItem('reading_positions') || '{}');
+                 pos[nextChapter.id] = { paragraphIndex: 0, isPlaying: true, timestamp: new Date().toISOString() };
+                 localStorage.setItem('reading_positions', JSON.stringify(pos));
+                 pendingAutoResumeRef.current = true;
+                 await changeChapter(nextChapter, true);
+               } else {
+                 setPlaying(false);
+                 setCurrentParagraphIndex(0);
+               }
+             }
+           };
 
-          currentUtteranceRef.current = utterance;
+           currentUtteranceRef.current = utterance;
 
           // Chrome Web Speech API bug workarounds:
           // 1. getVoices() kickstarts the speech engine
