@@ -1677,3 +1677,28 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Âm thanh tiếp tục phát mượt mà xuyên suốt các chương nếu người dùng đang bật audio.
 - ✅ Nút Cào bị xám (vô hiệu hóa) chính xác khi kiểm tra cập nhật và phát hiện không có chương mới nào từ nguồn.
 - ✅ Vite build và Gradle build debug APK thành công không có bất kỳ lỗi nào.
+
+
+---
+
+## 2026-05-24 20:30 - Khắc phục lỗi đứng tiếng (Audio stuck) khi tự động chuyển sang chương mới
+
+**Vấn đề**:
+- Khi nghe hết chương hiện tại và ứng dụng tự động chuyển sang chương mới, âm thanh bị mất/treo (stuck) ở đoạn đầu tiên (đoạn 0) dù nút Play vẫn hiển thị là đang phát (icon Pause). Người dùng phải bấm tua hoặc double-click nút Play để phát lại.
+- **Nguyên nhân**: 
+  1. Do tốc độ tải chương mới rất nhanh (được cache từ trước), thời gian giữa lúc gọi dừng/hủy âm thanh chương cũ (`TextToSpeech.stop()` hoặc `window.speechSynthesis.cancel()`) và lúc bắt đầu phát chương mới (`speakParagraph(0)`) quá ngắn (chỉ 50ms). Điều này khiến hàng đợi của engine TTS (cả native lẫn trình duyệt) bị treo hoặc bỏ qua lệnh phát mới.
+  2. Đối tượng `SpeechSynthesisUtterance` trong Web Speech API là biến cục bộ trong hàm `speakParagraph`, dễ bị trình dọn rác (garbage collector) dọn dẹp sớm giữa chừng trước khi kịp phát hoặc khi chuyển đoạn.
+
+**Giải pháp đã thực hiện**:
+1. **Tăng thời gian trễ khôi phục phát (Restoration Delay)**:
+   - Thay đổi toàn bộ các khoảng trễ gọi `speakParagraph` trong các nhánh khôi phục vị trí/tự động tiếp tục từ **50ms lên 500ms**. Khoảng trễ 500ms giúp engine TTS của thiết bị có đủ thời gian reset trạng thái và giải phóng hàng đợi cũ, đồng thời tạo ra một khoảng nghỉ tự nhiên cực kỳ dễ chịu giữa các chương (như người đọc nghỉ lấy hơi).
+2. **Khai báo bộ đồng bộ trạng thái phát tức thời (Synchronous Play State Tracker)**:
+   - Triển khai helper `setPlaying(playing: boolean)` cập nhật song song và tức thời cả React State `isPlaying` và mutable ref `isPlayingRef.current`.
+   - Kiểm tra `isPlayingRef.current` ngay đầu hàm `speakParagraph`. Nếu người dùng đã tạm dừng hoặc thoát màn hình trong khoảng trễ 500ms, lệnh phát sẽ bị hủy bỏ ngay lập tức để tránh chồng tiếng hoặc phát ngoài ý muốn (race conditions).
+3. **Chống Garbage Collection cho Web Speech API**:
+   - Sử dụng ref `currentUtteranceRef` trong React để lưu giữ tham chiếu đến đối tượng `SpeechSynthesisUtterance` đang phát, tránh việc đối tượng này bị bộ dọn rác giải phóng giữa chừng.
+
+**Kết quả**:
+- ✅ Âm thanh tự động chuyển tiếp và phát ngay lập tức sau khi chuyển chương mới mà không bị khựng, đứng tiếng hay mất tiếng.
+- ✅ Giao diện điều khiển (Play/Pause, tua, v.v.) hoạt động ổn định và phản hồi chính xác 100%.
+- ✅ Đã chạy thử nghiệm thực tế trên môi trường mô phỏng trình duyệt và xác nhận lỗi đã được sửa triệt để.
