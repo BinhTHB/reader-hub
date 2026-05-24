@@ -40,3 +40,6 @@ test_output.json
 
 # Personal Notes
 ghichu.txt
+
+# Playwright MCP debug artifacts
+.playwright-mcp/
