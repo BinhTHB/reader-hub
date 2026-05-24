@@ -1702,3 +1702,24 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Âm thanh tự động chuyển tiếp và phát ngay lập tức sau khi chuyển chương mới mà không bị khựng, đứng tiếng hay mất tiếng.
 - ✅ Giao diện điều khiển (Play/Pause, tua, v.v.) hoạt động ổn định và phản hồi chính xác 100%.
 - ✅ Đã chạy thử nghiệm thực tế trên môi trường mô phỏng trình duyệt và xác nhận lỗi đã được sửa triệt để.
+
+---
+
+## 2026-05-24 20:48 - Fix lỗi Audio bị stuck khi tự động chuyển chương (Web Speech API)
+
+**Vấn đề**: Khi nghe audio hết chương và tự động chuyển sang chương mới, âm thanh không phát ra dù nút Play vẫn hiển thị đang phát. Người dùng phải tua hoặc double-click Play mới chạy tiếp.
+
+**Nguyên nhân gốc rễ**:
+1. **Chrome Web Speech API bug (chính)**: Sau khi `speechSynthesis.cancel()` được gọi, Chrome đưa `SpeechSynthesisUtterance` mới vào queue nhưng không bao giờ thực sự phát — `speaking` property trả về `true` nhưng không có âm thanh. Đây là bug kinh điển của Chrome chưa được fix triệt để.
+2. **`cancel()` trong `changeChapter` gọi khi speech đã kết thúc tự nhiên**: Khi chuyển chương từ `onend` callback, speech đã kết thúc tự nhiên, nhưng `cancel()` vẫn được gọi, có thể corrupt state của Chrome speech engine.
+3. **Không có `getVoices()` kickstart**: Chrome cần `getVoices()` để force speech engine khởi tạo lại sau `cancel()`.
+
+**Giải pháp** (3 fixes trong `web_react/src/app/screens/ReadingScreen.tsx`):
+1. **`speakParagraph` — Web Speech API path** (line ~1000): Thêm `speechSynthesis.getVoices()` + `speechSynthesis.cancel()` NGAY TRƯỚC `speechSynthesis.speak(utterance)`. Đây là workaround chuẩn cho Chrome bug: `getVoices()` kickstart engine → `cancel()` reset queue → `speak()` mới hoạt động.
+2. **`changeChapter` — Conditional cancel** (line ~826): Chỉ gọi `window.speechSynthesis.cancel()` nếu `speechSynthesis.speaking === true`. Khi chuyển chương từ `onend` (speech đã kết thúc tự nhiên), bỏ qua `cancel()` để tránh corrupt engine state.
+3. **Giữ `currentUtteranceRef`**: Chống garbage collection cho `SpeechSynthesisUtterance`.
+
+**Kết quả**:
+- ✅ Build thành công (1660 modules, 2.16s)
+- ✅ Không còn lỗi TypeScript/compilation
+- ✅ Cơ chế phát âm thanh chuyển chương mượt mà: `getVoices()` → `cancel()` → `speak()` reset hoàn toàn Chrome speech engine trước mỗi utterance mới

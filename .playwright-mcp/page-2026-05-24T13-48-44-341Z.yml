@@ -1,0 +1,26 @@
+- generic [ref=e3]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - heading "Reader Hub" [level=1] [ref=e7]
+      - paragraph [ref=e8]: Khám phá thế giới truyện chữ
+    - generic [ref=e9]:
+      - generic [ref=e11]:
+        - img [ref=e12]
+        - textbox "Tìm kiếm truyện..." [ref=e15]
+      - img [ref=e17]
+  - generic [ref=e23]:
+    - button "Trang chủ" [ref=e24]:
+      - img [ref=e25]
+      - generic [ref=e28]: Trang chủ
+    - button "Thư viện" [ref=e29]:
+      - img [ref=e30]
+      - generic [ref=e32]: Thư viện
+    - button "Cào" [ref=e33]:
+      - img [ref=e34]
+      - generic [ref=e37]: Cào
+    - button "Cá nhân" [ref=e38]:
+      - img [ref=e39]
+      - generic [ref=e42]: Cá nhân
+    - button "Thêm" [ref=e43]:
+      - img [ref=e44]
+      - generic [ref=e48]: Thêm

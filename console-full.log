@@ -1,0 +1,41 @@
+Total messages: 20 (Errors: 2, Warnings: 0)
+Returning 18 messages for level "info"
+
+[INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:21608
+[LOG] [Cache] Loaded chapter 3 from local cache @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:631
+[LOG] [Cleanup] Ignored saving because position was not yet restored for chapter 3 @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:420
+[LOG] Restoring position for chapter 3 : {paragraphIndex: 2, isPlaying: false, timestamp: 2026-05-24T13:54:18.203Z} @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:585
+[LOG] Position restored, paragraphIndex: 2 isPlaying: false @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:515
+[LOG] [Cleanup] Final save paragraph index: 2 @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:424
+[LOG] Cleanup: Final save for chapter 3 : {paragraphIndex: 2, isPlaying: false, timestamp: 2026-05-24T13:54:38.622Z} @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:433
+[LOG] [ReadingScreen] Initializing media session for: Chương 3: Đấu La đại lục (3) @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:233
+[LOG] [ReadingScreen] Capacitor platform: web @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:234
+[LOG] [ReadingScreen] Is native: false @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:235
+[LOG] Media Session initialized: {title: Chương 3: Đấu La đại lục (3), artist: Đấu La Đại Lục} @ http://localhost:5174/src/lib/mediaService.ts:32
+[LOG] Media Session handlers set @ http://localhost:5174/src/lib/mediaService.ts:48
+[LOG] [ReadingScreen] Skipping audio service (web platform or service unavailable) @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:255
+[LOG] Auto-saving position for chapter 3 : {paragraphIndex: 2, isPlaying: false, timestamp: 2026-05-24T13:54:40.633Z} @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:410
+[LOG] Auto-saving position for chapter 3 : {paragraphIndex: 2, isPlaying: false, timestamp: 2026-05-24T13:54:42.625Z} @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:410
+[LOG] Auto-saving position for chapter 3 : {paragraphIndex: 2, isPlaying: false, timestamp: 2026-05-24T13:54:44.624Z} @ http://localhost:5174/src/app/screens/ReadingScreen.tsx?t=1779630845996:410
+TypeError: remove is not a function
+    at p.remove (http://localhost:5174/node_modules/.vite/deps/chunk-ZNMTJLFV.js?v=2e9432d4:99:34)
+    at http://localhost:5174/src/app/App.tsx?t=1779630845996:158:28
+    at safelyCallDestroy (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:16796:13)
+    at commitHookEffectListUnmount (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:16923:19)
+    at commitPassiveUnmountOnFiber (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:18282:17)
+    at commitPassiveUnmountEffects_complete (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:18263:15)
+    at commitPassiveUnmountEffects_begin (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:18254:15)
+    at commitPassiveUnmountEffects (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:18219:11)
+    at flushPassiveEffectsImpl (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:19542:11)
+    at flushPassiveEffects (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:19500:22)
+TypeError: remove is not a function
+    at p.remove (http://localhost:5174/node_modules/.vite/deps/chunk-ZNMTJLFV.js?v=2e9432d4:99:34)
+    at http://localhost:5174/src/app/App.tsx?t=1779630845996:158:28
+    at safelyCallDestroy (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:16796:13)
+    at commitHookEffectListUnmount (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:16923:19)
+    at commitPassiveUnmountOnFiber (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:18282:17)
+    at commitPassiveUnmountEffects_complete (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:18263:15)
+    at commitPassiveUnmountEffects_begin (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:18254:15)
+    at commitPassiveUnmountEffects (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:18219:11)
+    at flushPassiveEffectsImpl (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:19542:11)
+    at flushPassiveEffects (http://localhost:5174/node_modules/.vite/deps/chunk-BH4GTE34.js?v=2e9432d4:19500:22)

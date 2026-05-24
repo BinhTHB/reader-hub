@@ -191,6 +191,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
   const lastComputedIndexRef = React.useRef(0);
   const isPositionRestoredRef = React.useRef(false);
   const currentUtteranceRef = React.useRef<SpeechSynthesisUtterance | null>(null);
+  const pendingAutoResumeRef = React.useRef(false);
 
   const setPlaying = (playing: boolean) => {
     isPlayingRef.current = playing;
@@ -382,9 +383,13 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
           setPlaying(false);
           if (Capacitor.isNativePlatform()) {
             TextToSpeech.stop().catch(err => console.error(err));
-          } else if ('speechSynthesis' in window) {
-            window.speechSynthesis.cancel();
-          }
+      } else if ('speechSynthesis' in window) {
+        // Only cancel if actively speaking to avoid corrupting
+        // speech engine state when called from onend (natural chapter end)
+        if (window.speechSynthesis.speaking) {
+          window.speechSynthesis.cancel();
+        }
+      }
           stopSleepTimer();
         } else {
           setTimeLeft(remaining);
@@ -591,7 +596,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
             }
           }, 150);
 
-          if (shouldAutoResume) {
+            if (shouldAutoResume || pendingAutoResumeRef.current) {
+            pendingAutoResumeRef.current = false;
             setShouldAutoResume(false);
             setPlaying(true);
             setTimeout(() => {
@@ -599,7 +605,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
             }, 500);
           }
         }
-      } else if (shouldAutoResume) {
+      } else if (shouldAutoResume || pendingAutoResumeRef.current) {
+        pendingAutoResumeRef.current = false;
         setShouldAutoResume(false);
         setPlaying(true);
         setTimeout(() => {
@@ -608,7 +615,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
       }
     } catch (err) {
       console.error('Failed to restore reading position from DB:', err);
-      if (shouldAutoResume) {
+      if (shouldAutoResume || pendingAutoResumeRef.current) {
+        pendingAutoResumeRef.current = false;
         setShouldAutoResume(false);
         setPlaying(true);
         setTimeout(() => {
@@ -628,8 +636,9 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
       if (restored) {
         console.log('Position restored, paragraphIndex:', restored.paragraphIndex, 'isPlaying:', restored.isPlaying);
         // Always restore position if found
-        if (shouldAutoResume) {
+        if (shouldAutoResume || pendingAutoResumeRef.current) {
           // Auto-resume if was playing or explicitly requested
+          pendingAutoResumeRef.current = false;
           console.log('Auto-resuming from paragraph', restored.paragraphIndex);
           setShouldAutoResume(false);
           setPlaying(true);
@@ -657,8 +666,9 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
       } else {
         // No local positions, no user -> start from 0
         isPositionRestoredRef.current = true;
-        if (shouldAutoResume) {
+        if (shouldAutoResume || pendingAutoResumeRef.current) {
           // No saved position, but auto-resume requested (chapter change)
+          pendingAutoResumeRef.current = false;
           console.log('No saved position, starting from 0');
           setShouldAutoResume(false);
           setPlaying(true);
@@ -668,7 +678,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
         }
       }
     }
-  }, [content]);
+  }, [content, shouldAutoResume]);
 
   const saveReadingHistory = async () => {
     if (!chapter?.story_id || !chapter?.chapter_number || !chapter?.id) return;
@@ -823,7 +833,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
       setPlaying(false);
       if (Capacitor.isNativePlatform()) {
         await TextToSpeech.stop();
-      } else if ('speechSynthesis' in window) {
+      } else if ('speechSynthesis' in window && window.speechSynthesis.speaking) {
         window.speechSynthesis.cancel();
       }
     }
@@ -831,6 +841,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     // Reset paragraph index and content before changing chapter
     setCurrentParagraphIndex(0);
     setContent(null);
+    if (wasPlaying) pendingAutoResumeRef.current = true;
     setShouldAutoResume(wasPlaying);
     isPositionRestoredRef.current = false;
     
@@ -944,16 +955,17 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
                speakParagraph(index + 1);
              }
            }, 100);
-         } else {
-           // Finished chapter, auto-advance
-           if (currentChapterIndex < chapters.length - 1) {
-             const nextChapter = chapters[currentChapterIndex + 1];
-             await changeChapter(nextChapter, true);
-            } else {
-              setPlaying(false);
-              setCurrentParagraphIndex(0);
-            }
-          }
+          } else {
+            // Finished chapter, auto-advance
+            if (currentChapterIndex < chapters.length - 1) {
+               const nextChapter = chapters[currentChapterIndex + 1];
+               pendingAutoResumeRef.current = true;
+               await changeChapter(nextChapter, true);
+             } else {
+               setPlaying(false);
+               setCurrentParagraphIndex(0);
+             }
+           }
         } catch (error) {
           console.error('TTS error:', error);
           setPlaying(false);
@@ -966,12 +978,16 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
          utterance.pitch = speechPitch;
          utterance.lang = 'vi-VN';
          
-         utterance.onstart = () => {
-           // Update UI immediately when speech starts
-           setCurrentParagraphIndex(index);
-         };
-         
-         utterance.onend = async () => {
+          utterance.onstart = () => {
+            // Update UI immediately when speech starts
+            setCurrentParagraphIndex(index);
+          };
+
+          utterance.onerror = (event: any) => {
+            console.error('[SpeechSynthesis] Error for paragraph', index, ':', event.error || event);
+          };
+          
+          utterance.onend = async () => {
            // Check if still playing using ref
            if (!isPlayingRef.current) return;
 
@@ -995,6 +1011,20 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
           };
 
           currentUtteranceRef.current = utterance;
+
+          // Chrome Web Speech API bug workarounds:
+          // 1. getVoices() kickstarts the speech engine
+          // 2. cancel() resets queue if engine is busy
+          // 3. Delay lets Chrome fully reset engine state before speak()
+          window.speechSynthesis.getVoices();
+          if (window.speechSynthesis.speaking || window.speechSynthesis.pending) {
+            window.speechSynthesis.cancel();
+          }
+          await new Promise<void>(r => setTimeout(r, 100));
+          if (!isPlayingRef.current) {
+            console.log('[speakParagraph] Cancelled after engine reset delay');
+            return;
+          }
           window.speechSynthesis.speak(utterance);
        }
      }

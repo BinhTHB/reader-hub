@@ -1,1 +1,0 @@
-sửa lỗi: "(app dùng là web_react), 1. vẫn không hiển thị thông báo trên thanh thông báo và có trong trình phát, 2. audio dừng phát khi thoát app ngay cả khi không chuyển chương mới 

@@ -1,0 +1,2626 @@
+- generic [ref=e167]:
+  - generic [ref=e168]:
+    - button [ref=e169]:
+      - img [ref=e170]
+    - generic [ref=e172]:
+      - button [ref=e173]:
+        - img [ref=e174]
+      - button [ref=e176]:
+        - img [ref=e177]
+  - generic [ref=e183]:
+    - generic [ref=e184]:
+      - img "Đấu La Đại Lục" [ref=e186]
+      - generic [ref=e187]:
+        - heading "Đấu La Đại Lục" [level=1] [ref=e188]
+        - paragraph [ref=e189]: Đường Gia Tam Thiếu
+        - generic [ref=e190]:
+          - generic [ref=e191]: 517 chương
+          - generic [ref=e192]: •
+          - generic [ref=e193]: ongoing
+        - generic [ref=e194]:
+          - generic [ref=e195]: Tiên Hiệp
+          - generic [ref=e196]: Huyền Huyễn
+    - generic [ref=e197]:
+      - button "Bắt đầu đọc" [ref=e198]:
+        - img [ref=e199]
+        - text: Bắt đầu đọc
+      - button "Cập nhật" [ref=e202]:
+        - img [ref=e203]
+        - text: Cập nhật
+    - generic [ref=e208]:
+      - heading "Mô tả" [level=2] [ref=e209]
+      - generic [ref=e210]:
+        - paragraph [ref=e211]: "Giới Thiệu TruyệnrnrnMột đại lục không hề yên bình, một cuộc sống đầy hiểm nguy, phiêu lưu nhưng cũng không kém phần lãng mạn. tình yêu, thù hận, trách nhiệm… Tiếp bước những tiền bối đi trước, Hoắc Vũ Hạo và đời sau sử lai khắc thất quái, bằng niềm tin nhiệt huyết tuổi trẻ đã gây dựng lại đường môn tái lập những huy hoàng xưa kia của các tiền bối đi trước…rnrn - Kiếp trước là thiên tài sau khi chế tạo ám khí cao nhất của đường môn: Phật Nộ Liên Hoa. Xuyên việt mang theo võ công cùng với ám khí Đường Môn đến thế giới không có võ công cùng ám khí siêu đẳng như thế, chuyện gì sẽ xảy ra tiếp theo? Hãy cùng nhau theo dõi Đấu La Đại Lục để biết rõ bạn nhé.rnrn - Tags: dau la dai luc, truyen huyen ao, dau la dai luc prc fullrn"
+        - button "Xem thêm" [ref=e212]
+    - generic [ref=e213]:
+      - generic [ref=e214] [cursor=pointer]:
+        - generic [ref=e215]:
+          - heading "Danh sách chương (517)" [level=2] [ref=e216]
+          - button "Cũ nhất trước" [ref=e217]
+        - img [ref=e219]
+      - generic [ref=e221]:
+        - generic [ref=e222] [cursor=pointer]:
+          - generic [ref=e223]:
+            - 'heading "Chương 1: Chương 1: Đấu La Đại Lục (1)" [level=4] [ref=e224]'
+            - paragraph [ref=e225]: 20/5/2026
+          - img [ref=e226]
+        - generic [ref=e228] [cursor=pointer]:
+          - generic [ref=e229]:
+            - 'heading "Chương 2: Chương 2: Đấu La Đại Lục (2)" [level=4] [ref=e230]'
+            - paragraph [ref=e231]: 16/5/2026
+          - img [ref=e232]
+        - generic [ref=e234] [cursor=pointer]:
+          - generic [ref=e235]:
+            - 'heading "Chương 3: Chương 3: Đấu La đại lục (3)" [level=4] [ref=e236]'
+            - paragraph [ref=e237]: 16/5/2026
+          - img [ref=e238]
+        - generic [ref=e240] [cursor=pointer]:
+          - generic [ref=e241]:
+            - 'heading "Chương 4: Chương 4: Đấu La đại lục (4)" [level=4] [ref=e242]'
+            - paragraph [ref=e243]: 16/5/2026
+          - img [ref=e244]
+        - generic [ref=e246] [cursor=pointer]:
+          - generic [ref=e247]:
+            - 'heading "Chương 5: Chương 5: Phế Vũ Hồn Dữ Tiên Thiên Mãn Hồn Lực (1)" [level=4] [ref=e248]'
+            - paragraph [ref=e249]: 16/5/2026
+          - img [ref=e250]
+        - generic [ref=e252] [cursor=pointer]:
+          - generic [ref=e253]:
+            - 'heading "Chương 6: Chương 6: Phế Vũ Hồn Dữ Tiên Thiên Mãn Hồn Lực (2)" [level=4] [ref=e254]'
+            - paragraph [ref=e255]: 16/5/2026
+          - img [ref=e256]
+        - generic [ref=e258] [cursor=pointer]:
+          - generic [ref=e259]:
+            - 'heading "Chương 7: Chương 7: Phế Vũ Hồn Dữ Tiên Thiên Mãn Hồn Lực (3)" [level=4] [ref=e260]'
+            - paragraph [ref=e261]: 16/5/2026
+          - img [ref=e262]
+        - generic [ref=e264] [cursor=pointer]:
+          - generic [ref=e265]:
+            - 'heading "Chương 8: Chương 8: Phế Vũ Hồn Dữ Tiên Thiên Mãn Hồn Lực (4)" [level=4] [ref=e266]'
+            - paragraph [ref=e267]: 16/5/2026
+          - img [ref=e268]
+        - generic [ref=e270] [cursor=pointer]:
+          - generic [ref=e271]:
+            - 'heading "Chương 9: Chương 9: Song Sinh Vũ Hồn (1)" [level=4] [ref=e272]'
+            - paragraph [ref=e273]: 16/5/2026
+          - img [ref=e274]
+        - generic [ref=e276] [cursor=pointer]:
+          - generic [ref=e277]:
+            - 'heading "Chương 10: Chương 10: Song Sinh Vũ Hồn (2)" [level=4] [ref=e278]'
+            - paragraph [ref=e279]: 16/5/2026
+          - img [ref=e280]
+        - generic [ref=e282] [cursor=pointer]:
+          - generic [ref=e283]:
+            - 'heading "Chương 11: Chương 11: Song Sinh Vũ Hồn (3)" [level=4] [ref=e284]'
+            - paragraph [ref=e285]: 16/5/2026
+          - img [ref=e286]
+        - generic [ref=e288] [cursor=pointer]:
+          - generic [ref=e289]:
+            - 'heading "Chương 12: Chương 12: Song Sinh Vũ Hồn (4)" [level=4] [ref=e290]'
+            - paragraph [ref=e291]: 16/5/2026
+          - img [ref=e292]
+        - generic [ref=e294] [cursor=pointer]:
+          - generic [ref=e295]:
+            - 'heading "Chương 13: Chương 13: Song Sinh Vũ Hồn (5)" [level=4] [ref=e296]'
+            - paragraph [ref=e297]: 16/5/2026
+          - img [ref=e298]
+        - generic [ref=e300] [cursor=pointer]:
+          - generic [ref=e301]:
+            - 'heading "Chương 14: Chương 14: Nhất Kiện Ám Khí (1)" [level=4] [ref=e302]'
+            - paragraph [ref=e303]: 16/5/2026
+          - img [ref=e304]
+        - generic [ref=e306] [cursor=pointer]:
+          - generic [ref=e307]:
+            - 'heading "Chương 15: Chương 15: Nhất Kiện Ám Khí (2)" [level=4] [ref=e308]'
+            - paragraph [ref=e309]: 16/5/2026
+          - img [ref=e310]
+        - generic [ref=e312] [cursor=pointer]:
+          - generic [ref=e313]:
+            - 'heading "Chương 16: Chương 16: Nhất Kiện Ám Khí (3)" [level=4] [ref=e314]'
+            - paragraph [ref=e315]: 16/5/2026
+          - img [ref=e316]
+        - generic [ref=e318] [cursor=pointer]:
+          - generic [ref=e319]:
+            - 'heading "Chương 17: Chương 17: Nhất Kiện Ám Khí (4)" [level=4] [ref=e320]'
+            - paragraph [ref=e321]: 16/5/2026
+          - img [ref=e322]
+        - generic [ref=e324] [cursor=pointer]:
+          - generic [ref=e325]:
+            - 'heading "Chương 18: Chương 18: Nhất Kiện Ám Khí (5)" [level=4] [ref=e326]'
+            - paragraph [ref=e327]: 16/5/2026
+          - img [ref=e328]
+        - generic [ref=e330] [cursor=pointer]:
+          - generic [ref=e331]:
+            - 'heading "Chương 19: Chương 19: Đại Sư? Sư Phụ? (1)" [level=4] [ref=e332]'
+            - paragraph [ref=e333]: 16/5/2026
+          - img [ref=e334]
+        - generic [ref=e336] [cursor=pointer]:
+          - generic [ref=e337]:
+            - 'heading "Chương 20: Chương 20: Đại Sư? Sư Phụ? (2)" [level=4] [ref=e338]'
+            - paragraph [ref=e339]: 16/5/2026
+          - img [ref=e340]
+        - generic [ref=e342] [cursor=pointer]:
+          - generic [ref=e343]:
+            - 'heading "Chương 21: Chương 21: Đại Sư? Sư Phụ? (3)" [level=4] [ref=e344]'
+            - paragraph [ref=e345]: 16/5/2026
+          - img [ref=e346]
+        - generic [ref=e348] [cursor=pointer]:
+          - generic [ref=e349]:
+            - 'heading "Chương 22: Chương 22: Đại Sư? Sư Phụ? (4)" [level=4] [ref=e350]'
+            - paragraph [ref=e351]: 16/5/2026
+          - img [ref=e352]
+        - generic [ref=e354] [cursor=pointer]:
+          - generic [ref=e355]:
+            - 'heading "Chương 23: Chương 23: Ngã Khiếu Tiểu Vũ, Khiêu Vũ Đích Vũ (1) (Ta gọi là Tiểu Vũ, Vũ trong nhảy múa)" [level=4] [ref=e356]'
+            - paragraph [ref=e357]: 16/5/2026
+          - img [ref=e358]
+        - generic [ref=e360] [cursor=pointer]:
+          - generic [ref=e361]:
+            - 'heading "Chương 24: Chương 24: Ngã Khiếu Tiểu Vũ, Khiêu Vũ Đích Vũ (2) (Ta gọi là Tiểu Vũ, Vũ trong nhảy múa)" [level=4] [ref=e362]'
+            - paragraph [ref=e363]: 16/5/2026
+          - img [ref=e364]
+        - generic [ref=e366] [cursor=pointer]:
+          - generic [ref=e367]:
+            - 'heading "Chương 25: Chương 25: Ngã Khiếu Tiểu Vũ, Khiêu Vũ Đích Vũ (3)" [level=4] [ref=e368]'
+            - paragraph [ref=e369]: 16/5/2026
+          - img [ref=e370]
+        - generic [ref=e372] [cursor=pointer]:
+          - generic [ref=e373]:
+            - 'heading "Chương 26: Chương 26: Ngã Khiếu Tiểu Vũ, Khiêu Vũ Đích Vũ (4)" [level=4] [ref=e374]'
+            - paragraph [ref=e375]: 16/5/2026
+          - img [ref=e376]
+        - generic [ref=e378] [cursor=pointer]:
+          - generic [ref=e379]:
+            - 'heading "Chương 27: Chương 27: Ngã Khiếu Tiểu Vũ, Khiêu Vũ Đích Vũ (5)" [level=4] [ref=e380]'
+            - paragraph [ref=e381]: 16/5/2026
+          - img [ref=e382]
+        - generic [ref=e384] [cursor=pointer]:
+          - generic [ref=e385]:
+            - 'heading "Chương 28: Chương 28: Tiểu Vũ, Nhĩ hoàn yếu a? (1)" [level=4] [ref=e386]'
+            - paragraph [ref=e387]: 16/5/2026
+          - img [ref=e388]
+        - generic [ref=e390] [cursor=pointer]:
+          - generic [ref=e391]:
+            - 'heading "Chương 29: Chương 29: Tiểu Vũ, Nhĩ hoàn yếu a? (2)" [level=4] [ref=e392]'
+            - paragraph [ref=e393]: 16/5/2026
+          - img [ref=e394]
+        - generic [ref=e396] [cursor=pointer]:
+          - generic [ref=e397]:
+            - 'heading "Chương 30: Chương 30: Tiểu Vũ, Nhĩ hoàn yếu a? (3)" [level=4] [ref=e398]'
+            - paragraph [ref=e399]: 16/5/2026
+          - img [ref=e400]
+        - generic [ref=e402] [cursor=pointer]:
+          - generic [ref=e403]:
+            - 'heading "Chương 31: Chương 31: Hồn Đạo Khí, Nhị Thập Tứ Kiều Minh Nguyệt Dạ (1)" [level=4] [ref=e404]'
+            - paragraph [ref=e405]: 16/5/2026
+          - img [ref=e406]
+        - generic [ref=e408] [cursor=pointer]:
+          - generic [ref=e409]:
+            - 'heading "Chương 32: Chương 32: Hồn Đạo Khí, Nhị Thập Tứ Kiều Minh Nguyệt Dạ (2)" [level=4] [ref=e410]'
+            - paragraph [ref=e411]: 16/5/2026
+          - img [ref=e412]
+        - generic [ref=e414] [cursor=pointer]:
+          - generic [ref=e415]:
+            - 'heading "Chương 33: Chương 33: Hồn Đạo Khí, Nhị Thập Tứ Kiều Minh Nguyệt Dạ (3)" [level=4] [ref=e416]'
+            - paragraph [ref=e417]: 16/5/2026
+          - img [ref=e418]
+        - generic [ref=e420] [cursor=pointer]:
+          - generic [ref=e421]:
+            - 'heading "Chương 34: Chương 34: Hồn Đạo Khí, Nhị Thập Tứ Kiều Minh Nguyệt Dạ (4)" [level=4] [ref=e422]'
+            - paragraph [ref=e423]: 16/5/2026
+          - img [ref=e424]
+        - generic [ref=e426] [cursor=pointer]:
+          - generic [ref=e427]:
+            - 'heading "Chương 35: Chương 35: Lam Ngân Thảo Đích Đệ Nhất Hồn Hoàn (1)" [level=4] [ref=e428]'
+            - paragraph [ref=e429]: 16/5/2026
+          - img [ref=e430]
+        - generic [ref=e432] [cursor=pointer]:
+          - generic [ref=e433]:
+            - 'heading "Chương 36: Chương 36: Lam Ngân Thảo Đích Đệ Nhất Hồn Hoàn (2)" [level=4] [ref=e434]'
+            - paragraph [ref=e435]: 16/5/2026
+          - img [ref=e436]
+        - generic [ref=e438] [cursor=pointer]:
+          - generic [ref=e439]:
+            - 'heading "Chương 37: Chương 37: Lam Ngân Thảo Đích Đệ Nhất Hồn Hoàn (3)" [level=4] [ref=e440]'
+            - paragraph [ref=e441]: 16/5/2026
+          - img [ref=e442]
+        - generic [ref=e444] [cursor=pointer]:
+          - generic [ref=e445]:
+            - 'heading "Chương 38: Chương 38: Lam Ngân Thảo Đích Đệ Nhất Hồn Hoàn (4)" [level=4] [ref=e446]'
+            - paragraph [ref=e447]: 16/5/2026
+          - img [ref=e448]
+        - generic [ref=e450] [cursor=pointer]:
+          - generic [ref=e451]:
+            - 'heading "Chương 39: Chương 39: Lam Ngân Thảo Đích Đệ Nhất Hồn Hoàn (5)" [level=4] [ref=e452]'
+            - paragraph [ref=e453]: 16/5/2026
+          - img [ref=e454]
+        - generic [ref=e456] [cursor=pointer]:
+          - generic [ref=e457]:
+            - 'heading "Chương 40: Chương 40: Đệ Nhất Hồn Hoàn Kỹ Năng (1)" [level=4] [ref=e458]'
+            - paragraph [ref=e459]: 16/5/2026
+          - img [ref=e460]
+        - generic [ref=e462] [cursor=pointer]:
+          - generic [ref=e463]:
+            - 'heading "Chương 41: Chương 41: Đệ Nhất Hồn Hoàn Kỹ Năng (2)" [level=4] [ref=e464]'
+            - paragraph [ref=e465]: 16/5/2026
+          - img [ref=e466]
+        - generic [ref=e468] [cursor=pointer]:
+          - generic [ref=e469]:
+            - 'heading "Chương 42: Chương 42: Đệ Nhất Hồn Hoàn Kỹ Năng (p3)" [level=4] [ref=e470]'
+            - paragraph [ref=e471]: 16/5/2026
+          - img [ref=e472]
+        - generic [ref=e474] [cursor=pointer]:
+          - generic [ref=e475]:
+            - 'heading "Chương 43: Chương 43: Tiểu Vũ, Nguyên Lai Nhĩ Chân Đích Thị Cá Thỏ Tử (1) (Tiểu vũ, nguyên lai ngươi thật là một con thỏ)" [level=4] [ref=e476]'
+            - paragraph [ref=e477]: 16/5/2026
+          - img [ref=e478]
+        - generic [ref=e480] [cursor=pointer]:
+          - generic [ref=e481]:
+            - 'heading "Chương 44: Chương 44: Tiểu Vũ, Nguyên Lai Nhĩ Chân Đích Thị Cá Thỏ Tử (2)" [level=4] [ref=e482]'
+            - paragraph [ref=e483]: 16/5/2026
+          - img [ref=e484]
+        - generic [ref=e486] [cursor=pointer]:
+          - generic [ref=e487]:
+            - 'heading "Chương 45: Chương 45: Tiểu Vũ, Nguyên Lai Nhĩ Chân Đích Thị Cá Thỏ Tử (3)" [level=4] [ref=e488]'
+            - paragraph [ref=e489]: 16/5/2026
+          - img [ref=e490]
+        - generic [ref=e492] [cursor=pointer]:
+          - generic [ref=e493]:
+            - 'heading "Chương 46: Chương 46: Tiểu Vũ, Nguyên Lai Nhĩ Chân Đích Thị Cá thỏ Tử (4)" [level=4] [ref=e494]'
+            - paragraph [ref=e495]: 16/5/2026
+          - img [ref=e496]
+        - generic [ref=e498] [cursor=pointer]:
+          - generic [ref=e499]:
+            - 'heading "Chương 47: Chương 47: Loạn Phi Phong Chuy Pháp (1)" [level=4] [ref=e500]'
+            - paragraph [ref=e501]: 16/5/2026
+          - img [ref=e502]
+        - generic [ref=e504] [cursor=pointer]:
+          - generic [ref=e505]:
+            - 'heading "Chương 48: Chương 48: Loạn Phi Phong Chuy Pháp (2)" [level=4] [ref=e506]'
+            - paragraph [ref=e507]: 16/5/2026
+          - img [ref=e508]
+        - generic [ref=e510] [cursor=pointer]:
+          - generic [ref=e511]:
+            - 'heading "Chương 49: Chương 49: Loạn phi phong chuy pháp (3)" [level=4] [ref=e512]'
+            - paragraph [ref=e513]: 16/5/2026
+          - img [ref=e514]
+        - generic [ref=e516] [cursor=pointer]:
+          - generic [ref=e517]:
+            - 'heading "Chương 50: Chương 50: Loạn Phi Phong Chuy Pháp (4)" [level=4] [ref=e518]'
+            - paragraph [ref=e519]: 16/5/2026
+          - img [ref=e520]
+        - generic [ref=e522] [cursor=pointer]:
+          - generic [ref=e523]:
+            - 'heading "Chương 51: Loạn Phi Phong Chuy Pháp (Hai)" [level=4] [ref=e524]'
+            - paragraph [ref=e525]: 18/5/2026
+          - img [ref=e526]
+        - generic [ref=e528] [cursor=pointer]:
+          - generic [ref=e529]:
+            - 'heading "Chương 52: Loạn Phi Phong Chuy Pháp (Ba)" [level=4] [ref=e530]'
+            - paragraph [ref=e531]: 18/5/2026
+          - img [ref=e532]
+        - generic [ref=e534] [cursor=pointer]:
+          - generic [ref=e535]:
+            - 'heading "Chương 53: Loạn Phi Phong Chuy Pháp (Bốn)" [level=4] [ref=e536]'
+            - paragraph [ref=e537]: 18/5/2026
+          - img [ref=e538]
+        - generic [ref=e540] [cursor=pointer]:
+          - generic [ref=e541]:
+            - 'heading "Chương 54: Loạn Phi Phong Chuy Pháp (Năm)" [level=4] [ref=e542]'
+            - paragraph [ref=e543]: 18/5/2026
+          - img [ref=e544]
+        - generic [ref=e546] [cursor=pointer]:
+          - generic [ref=e547]:
+            - 'heading "Chương 55: Phụ Thân Đích Lưu Ngôn (Một)" [level=4] [ref=e548]'
+            - paragraph [ref=e549]: 18/5/2026
+          - img [ref=e550]
+        - generic [ref=e552] [cursor=pointer]:
+          - generic [ref=e553]:
+            - 'heading "Chương 56: Phụ Thân Đích Lưu Ngôn (Hai)" [level=4] [ref=e554]'
+            - paragraph [ref=e555]: 18/5/2026
+          - img [ref=e556]
+        - generic [ref=e558] [cursor=pointer]:
+          - generic [ref=e559]:
+            - 'heading "Chương 57: Phụ Thân Đích Lưu Ngôn (Ba)" [level=4] [ref=e560]'
+            - paragraph [ref=e561]: 18/5/2026
+          - img [ref=e562]
+        - generic [ref=e564] [cursor=pointer]:
+          - generic [ref=e565]:
+            - 'heading "Chương 58: Phụ Thân Đích Lưu Ngôn (Bốn)" [level=4] [ref=e566]'
+            - paragraph [ref=e567]: 18/5/2026
+          - img [ref=e568]
+        - generic [ref=e570] [cursor=pointer]:
+          - generic [ref=e571]:
+            - 'heading "Chương 59: Tà Mâu Bạch Hổ Đái Mộc Bạch (Một)" [level=4] [ref=e572]'
+            - paragraph [ref=e573]: 18/5/2026
+          - img [ref=e574]
+        - generic [ref=e576] [cursor=pointer]:
+          - generic [ref=e577]:
+            - 'heading "Chương 60: Tà Mâu Bạch Hổ Đái Mộc Bạch (Hai)" [level=4] [ref=e578]'
+            - paragraph [ref=e579]: 18/5/2026
+          - img [ref=e580]
+        - generic [ref=e582] [cursor=pointer]:
+          - generic [ref=e583]:
+            - 'heading "Chương 61: Tà Mâu Bạch Hổ Đái Mộc Bạch (Ba)" [level=4] [ref=e584]'
+            - paragraph [ref=e585]: 18/5/2026
+          - img [ref=e586]
+        - generic [ref=e588] [cursor=pointer]:
+          - generic [ref=e589]:
+            - 'heading "Chương 62: Tà Mâu Bạch Hổ Đái Mộc Bạch (Bốn)" [level=4] [ref=e590]'
+            - paragraph [ref=e591]: 18/5/2026
+          - img [ref=e592]
+        - generic [ref=e594] [cursor=pointer]:
+          - generic [ref=e595]:
+            - 'heading "Chương 63: Tà Mâu Bạch Hổ Đái Mộc Bạch (Năm)" [level=4] [ref=e596]'
+            - paragraph [ref=e597]: 18/5/2026
+          - img [ref=e598]
+        - generic [ref=e600] [cursor=pointer]:
+          - generic [ref=e601]:
+            - 'heading "Chương 64: Tà Mâu Bạch Hổ Đái Mộc Bạch (Sáu)" [level=4] [ref=e602]'
+            - paragraph [ref=e603]: 18/5/2026
+          - img [ref=e604]
+        - generic [ref=e606] [cursor=pointer]:
+          - generic [ref=e607]:
+            - 'heading "Chương 65: Thiên Niên Hồn Hoàn Chi Kỹ Bạch Hổ Kim Cương Biến (Một)" [level=4] [ref=e608]'
+            - paragraph [ref=e609]: 18/5/2026
+          - img [ref=e610]
+        - generic [ref=e612] [cursor=pointer]:
+          - generic [ref=e613]:
+            - 'heading "Chương 66: Thiên Niên Hồn Hoàn Chi Kỹ Bbạch Hổ Kim Cương Biến (Hai)" [level=4] [ref=e614]'
+            - paragraph [ref=e615]: 18/5/2026
+          - img [ref=e616]
+        - generic [ref=e618] [cursor=pointer]:
+          - generic [ref=e619]:
+            - 'heading "Chương 67: Thiên Niên Hồn Hoàn Chi Kỹ Bạch Hổ Kim Cương Biến (Ba)" [level=4] [ref=e620]'
+            - paragraph [ref=e621]: 18/5/2026
+          - img [ref=e622]
+        - generic [ref=e624] [cursor=pointer]:
+          - generic [ref=e625]:
+            - 'heading "Chương 68: Thiên Niên Hồn Hoàn Chi Kỹ Bạch Hổ Kim Cương Biến (Bốn)" [level=4] [ref=e626]'
+            - paragraph [ref=e627]: 18/5/2026
+          - img [ref=e628]
+        - generic [ref=e630] [cursor=pointer]:
+          - generic [ref=e631]:
+            - 'heading "Chương 69: Thiên Niên Hồn Hoàn Chi Kỹ Bạch Hổ Kim Cương Biến (Năm)" [level=4] [ref=e632]'
+            - paragraph [ref=e633]: 18/5/2026
+          - img [ref=e634]
+        - generic [ref=e636] [cursor=pointer]:
+          - generic [ref=e637]:
+            - 'heading "Chương 70: Bản Tinh Phát Kim Long Tu Châm (Một)" [level=4] [ref=e638]'
+            - paragraph [ref=e639]: 18/5/2026
+          - img [ref=e640]
+        - generic [ref=e642] [cursor=pointer]:
+          - generic [ref=e643]:
+            - 'heading "Chương 71: Bản Tinh Phát Kim Long Tu Châm (Hai)" [level=4] [ref=e644]'
+            - paragraph [ref=e645]: 18/5/2026
+          - img [ref=e646]
+        - generic [ref=e648] [cursor=pointer]:
+          - generic [ref=e649]:
+            - 'heading "Chương 72: Bản Tinh Phát Kim Long Tu Châm (Ba )" [level=4] [ref=e650]'
+            - paragraph [ref=e651]: 18/5/2026
+          - img [ref=e652]
+        - generic [ref=e654] [cursor=pointer]:
+          - generic [ref=e655]:
+            - 'heading "Chương 73: Bản Tinh Phát Kim Long Tu Châm (Bốn)" [level=4] [ref=e656]'
+            - paragraph [ref=e657]: 18/5/2026
+          - img [ref=e658]
+        - generic [ref=e660] [cursor=pointer]:
+          - generic [ref=e661]:
+            - 'heading "Chương 74: Bản Tinh Phát Kim Long Tu Châm (Năm)" [level=4] [ref=e662]'
+            - paragraph [ref=e663]: 18/5/2026
+          - img [ref=e664]
+        - generic [ref=e666] [cursor=pointer]:
+          - generic [ref=e667]:
+            - 'heading "Chương 75: Chích Thu Quái Vật Đích Học Viện (Một)" [level=4] [ref=e668]'
+            - paragraph [ref=e669]: 18/5/2026
+          - img [ref=e670]
+        - generic [ref=e672] [cursor=pointer]:
+          - generic [ref=e673]:
+            - 'heading "Chương 76: Chích Thu Quái Vật Đích Học Viện (Hai)" [level=4] [ref=e674]'
+            - paragraph [ref=e675]: 18/5/2026
+          - img [ref=e676]
+        - generic [ref=e678] [cursor=pointer]:
+          - generic [ref=e679]:
+            - 'heading "Chương 77: Chích Thu Quái Vật Đích Học Viện (Ba)" [level=4] [ref=e680]'
+            - paragraph [ref=e681]: 18/5/2026
+          - img [ref=e682]
+        - generic [ref=e684] [cursor=pointer]:
+          - generic [ref=e685]:
+            - 'heading "Chương 78: Chích Thu Quái Vật Đích Học Viện (Bốn)" [level=4] [ref=e686]'
+            - paragraph [ref=e687]: 18/5/2026
+          - img [ref=e688]
+        - generic [ref=e690] [cursor=pointer]:
+          - generic [ref=e691]:
+            - 'heading "Chương 79: Học Viện Chỉ Nhận Quái Vật (5)" [level=4] [ref=e692]'
+            - paragraph [ref=e693]: 18/5/2026
+          - img [ref=e694]
+        - generic [ref=e696] [cursor=pointer]:
+          - generic [ref=e697]:
+            - 'heading "Chương 80: Bất Động Minh Vương Triệu Vô Cực (1)" [level=4] [ref=e698]'
+            - paragraph [ref=e699]: 18/5/2026
+          - img [ref=e700]
+        - generic [ref=e702] [cursor=pointer]:
+          - generic [ref=e703]:
+            - 'heading "Chương 81: Bất Động Minh Vương Triệu Vô Cực (2)" [level=4] [ref=e704]'
+            - paragraph [ref=e705]: 18/5/2026
+          - img [ref=e706]
+        - generic [ref=e708] [cursor=pointer]:
+          - generic [ref=e709]:
+            - 'heading "Chương 82: Bất Động Minh Vương Triệu Vô Cực (3)" [level=4] [ref=e710]'
+            - paragraph [ref=e711]: 18/5/2026
+          - img [ref=e712]
+        - generic [ref=e714] [cursor=pointer]:
+          - generic [ref=e715]:
+            - 'heading "Chương 83: Bất Động Minh Vương Triệu Vô Cực (4)" [level=4] [ref=e716]'
+            - paragraph [ref=e717]: 18/5/2026
+          - img [ref=e718]
+        - generic [ref=e720] [cursor=pointer]:
+          - generic [ref=e721]:
+            - 'heading "Chương 84: Bất Động Minh Vương Triệu Vô Cực (5)" [level=4] [ref=e722]'
+            - paragraph [ref=e723]: 18/5/2026
+          - img [ref=e724]
+        - generic [ref=e726] [cursor=pointer]:
+          - generic [ref=e727]:
+            - 'heading "Chương 85: Ám Khí Của Đường Tam (1)" [level=4] [ref=e728]'
+            - paragraph [ref=e729]: 18/5/2026
+          - img [ref=e730]
+        - generic [ref=e732] [cursor=pointer]:
+          - generic [ref=e733]:
+            - 'heading "Chương 86: Ám Khí Của Đường Tam (2)" [level=4] [ref=e734]'
+            - paragraph [ref=e735]: 18/5/2026
+          - img [ref=e736]
+        - generic [ref=e738] [cursor=pointer]:
+          - generic [ref=e739]:
+            - 'heading "Chương 87: Ám Khí Của Đường Tam (3)" [level=4] [ref=e740]'
+            - paragraph [ref=e741]: 18/5/2026
+          - img [ref=e742]
+        - generic [ref=e744] [cursor=pointer]:
+          - generic [ref=e745]:
+            - 'heading "Chương 88: Ám Khí Của Đường Tam (4)" [level=4] [ref=e746]'
+            - paragraph [ref=e747]: 18/5/2026
+          - img [ref=e748]
+        - generic [ref=e750] [cursor=pointer]:
+          - generic [ref=e751]:
+            - 'heading "Chương 89: Ám Khí Của Đường Tam (5)" [level=4] [ref=e752]'
+            - paragraph [ref=e753]: 18/5/2026
+          - img [ref=e754]
+        - generic [ref=e756] [cursor=pointer]:
+          - generic [ref=e757]:
+            - 'heading "Chương 90: Đại Tiểu Hương Tràng Của Áo Tư Tạp (1)" [level=4] [ref=e758]'
+            - paragraph [ref=e759]: 18/5/2026
+          - img [ref=e760]
+        - generic [ref=e762] [cursor=pointer]:
+          - generic [ref=e763]:
+            - 'heading "Chương 91: Đại Tiểu Hương Tràng Của Áo Tư Tạp (2)" [level=4] [ref=e764]'
+            - paragraph [ref=e765]: 18/5/2026
+          - img [ref=e766]
+        - generic [ref=e768] [cursor=pointer]:
+          - generic [ref=e769]:
+            - 'heading "Chương 92: Đại Tiểu Hương Tràng Của Áo Tư Tạp (3)" [level=4] [ref=e770]'
+            - paragraph [ref=e771]: 18/5/2026
+          - img [ref=e772]
+        - generic [ref=e774] [cursor=pointer]:
+          - generic [ref=e775]:
+            - 'heading "Chương 93: Đại Tiểu Hương Tràng Của Áo Tư Tạp (4)" [level=4] [ref=e776]'
+            - paragraph [ref=e777]: 18/5/2026
+          - img [ref=e778]
+        - generic [ref=e780] [cursor=pointer]:
+          - generic [ref=e781]:
+            - 'heading "Chương 94: Đại Tiểu Hương Tràng Của Áo Tư Tạp (5)" [level=4] [ref=e782]'
+            - paragraph [ref=e783]: 18/5/2026
+          - img [ref=e784]
+        - generic [ref=e786] [cursor=pointer]:
+          - generic [ref=e787]:
+            - 'heading "Chương 95: Tà Hỏa Phượng Hoàng (1)" [level=4] [ref=e788]'
+            - paragraph [ref=e789]: 18/5/2026
+          - img [ref=e790]
+        - generic [ref=e792] [cursor=pointer]:
+          - generic [ref=e793]:
+            - 'heading "Chương 96: Tà Hỏa Phượng Hoàng (2)" [level=4] [ref=e794]'
+            - paragraph [ref=e795]: 18/5/2026
+          - img [ref=e796]
+        - generic [ref=e798] [cursor=pointer]:
+          - generic [ref=e799]:
+            - 'heading "Chương 97: Tà Hỏa Phượng Hoàng (3)" [level=4] [ref=e800]'
+            - paragraph [ref=e801]: 18/5/2026
+          - img [ref=e802]
+        - generic [ref=e804] [cursor=pointer]:
+          - generic [ref=e805]:
+            - 'heading "Chương 98: Tà Hỏa Phượng Hoàng (4)" [level=4] [ref=e806]'
+            - paragraph [ref=e807]: 18/5/2026
+          - img [ref=e808]
+        - generic [ref=e810] [cursor=pointer]:
+          - generic [ref=e811]:
+            - 'heading "Chương 99: Tứ Nhãn Miêu Ưng Phất Lan Đức (1)" [level=4] [ref=e812]'
+            - paragraph [ref=e813]: 18/5/2026
+          - img [ref=e814]
+        - generic [ref=e816] [cursor=pointer]:
+          - generic [ref=e817]:
+            - 'heading "Chương 100: Tứ Nhãn Miêu Ưng Phất Lan Đức (2)" [level=4] [ref=e818]'
+            - paragraph [ref=e819]: 18/5/2026
+          - img [ref=e820]
+        - generic [ref=e822] [cursor=pointer]:
+          - generic [ref=e823]:
+            - 'heading "Chương 101: Tứ Nhãn Miêu Ưng Phất Lan Đức (3)" [level=4] [ref=e824]'
+            - paragraph [ref=e825]: 18/5/2026
+          - img [ref=e826]
+        - generic [ref=e828] [cursor=pointer]:
+          - generic [ref=e829]:
+            - 'heading "Chương 102: Tứ Nhãn Miêu Ưng Phất Lan Đức (4)" [level=4] [ref=e830]'
+            - paragraph [ref=e831]: 18/5/2026
+          - img [ref=e832]
+        - generic [ref=e834] [cursor=pointer]:
+          - generic [ref=e835]:
+            - 'heading "Chương 103: Tứ Nhãn Miêu Ưng Phất Lan Đức (5)" [level=4] [ref=e836]'
+            - paragraph [ref=e837]: 18/5/2026
+          - img [ref=e838]
+        - generic [ref=e840] [cursor=pointer]:
+          - generic [ref=e841]:
+            - 'heading "Chương 104: Bản Sắc Ma Nữ (1)" [level=4] [ref=e842]'
+            - paragraph [ref=e843]: 18/5/2026
+          - img [ref=e844]
+        - generic [ref=e846] [cursor=pointer]:
+          - generic [ref=e847]:
+            - 'heading "Chương 105: Bản Sắc Ma Nữ (2)" [level=4] [ref=e848]'
+            - paragraph [ref=e849]: 18/5/2026
+          - img [ref=e850]
+        - generic [ref=e852] [cursor=pointer]:
+          - generic [ref=e853]:
+            - 'heading "Chương 106: Bản Sắc Ma Nữ (3)" [level=4] [ref=e854]'
+            - paragraph [ref=e855]: 18/5/2026
+          - img [ref=e856]
+        - generic [ref=e858] [cursor=pointer]:
+          - generic [ref=e859]:
+            - 'heading "Chương 107: Bản Sắc Ma Nữ (4)" [level=4] [ref=e860]'
+            - paragraph [ref=e861]: 18/5/2026
+          - img [ref=e862]
+        - generic [ref=e864] [cursor=pointer]:
+          - generic [ref=e865]:
+            - 'heading "Chương 108: Bản Sắc Ma Nữ (5)" [level=4] [ref=e866]'
+            - paragraph [ref=e867]: 18/5/2026
+          - img [ref=e868]
+        - generic [ref=e870] [cursor=pointer]:
+          - generic [ref=e871]:
+            - 'heading "Chương 109: Thành Lập Tam Ngũ Đội(1)" [level=4] [ref=e872]'
+            - paragraph [ref=e873]: 18/5/2026
+          - img [ref=e874]
+        - generic [ref=e876] [cursor=pointer]:
+          - generic [ref=e877]:
+            - 'heading "Chương 110: Thành Lập Tam Ngũ Đội(2)" [level=4] [ref=e878]'
+            - paragraph [ref=e879]: 18/5/2026
+          - img [ref=e880]
+        - generic [ref=e882] [cursor=pointer]:
+          - generic [ref=e883]:
+            - 'heading "Chương 111: Thành Lập Tam Ngũ Đội(3)" [level=4] [ref=e884]'
+            - paragraph [ref=e885]: 18/5/2026
+          - img [ref=e886]
+        - generic [ref=e888] [cursor=pointer]:
+          - generic [ref=e889]:
+            - 'heading "Chương 112: Thành Lập Tam Ngũ Đội(4)" [level=4] [ref=e890]'
+            - paragraph [ref=e891]: 18/5/2026
+          - img [ref=e892]
+        - generic [ref=e894] [cursor=pointer]:
+          - generic [ref=e895]:
+            - 'heading "Chương 113: Thành Lập Tam Ngũ Đội(5)" [level=4] [ref=e896]'
+            - paragraph [ref=e897]: 18/5/2026
+          - img [ref=e898]
+        - generic [ref=e900] [cursor=pointer]:
+          - generic [ref=e901]:
+            - 'heading "Chương 114: Uy Lực Của Khí Vũ Hồn(Thượng)" [level=4] [ref=e902]'
+            - paragraph [ref=e903]: 18/5/2026
+          - img [ref=e904]
+        - generic [ref=e906] [cursor=pointer]:
+          - generic [ref=e907]:
+            - 'heading "Chương 115: Uy Lực Của Khí Vũ Hồn(Trung)" [level=4] [ref=e908]'
+            - paragraph [ref=e909]: 18/5/2026
+          - img [ref=e910]
+        - generic [ref=e912] [cursor=pointer]:
+          - generic [ref=e913]:
+            - 'heading "Chương 116: Uy Lực Của Khí Vũ Hồn (Hạ)" [level=4] [ref=e914]'
+            - paragraph [ref=e915]: 18/5/2026
+          - img [ref=e916]
+        - generic [ref=e918] [cursor=pointer]:
+          - generic [ref=e919]:
+            - 'heading "Chương 117: Tinh Đấu Đại Lâm (1)" [level=4] [ref=e920]'
+            - paragraph [ref=e921]: 18/5/2026
+          - img [ref=e922]
+        - generic [ref=e924] [cursor=pointer]:
+          - generic [ref=e925]:
+            - 'heading "Chương 118: Tinh Đấu Đại Lâm (2)" [level=4] [ref=e926]'
+            - paragraph [ref=e927]: 18/5/2026
+          - img [ref=e928]
+        - generic [ref=e930] [cursor=pointer]:
+          - generic [ref=e931]:
+            - 'heading "Chương 119: Không Dám Gây Chuyện Là Đồ Hèn (Thượng)" [level=4] [ref=e932]'
+            - paragraph [ref=e933]: 18/5/2026
+          - img [ref=e934]
+        - generic [ref=e936] [cursor=pointer]:
+          - generic [ref=e937]:
+            - 'heading "Chương 120: Không Dám Gây Chuyện Là Đồ Hèn (Trung)" [level=4] [ref=e938]'
+            - paragraph [ref=e939]: 18/5/2026
+          - img [ref=e940]
+        - generic [ref=e942] [cursor=pointer]:
+          - generic [ref=e943]:
+            - 'heading "Chương 121: Không Dám Gây Chuyện Là Đồ Hèn (Hạ)" [level=4] [ref=e944]'
+            - paragraph [ref=e945]: 18/5/2026
+          - img [ref=e946]
+        - generic [ref=e948] [cursor=pointer]:
+          - generic [ref=e949]:
+            - 'heading "Chương 122: Thiên Niên Phong Vĩ Kê Quan Xà (Thượng)" [level=4] [ref=e950]'
+            - paragraph [ref=e951]: 18/5/2026
+          - img [ref=e952]
+        - generic [ref=e954] [cursor=pointer]:
+          - generic [ref=e955]:
+            - 'heading "Chương 123: Thiên Niên Phong Vĩ Kê Quan Xà (Trung)" [level=4] [ref=e956]'
+            - paragraph [ref=e957]: 18/5/2026
+          - img [ref=e958]
+        - generic [ref=e960] [cursor=pointer]:
+          - generic [ref=e961]:
+            - 'heading "Chương 124: Thiên Niên Phong Vĩ Kê Quan Xà (Hạ)" [level=4] [ref=e962]'
+            - paragraph [ref=e963]: 18/5/2026
+          - img [ref=e964]
+        - generic [ref=e966] [cursor=pointer]:
+          - generic [ref=e967]:
+            - 'heading "Chương 125: Cái Thế Long Xà" [level=4] [ref=e968]'
+            - paragraph [ref=e969]: 18/5/2026
+          - img [ref=e970]
+        - generic [ref=e972] [cursor=pointer]:
+          - generic [ref=e973]:
+            - 'heading "Chương 126: Áo Tư Tạp Đích Đệ Tam Hồn Hoàn" [level=4] [ref=e974]'
+            - paragraph [ref=e975]: 18/5/2026
+          - img [ref=e976]
+        - generic [ref=e978] [cursor=pointer]:
+          - generic [ref=e979]:
+            - 'heading "Chương 127: Sâm Lâm Chi Vương Thái Thản Cự Viên (Thượng)" [level=4] [ref=e980]'
+            - paragraph [ref=e981]: 18/5/2026
+          - img [ref=e982]
+        - generic [ref=e984] [cursor=pointer]:
+          - generic [ref=e985]:
+            - 'heading "Chương 128: Sâm Lâm Chi Vương Thái Thản Cự Viên (Trung)" [level=4] [ref=e986]'
+            - paragraph [ref=e987]: 18/5/2026
+          - img [ref=e988]
+        - generic [ref=e990] [cursor=pointer]:
+          - generic [ref=e991]:
+            - 'heading "Chương 129: Sâm Lâm Chi Vương Thái Thản Cự Viên (Hạ)" [level=4] [ref=e992]'
+            - paragraph [ref=e993]: 18/5/2026
+          - img [ref=e994]
+        - generic [ref=e996] [cursor=pointer]:
+          - generic [ref=e997]:
+            - 'heading "Chương 130: Kẻ Giết Chóc Tà Ác – Nhân Diện Ma Chu (Thượng)" [level=4] [ref=e998]'
+            - paragraph [ref=e999]: 18/5/2026
+          - img [ref=e1000]
+        - generic [ref=e1002] [cursor=pointer]:
+          - generic [ref=e1003]:
+            - 'heading "Chương 131: Kẻ Giết Chóc Tà Ác – Nhân Diện Ma Chu (Trung)" [level=4] [ref=e1004]'
+            - paragraph [ref=e1005]: 18/5/2026
+          - img [ref=e1006]
+        - generic [ref=e1008] [cursor=pointer]:
+          - generic [ref=e1009]:
+            - 'heading "Chương 132: Kẻ Giết Chóc Tà Ác – Nhân Diện Ma Chu (Hạ)" [level=4] [ref=e1010]'
+            - paragraph [ref=e1011]: 18/5/2026
+          - img [ref=e1012]
+        - generic [ref=e1014] [cursor=pointer]:
+          - generic [ref=e1015]:
+            - 'heading "Chương 133: Mạnh Y Nhiên Cũng Dùng Ám Khí (Thượng)" [level=4] [ref=e1016]'
+            - paragraph [ref=e1017]: 18/5/2026
+          - img [ref=e1018]
+        - generic [ref=e1020] [cursor=pointer]:
+          - generic [ref=e1021]:
+            - 'heading "Chương 134: Mạnh Y Nhiên Cũng Dùng Ám Khí (Trung)" [level=4] [ref=e1022]'
+            - paragraph [ref=e1023]: 18/5/2026
+          - img [ref=e1024]
+        - generic [ref=e1026] [cursor=pointer]:
+          - generic [ref=e1027]:
+            - 'heading "Chương 135: Mạnh Y Nhiên Cũng Dùng Ám Khí (Hạ)" [level=4] [ref=e1028]'
+            - paragraph [ref=e1029]: 18/5/2026
+          - img [ref=e1030]
+        - generic [ref=e1032] [cursor=pointer]:
+          - generic [ref=e1033]:
+            - 'heading "Chương 136: Nhân Diện Ma Chu Hồn Hoàn Vượt Qua Cực Hạn (Thượng)" [level=4] [ref=e1034]'
+            - paragraph [ref=e1035]: 18/5/2026
+          - img [ref=e1036]
+        - generic [ref=e1038] [cursor=pointer]:
+          - generic [ref=e1039]:
+            - 'heading "Chương 137: Nhân Diện Ma Chu Hồn Hoàn Vượt Qua Cực Hạn (Trung)" [level=4] [ref=e1040]'
+            - paragraph [ref=e1041]: 18/5/2026
+          - img [ref=e1042]
+        - generic [ref=e1044] [cursor=pointer]:
+          - generic [ref=e1045]:
+            - 'heading "Chương 138: Nhân Diện Ma Chu Hồn Hoàn Vượt Qua Cực Hạn (Hạ)" [level=4] [ref=e1046]'
+            - paragraph [ref=e1047]: 18/5/2026
+          - img [ref=e1048]
+        - generic [ref=e1050] [cursor=pointer]:
+          - generic [ref=e1051]:
+            - 'heading "Chương 139: Đệ Tam Hồn Hoàn Mạnh Mẽ Của Đường Tam (Thượng)" [level=4] [ref=e1052]'
+            - paragraph [ref=e1053]: 18/5/2026
+          - img [ref=e1054]
+        - generic [ref=e1056] [cursor=pointer]:
+          - generic [ref=e1057]:
+            - 'heading "Chương 140: Đệ Tam Hồn Hoàn Mạnh Mẽ Của Đường Tam (Trung)" [level=4] [ref=e1058]'
+            - paragraph [ref=e1059]: 18/5/2026
+          - img [ref=e1060]
+        - generic [ref=e1062] [cursor=pointer]:
+          - generic [ref=e1063]:
+            - 'heading "Chương 141: Đệ Tam Hồn Hoàn Mạnh Mẽ Của Đường Tam (Hạ)" [level=4] [ref=e1064]'
+            - paragraph [ref=e1065]: 18/5/2026
+          - img [ref=e1066]
+        - generic [ref=e1068] [cursor=pointer]:
+          - generic [ref=e1069]:
+            - 'heading "Chương 142: Đại Sư Đến (Thượng)" [level=4] [ref=e1070]'
+            - paragraph [ref=e1071]: 19/5/2026
+          - img [ref=e1072]
+        - generic [ref=e1074] [cursor=pointer]:
+          - generic [ref=e1075]:
+            - 'heading "Chương 143: Đại Sư Đến (Trung)" [level=4] [ref=e1076]'
+            - paragraph [ref=e1077]: 19/5/2026
+          - img [ref=e1078]
+        - generic [ref=e1080] [cursor=pointer]:
+          - generic [ref=e1081]:
+            - 'heading "Chương 144: Đại Sư Đến (Hạ)" [level=4] [ref=e1082]'
+            - paragraph [ref=e1083]: 19/5/2026
+          - img [ref=e1084]
+        - generic [ref=e1086] [cursor=pointer]:
+          - generic [ref=e1087]:
+            - 'heading "Chương 145: Uy Lực Của Lam Ngân Thảo Sau Khi Tiến Hóa (Thượng)" [level=4] [ref=e1088]'
+            - paragraph [ref=e1089]: 19/5/2026
+          - img [ref=e1090]
+        - generic [ref=e1092] [cursor=pointer]:
+          - generic [ref=e1093]:
+            - 'heading "Chương 146: Uy Lực Của Lam Ngân Thảo Sau Khi Tiến Hóa (Trung)" [level=4] [ref=e1094]'
+            - paragraph [ref=e1095]: 19/5/2026
+          - img [ref=e1096]
+        - generic [ref=e1098] [cursor=pointer]:
+          - generic [ref=e1099]:
+            - 'heading "Chương 147: Uy Lực Của Lam Ngân Thảo Sau Khi Tiến Hóa (Hạ)" [level=4] [ref=e1100]'
+            - paragraph [ref=e1101]: 19/5/2026
+          - img [ref=e1102]
+        - generic [ref=e1104] [cursor=pointer]:
+          - generic [ref=e1105]:
+            - 'heading "Chương 148: Ngoại Phụ Hồn Cốt (Thượng)" [level=4] [ref=e1106]'
+            - paragraph [ref=e1107]: 19/5/2026
+          - img [ref=e1108]
+        - generic [ref=e1110] [cursor=pointer]:
+          - generic [ref=e1111]:
+            - 'heading "Chương 149: Ngoại Phụ Hồn Cốt (Trung)" [level=4] [ref=e1112]'
+            - paragraph [ref=e1113]: 19/5/2026
+          - img [ref=e1114]
+        - generic [ref=e1116] [cursor=pointer]:
+          - generic [ref=e1117]:
+            - 'heading "Chương 150: Ngoại Phụ Hồn Cốt (Hạ)" [level=4] [ref=e1118]'
+            - paragraph [ref=e1119]: 19/5/2026
+          - img [ref=e1120]
+        - generic [ref=e1122] [cursor=pointer]:
+          - generic [ref=e1123]:
+            - 'heading "Chương 151: Lò Rèn “Sắt” (Thượng)" [level=4] [ref=e1124]'
+            - paragraph [ref=e1125]: 19/5/2026
+          - img [ref=e1126]
+        - generic [ref=e1128] [cursor=pointer]:
+          - generic [ref=e1129]:
+            - 'heading "Chương 152: Lò Rèn “Sắt” (Trung)" [level=4] [ref=e1130]'
+            - paragraph [ref=e1131]: 19/5/2026
+          - img [ref=e1132]
+        - generic [ref=e1134] [cursor=pointer]:
+          - generic [ref=e1135]:
+            - 'heading "Chương 153: Lò Rèn “Sắt” (Hạ)" [level=4] [ref=e1136]'
+            - paragraph [ref=e1137]: 19/5/2026
+          - img [ref=e1138]
+        - generic [ref=e1140] [cursor=pointer]:
+          - generic [ref=e1141]:
+            - 'heading "Chương 154: Giai Đoạn Đặc Huấn Đầu Tiên Bắt Đầu (Thượng)" [level=4] [ref=e1142]'
+            - paragraph [ref=e1143]: 19/5/2026
+          - img [ref=e1144]
+        - generic [ref=e1146] [cursor=pointer]:
+          - generic [ref=e1147]:
+            - 'heading "Chương 155: Giai Đoạn Đặc Huấn Đầu Tiên Bắt Đầu (Trung)" [level=4] [ref=e1148]'
+            - paragraph [ref=e1149]: 19/5/2026
+          - img [ref=e1150]
+        - generic [ref=e1152] [cursor=pointer]:
+          - generic [ref=e1153]:
+            - 'heading "Chương 156: Giai Đoạn Đặc Huấn Đầu Tiên Bắt Đầu (Hạ)" [level=4] [ref=e1154]'
+            - paragraph [ref=e1155]: 19/5/2026
+          - img [ref=e1156]
+        - generic [ref=e1158] [cursor=pointer]:
+          - generic [ref=e1159]:
+            - 'heading "Chương 157: Bất Phao Khí Bất Phóng Khí (Thượng)" [level=4] [ref=e1160]'
+            - paragraph [ref=e1161]: 19/5/2026
+          - img [ref=e1162]
+        - generic [ref=e1164] [cursor=pointer]:
+          - generic [ref=e1165]:
+            - 'heading "Chương 158: Bất Phao Khí Bất Phóng Khí (Trung)" [level=4] [ref=e1166]'
+            - paragraph [ref=e1167]: 19/5/2026
+          - img [ref=e1168]
+        - generic [ref=e1170] [cursor=pointer]:
+          - generic [ref=e1171]:
+            - 'heading "Chương 159: Bất Phao Khí Bất Phóng Khí (Hạ)" [level=4] [ref=e1172]'
+            - paragraph [ref=e1173]: 19/5/2026
+          - img [ref=e1174]
+        - generic [ref=e1176] [cursor=pointer]:
+          - generic [ref=e1177]:
+            - 'heading "Chương 160: Đại Sư Là Ma Quỷ (Toàn)" [level=4] [ref=e1178]'
+            - paragraph [ref=e1179]: 19/5/2026
+          - img [ref=e1180]
+        - generic [ref=e1182] [cursor=pointer]:
+          - generic [ref=e1183]:
+            - 'heading "Chương 161: Quái Thúc Thúc Bỉ Ổi Bất Nhạc (Toàn)" [level=4] [ref=e1184]'
+            - paragraph [ref=e1185]: 19/5/2026
+          - img [ref=e1186]
+        - generic [ref=e1188] [cursor=pointer]:
+          - generic [ref=e1189]:
+            - 'heading "Chương 162: Đại Sư Dạy Học – Giai Đoạn 2 (Toàn)" [level=4] [ref=e1190]'
+            - paragraph [ref=e1191]: 19/5/2026
+          - img [ref=e1192]
+        - generic [ref=e1194] [cursor=pointer]:
+          - generic [ref=e1195]:
+            - 'heading "Chương 163: Cường Hoành Đích Đối Thủ Cuồng Chiến Đội (Toàn)" [level=4] [ref=e1196]'
+            - paragraph [ref=e1197]: 19/5/2026
+          - img [ref=e1198]
+        - generic [ref=e1200] [cursor=pointer]:
+          - generic [ref=e1201]:
+            - 'heading "Chương 164: Thế Mạnh Của Hồn Sư Hệ Khống Chế (Thượng)" [level=4] [ref=e1202]'
+            - paragraph [ref=e1203]: 19/5/2026
+          - img [ref=e1204]
+        - generic [ref=e1206] [cursor=pointer]:
+          - generic [ref=e1207]:
+            - 'heading "Chương 165: Thế Mạnh Của Hồn Sư Hệ Khống Chế (Trung)" [level=4] [ref=e1208]'
+            - paragraph [ref=e1209]: 19/5/2026
+          - img [ref=e1210]
+        - generic [ref=e1212] [cursor=pointer]:
+          - generic [ref=e1213]:
+            - 'heading "Chương 166: Thế Mạnh Của Hồn Sư Hệ Khống Chế (Hạ)" [level=4] [ref=e1214]'
+            - paragraph [ref=e1215]: 19/5/2026
+          - img [ref=e1216]
+        - generic [ref=e1218] [cursor=pointer]:
+          - generic [ref=e1219]:
+            - 'heading "Chương 167: Tri Chu Vương Giả Đích Uy Áp (Thượng)" [level=4] [ref=e1220]'
+            - paragraph [ref=e1221]: 19/5/2026
+          - img [ref=e1222]
+        - generic [ref=e1224] [cursor=pointer]:
+          - generic [ref=e1225]:
+            - 'heading "Chương 168: Tri Chu Vương Giả Đích Uy Áp (Trung)" [level=4] [ref=e1226]'
+            - paragraph [ref=e1227]: 19/5/2026
+          - img [ref=e1228]
+        - generic [ref=e1230] [cursor=pointer]:
+          - generic [ref=e1231]:
+            - 'heading "Chương 169: Tri Chu Vương Giả Đích Uy Áp (Hạ)" [level=4] [ref=e1232]'
+            - paragraph [ref=e1233]: 19/5/2026
+          - img [ref=e1234]
+        - generic [ref=e1236] [cursor=pointer]:
+          - generic [ref=e1237]:
+            - 'heading "Chương 170: Hoàng Đấu Chiến Đội (Thượng)" [level=4] [ref=e1238]'
+            - paragraph [ref=e1239]: 19/5/2026
+          - img [ref=e1240]
+        - generic [ref=e1242] [cursor=pointer]:
+          - generic [ref=e1243]:
+            - 'heading "Chương 171: Hoàng Đấu Chiến Đội (Trung)" [level=4] [ref=e1244]'
+            - paragraph [ref=e1245]: 19/5/2026
+          - img [ref=e1246]
+        - generic [ref=e1248] [cursor=pointer]:
+          - generic [ref=e1249]:
+            - 'heading "Chương 172: Hoàng Đấu Chiến Đội (Hạ)" [level=4] [ref=e1250]'
+            - paragraph [ref=e1251]: 19/5/2026
+          - img [ref=e1252]
+        - generic [ref=e1254] [cursor=pointer]:
+          - generic [ref=e1255]:
+            - 'heading "Chương 173: Thất Quái Chiến Hoàng Đấu (Thượng)" [level=4] [ref=e1256]'
+            - paragraph [ref=e1257]: 19/5/2026
+          - img [ref=e1258]
+        - generic [ref=e1260] [cursor=pointer]:
+          - generic [ref=e1261]:
+            - 'heading "Chương 174: Thất Quái Chiến Hoàng Đấu (Trung)" [level=4] [ref=e1262]'
+            - paragraph [ref=e1263]: 19/5/2026
+          - img [ref=e1264]
+        - generic [ref=e1266] [cursor=pointer]:
+          - generic [ref=e1267]:
+            - 'heading "Chương 175: Thất Quái Chiến Hoàng Đấu (Hạ)" [level=4] [ref=e1268]'
+            - paragraph [ref=e1269]: 19/5/2026
+          - img [ref=e1270]
+        - generic [ref=e1272] [cursor=pointer]:
+          - generic [ref=e1273]:
+            - 'heading "Chương 176: Bích Lân Tử Độc (Thượng)" [level=4] [ref=e1274]'
+            - paragraph [ref=e1275]: 19/5/2026
+          - img [ref=e1276]
+        - generic [ref=e1278] [cursor=pointer]:
+          - generic [ref=e1279]:
+            - 'heading "Chương 177: Bích Lân Tử Độc (Trung)" [level=4] [ref=e1280]'
+            - paragraph [ref=e1281]: 19/5/2026
+          - img [ref=e1282]
+        - generic [ref=e1284] [cursor=pointer]:
+          - generic [ref=e1285]:
+            - 'heading "Chương 178: Bích Lân Tử Độc (Hạ)" [level=4] [ref=e1286]'
+            - paragraph [ref=e1287]: 19/5/2026
+          - img [ref=e1288]
+        - generic [ref=e1290] [cursor=pointer]:
+          - generic [ref=e1291]:
+            - 'heading "Chương 179: U Minh Bạch Hổ Với Kỹ Thuật Dung Hợp Võ Hồn (Thượng)" [level=4] [ref=e1292]'
+            - paragraph [ref=e1293]: 19/5/2026
+          - img [ref=e1294]
+        - generic [ref=e1296] [cursor=pointer]:
+          - generic [ref=e1297]:
+            - 'heading "Chương 180: U Minh Bạch Hổ Với Kỹ Thuật Dung Hợp Võ Hồn (Trung)" [level=4] [ref=e1298]'
+            - paragraph [ref=e1299]: 19/5/2026
+          - img [ref=e1300]
+        - generic [ref=e1302] [cursor=pointer]:
+          - generic [ref=e1303]:
+            - 'heading "Chương 181: U Minh Bạch Hổ Với Kỹ Thuật Dung Hợp Võ Hồn (Hạ)" [level=4] [ref=e1304]'
+            - paragraph [ref=e1305]: 19/5/2026
+          - img [ref=e1306]
+        - generic [ref=e1308] [cursor=pointer]:
+          - generic [ref=e1309]:
+            - 'heading "Chương 182: Bát Chu Mâu Định Thắng Bại (Thượng)" [level=4] [ref=e1310]'
+            - paragraph [ref=e1311]: 19/5/2026
+          - img [ref=e1312]
+        - generic [ref=e1314] [cursor=pointer]:
+          - generic [ref=e1315]:
+            - 'heading "Chương 183: Bát Chu Mâu Định Thắng Bại (Trung)" [level=4] [ref=e1316]'
+            - paragraph [ref=e1317]: 19/5/2026
+          - img [ref=e1318]
+        - generic [ref=e1320] [cursor=pointer]:
+          - generic [ref=e1321]:
+            - 'heading "Chương 184: Bát Chu Mâu Định Thắng Bại (Hạ)" [level=4] [ref=e1322]'
+            - paragraph [ref=e1323]: 19/5/2026
+          - img [ref=e1324]
+        - generic [ref=e1326] [cursor=pointer]:
+          - generic [ref=e1327]:
+            - 'heading "Chương 185: Sử Lai Khắc Chiến Đội Cấp Kim Đấu Hồn (Toàn)" [level=4] [ref=e1328]'
+            - paragraph [ref=e1329]: 19/5/2026
+          - img [ref=e1330]
+        - generic [ref=e1332] [cursor=pointer]:
+          - generic [ref=e1333]:
+            - 'heading "Chương 186: Mượn Gà Đẻ Trứng (Toàn)" [level=4] [ref=e1334]'
+            - paragraph [ref=e1335]: 19/5/2026
+          - img [ref=e1336]
+        - generic [ref=e1338] [cursor=pointer]:
+          - generic [ref=e1339]:
+            - 'heading "Chương 187: Phi Thiên Thần Trảo (Toàn)" [level=4] [ref=e1340]'
+            - paragraph [ref=e1341]: 19/5/2026
+          - img [ref=e1342]
+        - generic [ref=e1344] [cursor=pointer]:
+          - generic [ref=e1345]:
+            - 'heading "Chương 188: Khiêu Chiến Vượt Cấp (Toàn)" [level=4] [ref=e1346]'
+            - paragraph [ref=e1347]: 19/5/2026
+          - img [ref=e1348]
+        - generic [ref=e1350] [cursor=pointer]:
+          - generic [ref=e1351]:
+            - 'heading "Chương 189: Chiến Đội Hung Thần (Toàn)" [level=4] [ref=e1352]'
+            - paragraph [ref=e1353]: 19/5/2026
+          - img [ref=e1354]
+        - generic [ref=e1356] [cursor=pointer]:
+          - generic [ref=e1357]:
+            - 'heading "Chương 190: Học Viện Hoàng Gia Thiên Đẩu (Thượng)" [level=4] [ref=e1358]'
+            - paragraph [ref=e1359]: 19/5/2026
+          - img [ref=e1360]
+        - generic [ref=e1362] [cursor=pointer]:
+          - generic [ref=e1363]:
+            - 'heading "Chương 191: Học Viện Hoàng Gia Thiên Đẩu (Trung)" [level=4] [ref=e1364]'
+            - paragraph [ref=e1365]: 19/5/2026
+          - img [ref=e1366]
+        - generic [ref=e1368] [cursor=pointer]:
+          - generic [ref=e1369]:
+            - 'heading "Chương 192: Học Viện Hoàng Gia Thiên Đẩu (Hạ)" [level=4] [ref=e1370]'
+            - paragraph [ref=e1371]: 19/5/2026
+          - img [ref=e1372]
+        - generic [ref=e1374] [cursor=pointer]:
+          - generic [ref=e1375]:
+            - 'heading "Chương 193: Quán Thông Đệ Nhất Mạch (Thượng)" [level=4] [ref=e1376]'
+            - paragraph [ref=e1377]: 19/5/2026
+          - img [ref=e1378]
+        - generic [ref=e1380] [cursor=pointer]:
+          - generic [ref=e1381]:
+            - 'heading "Chương 194: Quán Thông Đệ Nhất Mạch (Trung)" [level=4] [ref=e1382]'
+            - paragraph [ref=e1383]: 19/5/2026
+          - img [ref=e1384]
+        - generic [ref=e1386] [cursor=pointer]:
+          - generic [ref=e1387]:
+            - 'heading "Chương 195: Quán Thông Đệ Nhất Mạch (Hạ)" [level=4] [ref=e1388]'
+            - paragraph [ref=e1389]: 19/5/2026
+          - img [ref=e1390]
+        - generic [ref=e1392] [cursor=pointer]:
+          - generic [ref=e1393]:
+            - 'heading "Chương 196: Độc (Toàn)" [level=4] [ref=e1394]'
+            - paragraph [ref=e1395]: 19/5/2026
+          - img [ref=e1396]
+        - generic [ref=e1398] [cursor=pointer]:
+          - generic [ref=e1399]:
+            - 'heading "Chương 197: Hoàng Kim Thiết Tam Giác Đích Tối Hậu Nhất Giác(Thượng)" [level=4] [ref=e1400]'
+            - paragraph [ref=e1401]: 19/5/2026
+          - img [ref=e1402]
+        - generic [ref=e1404] [cursor=pointer]:
+          - generic [ref=e1405]:
+            - 'heading "Chương 198: Hoàng Kim Thiết Tam Giác Đích Tối Hậu Nhất Giác(Trung)" [level=4] [ref=e1406]'
+            - paragraph [ref=e1407]: 19/5/2026
+          - img [ref=e1408]
+        - generic [ref=e1410] [cursor=pointer]:
+          - generic [ref=e1411]:
+            - 'heading "Chương 199: Hoàng Kim Thiết Tam Giác Đích Tối Hậu Nhất Giác(Hạ)" [level=4] [ref=e1412]'
+            - paragraph [ref=e1413]: 19/5/2026
+          - img [ref=e1414]
+        - generic [ref=e1416] [cursor=pointer]:
+          - generic [ref=e1417]:
+            - 'heading "Chương 200: Chuyện Xưa Của Hoàng Kim Thiết Tam Giác (Toàn)" [level=4] [ref=e1418]'
+            - paragraph [ref=e1419]: 19/5/2026
+          - img [ref=e1420]
+        - generic [ref=e1422] [cursor=pointer]:
+          - generic [ref=e1423]:
+            - 'heading "Chương 201: Băng Hoả Lưỡng Nghi Nhãn (Toàn)" [level=4] [ref=e1424]'
+            - paragraph [ref=e1425]: 19/5/2026
+          - img [ref=e1426]
+        - generic [ref=e1428] [cursor=pointer]:
+          - generic [ref=e1429]:
+            - 'heading "Chương 202: Băng Hỏa Luyện Kim Thân (Toàn)" [level=4] [ref=e1430]'
+            - paragraph [ref=e1431]: 19/5/2026
+          - img [ref=e1432]
+        - generic [ref=e1434] [cursor=pointer]:
+          - generic [ref=e1435]:
+            - 'heading "Chương 203: Hoàng Kim Thánh Long Vs Bích Lân Xà Hoàng (Thượng)" [level=4] [ref=e1436]'
+            - paragraph [ref=e1437]: 19/5/2026
+          - img [ref=e1438]
+        - generic [ref=e1440] [cursor=pointer]:
+          - generic [ref=e1441]:
+            - 'heading "Chương 204: Hoàng Kim Thánh Long Vs Bích Lân Xà Hoàng (Trung)" [level=4] [ref=e1442]'
+            - paragraph [ref=e1443]: 19/5/2026
+          - img [ref=e1444]
+        - generic [ref=e1446] [cursor=pointer]:
+          - generic [ref=e1447]:
+            - 'heading "Chương 205: Hoàng Kim Thánh Long Vs Bích Lân Xà Hoàng (Hạ)" [level=4] [ref=e1448]'
+            - paragraph [ref=e1449]: 19/5/2026
+          - img [ref=e1450]
+        - generic [ref=e1452] [cursor=pointer]:
+          - generic [ref=e1453]:
+            - 'heading "Chương 206: U Hương Khởi La Tiên Phẩm (Toàn)" [level=4] [ref=e1454]'
+            - paragraph [ref=e1455]: 19/5/2026
+          - img [ref=e1456]
+        - generic [ref=e1458] [cursor=pointer]:
+          - generic [ref=e1459]:
+            - 'heading "Chương 207: Thuỷ Hoả Bất Xâm Bách Độc Dễ Trừ (Thượng)" [level=4] [ref=e1460]'
+            - paragraph [ref=e1461]: 19/5/2026
+          - img [ref=e1462]
+        - generic [ref=e1464] [cursor=pointer]:
+          - generic [ref=e1465]:
+            - 'heading "Chương 208: Thuỷ Hoả Bất Xâm Bách Độc Dễ Trừ (Trung)" [level=4] [ref=e1466]'
+            - paragraph [ref=e1467]: 19/5/2026
+          - img [ref=e1468]
+        - generic [ref=e1470] [cursor=pointer]:
+          - generic [ref=e1471]:
+            - 'heading "Chương 209: Thuỷ Hoả Bất Xâm Bách Độc Dễ Trừ (Hạ)" [level=4] [ref=e1472]'
+            - paragraph [ref=e1473]: 19/5/2026
+          - img [ref=e1474]
+        - generic [ref=e1476] [cursor=pointer]:
+          - generic [ref=e1477]:
+            - 'heading "Chương 210: Túi Bách Bảo Như Ý Cùng Tử Mẫu Truy Hồn Đoạt Mệnh Đảm (Thượng)" [level=4] [ref=e1478]'
+            - paragraph [ref=e1479]: 19/5/2026
+          - img [ref=e1480]
+        - generic [ref=e1482] [cursor=pointer]:
+          - generic [ref=e1483]:
+            - 'heading "Chương 211: Túi Bách Bảo Như Ý Cùng Tử Mẫu Truy Hồn Đoạt Mệnh Đảm (Trung)" [level=4] [ref=e1484]'
+            - paragraph [ref=e1485]: 19/5/2026
+          - img [ref=e1486]
+        - generic [ref=e1488] [cursor=pointer]:
+          - generic [ref=e1489]:
+            - 'heading "Chương 212: Túi Bách Bảo Như Ý Cùng Tử Mẫu Truy Hồn Đoạt Mệnh Đảm (Hạ)" [level=4] [ref=e1490]'
+            - paragraph [ref=e1491]: 19/5/2026
+          - img [ref=e1492]
+        - generic [ref=e1494] [cursor=pointer]:
+          - generic [ref=e1495]:
+            - 'heading "Chương 213: Tiểu Vũ Thề Không Được Rời Khỏi Ta(Thượng)" [level=4] [ref=e1496]'
+            - paragraph [ref=e1497]: 19/5/2026
+          - img [ref=e1498]
+        - generic [ref=e1500] [cursor=pointer]:
+          - generic [ref=e1501]:
+            - 'heading "Chương 214: Tiểu Vũ Thề Không Được Rời Khỏi Ta(Trung)" [level=4] [ref=e1502]'
+            - paragraph [ref=e1503]: 19/5/2026
+          - img [ref=e1504]
+        - generic [ref=e1506] [cursor=pointer]:
+          - generic [ref=e1507]:
+            - 'heading "Chương 215: Tiểu Vũ Thề Không Được Rời Khỏi Ta(Hạ)" [level=4] [ref=e1508]'
+            - paragraph [ref=e1509]: 19/5/2026
+          - img [ref=e1510]
+        - generic [ref=e1512] [cursor=pointer]:
+          - generic [ref=e1513]:
+            - 'heading "Chương 216: Đại Địa Chi Vương Dưới Chân Xích Long (1)" [level=4] [ref=e1514]'
+            - paragraph [ref=e1515]: 19/5/2026
+          - img [ref=e1516]
+        - generic [ref=e1518] [cursor=pointer]:
+          - generic [ref=e1519]:
+            - 'heading "Chương 217: Đại Địa Chi Vương Dưới Chân Xích Long (2)" [level=4] [ref=e1520]'
+            - paragraph [ref=e1521]: 19/5/2026
+          - img [ref=e1522]
+        - generic [ref=e1524] [cursor=pointer]:
+          - generic [ref=e1525]:
+            - 'heading "Chương 218: Đại Địa Chi Vương Dưới Chân Xích Long (2)" [level=4] [ref=e1526]'
+            - paragraph [ref=e1527]: 19/5/2026
+          - img [ref=e1528]
+        - generic [ref=e1530] [cursor=pointer]:
+          - generic [ref=e1531]:
+            - 'heading "Chương 219: Đại Địa Chi Vương Và Phấn Hồng Nương Nương (1)" [level=4] [ref=e1532]'
+            - paragraph [ref=e1533]: 19/5/2026
+          - img [ref=e1534]
+        - generic [ref=e1536] [cursor=pointer]:
+          - generic [ref=e1537]:
+            - 'heading "Chương 220: Đại Địa Vương Dữ Phấn Hồng Nương Nương (2)" [level=4] [ref=e1538]'
+            - paragraph [ref=e1539]: 19/5/2026
+          - img [ref=e1540]
+        - generic [ref=e1542] [cursor=pointer]:
+          - generic [ref=e1543]:
+            - 'heading "Chương 221: Đại Địa Vương Dữ Phấn Hồng Nương Nương (3)" [level=4] [ref=e1544]'
+            - paragraph [ref=e1545]: 19/5/2026
+          - img [ref=e1546]
+        - generic [ref=e1548] [cursor=pointer]:
+          - generic [ref=e1549]:
+            - 'heading "Chương 222: Đệ Tứ Hồn Kỹ Của Mập Mạp, Phượng Hoàng Khiếu Thiên Kích (1)" [level=4] [ref=e1550]'
+            - paragraph [ref=e1551]: 19/5/2026
+          - img [ref=e1552]
+        - generic [ref=e1554] [cursor=pointer]:
+          - generic [ref=e1555]:
+            - 'heading "Chương 223: Đệ Tứ Hồn Kỹ Của Mập Mạp, Phượng Hoàng Khiếu Thiên Kích (2)" [level=4] [ref=e1556]'
+            - paragraph [ref=e1557]: 19/5/2026
+          - img [ref=e1558]
+        - generic [ref=e1560] [cursor=pointer]:
+          - generic [ref=e1561]:
+            - 'heading "Chương 224: Đệ Tứ Hồn Kỹ Của Mập Mạp, Phượng Hoàng Khiếu Thiên Kích (3)" [level=4] [ref=e1562]'
+            - paragraph [ref=e1563]: 19/5/2026
+          - img [ref=e1564]
+        - generic [ref=e1566] [cursor=pointer]:
+          - generic [ref=e1567]:
+            - 'heading "Chương 225: Hương Dẫn Hồn Thú (1)" [level=4] [ref=e1568]'
+            - paragraph [ref=e1569]: 19/5/2026
+          - img [ref=e1570]
+        - generic [ref=e1572] [cursor=pointer]:
+          - generic [ref=e1573]:
+            - 'heading "Chương 226: Hương Dẫn Hồn Thú (2)" [level=4] [ref=e1574]'
+            - paragraph [ref=e1575]: 19/5/2026
+          - img [ref=e1576]
+        - generic [ref=e1578] [cursor=pointer]:
+          - generic [ref=e1579]:
+            - 'heading "Chương 227: Hương Dẫn Hồn Thú (3)" [level=4] [ref=e1580]'
+            - paragraph [ref=e1581]: 19/5/2026
+          - img [ref=e1582]
+        - generic [ref=e1584] [cursor=pointer]:
+          - generic [ref=e1585]:
+            - 'heading "Chương 228: Lân Giáp Thú Ngàn Năm Cùng Với Ma Chu Ngàn Năm (1)" [level=4] [ref=e1586]'
+            - paragraph [ref=e1587]: 19/5/2026
+          - img [ref=e1588]
+        - generic [ref=e1590] [cursor=pointer]:
+          - generic [ref=e1591]:
+            - 'heading "Chương 229: Lân Giáp Thú Ngàn Năm Cùng Với Ma Chu Ngàn Năm (2)" [level=4] [ref=e1592]'
+            - paragraph [ref=e1593]: 19/5/2026
+          - img [ref=e1594]
+        - generic [ref=e1596] [cursor=pointer]:
+          - generic [ref=e1597]:
+            - 'heading "Chương 230: Lân Giáp Thú Ngàn Năm Cùng Với Ma Chu Ngàn Năm (3)" [level=4] [ref=e1598]'
+            - paragraph [ref=e1599]: 19/5/2026
+          - img [ref=e1600]
+        - generic [ref=e1602] [cursor=pointer]:
+          - generic [ref=e1603]:
+            - 'heading "Chương 231: Địa Huyệt Chu Ma Ngàn Năm (1)" [level=4] [ref=e1604]'
+            - paragraph [ref=e1605]: 19/5/2026
+          - img [ref=e1606]
+        - generic [ref=e1608] [cursor=pointer]:
+          - generic [ref=e1609]:
+            - 'heading "Chương 232: Địa Huyệt Ma Chu Ngàn Năm (2 )" [level=4] [ref=e1610]'
+            - paragraph [ref=e1611]: 19/5/2026
+          - img [ref=e1612]
+        - generic [ref=e1614] [cursor=pointer]:
+          - generic [ref=e1615]:
+            - 'heading "Chương 233: Chương 233: Địa huyệt ma chu ngàn năm (3 ): Ca, chải đầu cho em (3)" [level=4] [ref=e1616]'
+            - paragraph [ref=e1617]: 20/5/2026
+          - img [ref=e1618]
+        - generic [ref=e1620] [cursor=pointer]:
+          - generic [ref=e1621]:
+            - 'heading "Chương 234: Chương 234: Cắn nuốt, Bát chu mâu (1): Ca, chải đầu cho em (3)" [level=4] [ref=e1622]'
+            - paragraph [ref=e1623]: 20/5/2026
+          - img [ref=e1624]
+        - generic [ref=e1626] [cursor=pointer]:
+          - generic [ref=e1627]:
+            - 'heading "Chương 235: Chương 235: Cắn nuốt, bát chu mâu (2 ): Ca, chải đầu cho em (3)" [level=4] [ref=e1628]'
+            - paragraph [ref=e1629]: 20/5/2026
+          - img [ref=e1630]
+        - generic [ref=e1632] [cursor=pointer]:
+          - generic [ref=e1633]:
+            - 'heading "Chương 236: Chương 236: Cắn nuốt, bát chu mâu (3): Ca, chải đầu cho em (3)" [level=4] [ref=e1634]'
+            - paragraph [ref=e1635]: 20/5/2026
+          - img [ref=e1636]
+        - generic [ref=e1638] [cursor=pointer]:
+          - generic [ref=e1639]:
+            - 'heading "Chương 237: Chương 237: Đường Tam đệ tứ hồn kỹ - Hồn kỹ thứ bốn của Đường Tam (1): Ca, chải đầu cho em (3)" [level=4] [ref=e1640]'
+            - paragraph [ref=e1641]: 20/5/2026
+          - img [ref=e1642]
+        - generic [ref=e1644] [cursor=pointer]:
+          - generic [ref=e1645]:
+            - 'heading "Chương 238: Chương 238: Đường Tam đệ tứ hồn kỹ - Hồn kỹ thứ bốn của Đường Tam (2): Ca, chải đầu cho em (3)" [level=4] [ref=e1646]'
+            - paragraph [ref=e1647]: 20/5/2026
+          - img [ref=e1648]
+        - generic [ref=e1650] [cursor=pointer]:
+          - generic [ref=e1651]:
+            - 'heading "Chương 239: Chương 239: Đường Tam đệ tứ hồn kỹ - Hồn kỹ thứ bốn của Đường Tam (3): Ca, chải đầu cho em (3)" [level=4] [ref=e1652]'
+            - paragraph [ref=e1653]: 20/5/2026
+          - img [ref=e1654]
+        - generic [ref=e1656] [cursor=pointer]:
+          - generic [ref=e1657]:
+            - 'heading "Chương 240: Chương 240: Tinh anh cao cấp hồn sư học viện toàn Đại lục đại chiến (1): Ca, chải đầu cho em (3)" [level=4] [ref=e1658]'
+            - paragraph [ref=e1659]: 20/5/2026
+          - img [ref=e1660]
+        - generic [ref=e1662] [cursor=pointer]:
+          - generic [ref=e1663]:
+            - 'heading "Chương 241: Chương 241: Tinh anh cao cấp hồn sư học viện toàn Đại lục đại chiến (2): Ca, chải đầu cho em (3)" [level=4] [ref=e1664]'
+            - paragraph [ref=e1665]: 20/5/2026
+          - img [ref=e1666]
+        - generic [ref=e1668] [cursor=pointer]:
+          - generic [ref=e1669]:
+            - 'heading "Chương 242: Chương 242: Tinh anh cao cấp hồn sư học viện toàn Đại lục đại chiến (3): Ca, chải đầu cho em (3)" [level=4] [ref=e1670]'
+            - paragraph [ref=e1671]: 20/5/2026
+          - img [ref=e1672]
+        - generic [ref=e1674] [cursor=pointer]:
+          - generic [ref=e1675]:
+            - 'heading "Chương 243: Chương 243: Dự tuyển tái đệ nhất tràng, khai chiến: Ca, chải đầu cho em (3)" [level=4] [ref=e1676]'
+            - paragraph [ref=e1677]: 20/5/2026
+          - img [ref=e1678]
+        - generic [ref=e1680] [cursor=pointer]:
+          - generic [ref=e1681]:
+            - 'heading "Chương 244: Chương 244: Một phút chiến thắng: Ca, chải đầu cho em (3)" [level=4] [ref=e1682]'
+            - paragraph [ref=e1683]: 20/5/2026
+          - img [ref=e1684]
+        - generic [ref=e1686] [cursor=pointer]:
+          - generic [ref=e1687]:
+            - 'heading "Chương 245: Chương 245: Nguyên nhân Đường Hạo thoái ẩn: Ca, chải đầu cho em (3)" [level=4] [ref=e1688]'
+            - paragraph [ref=e1689]: 20/5/2026
+          - img [ref=e1690]
+        - generic [ref=e1692] [cursor=pointer]:
+          - generic [ref=e1693]:
+            - 'heading "Chương 246: Chương 246: Phân tâm khống chế - Tam Khiếu Ngự Chi Tâm: Ca, chải đầu cho em (3)" [level=4] [ref=e1694]'
+            - paragraph [ref=e1695]: 20/5/2026
+          - img [ref=e1696]
+        - generic [ref=e1698] [cursor=pointer]:
+          - generic [ref=e1699]:
+            - 'heading "Chương 247: Chương 247: Chiến thuật mới của Đường Tam: Vũ trụ thiên không lưu" [level=4] [ref=e1700]'
+            - paragraph [ref=e1701]: 20/5/2026
+          - img [ref=e1702]
+        - generic [ref=e1704] [cursor=pointer]:
+          - generic [ref=e1705]:
+            - 'heading "Chương 248: Chương 248: Khống chế quần thể cực hạn và sự kinh khủng của U Minh Bạch Hổ (1): Vũ trụ thiên không lưu" [level=4] [ref=e1706]'
+            - paragraph [ref=e1707]: 20/5/2026
+          - img [ref=e1708]
+        - generic [ref=e1710] [cursor=pointer]:
+          - generic [ref=e1711]:
+            - 'heading "Chương 249: Chương 249: Khống chế quần thể cực hạn và sự kinh khủng của U Minh Bạch Hổ (2): Vũ trụ thiên không lưu" [level=4] [ref=e1712]'
+            - paragraph [ref=e1713]: 20/5/2026
+          - img [ref=e1714]
+        - generic [ref=e1716] [cursor=pointer]:
+          - generic [ref=e1717]:
+            - 'heading "Chương 250: Chương 250: Khống chế quần thể cực hạn và sự kinh khủng của U Minh Bạch Hổ (3): Vũ trụ thiên không lưu" [level=4] [ref=e1718]'
+            - paragraph [ref=e1719]: 20/5/2026
+          - img [ref=e1720]
+        - generic [ref=e1722] [cursor=pointer]:
+          - generic [ref=e1723]:
+            - 'heading "Chương 251: Chương 251: Phái “cực đoan” và phái “bình hành” trong hồn sư giới (1): Vũ trụ thiên không lưu" [level=4] [ref=e1724]'
+            - paragraph [ref=e1725]: 20/5/2026
+          - img [ref=e1726]
+        - generic [ref=e1728] [cursor=pointer]:
+          - generic [ref=e1729]:
+            - 'heading "Chương 252: Chương 252: Phái “cực đoan” và phái “bình hành” trong hồn sư giới (2): Vũ trụ thiên không lưu" [level=4] [ref=e1730]'
+            - paragraph [ref=e1731]: 20/5/2026
+          - img [ref=e1732]
+        - generic [ref=e1734] [cursor=pointer]:
+          - generic [ref=e1735]:
+            - 'heading "Chương 253: Chương 253: Phái “cực đoan” và phái “bình hành” trong hồn sư giới (3): Vũ trụ thiên không lưu" [level=4] [ref=e1736]'
+            - paragraph [ref=e1737]: 20/5/2026
+          - img [ref=e1738]
+        - generic [ref=e1740] [cursor=pointer]:
+          - generic [ref=e1741]:
+            - 'heading "Chương 254: Chương 254: Truy hồn đoạt mệnh diêm vương thiếp: Vũ trụ thiên không lưu" [level=4] [ref=e1742]'
+            - paragraph [ref=e1743]: 20/5/2026
+          - img [ref=e1744]
+        - generic [ref=e1746] [cursor=pointer]:
+          - generic [ref=e1747]:
+            - 'heading "Chương 255: Chương 255: Lại là một khối hồn cốt: Vũ trụ thiên không lưu" [level=4] [ref=e1748]'
+            - paragraph [ref=e1749]: 20/5/2026
+          - img [ref=e1750]
+        - generic [ref=e1752] [cursor=pointer]:
+          - generic [ref=e1753]:
+            - 'heading "Chương 256: Chương 256: Sử Lai Khắc học viện chiến Sí Hỏa học viện" [level=4] [ref=e1754]'
+            - paragraph [ref=e1755]: 20/5/2026
+          - img [ref=e1756]
+        - generic [ref=e1758] [cursor=pointer]:
+          - generic [ref=e1759]:
+            - 'heading "Chương 257: Chương 257: Hoả miễn Lam Ngân thảo (1)" [level=4] [ref=e1760]'
+            - paragraph [ref=e1761]: 20/5/2026
+          - img [ref=e1762]
+        - generic [ref=e1764] [cursor=pointer]:
+          - generic [ref=e1765]:
+            - 'heading "Chương 258: Chương 258: Hoả miễn Lam Ngân thảo (2)" [level=4] [ref=e1766]'
+            - paragraph [ref=e1767]: 20/5/2026
+          - img [ref=e1768]
+        - generic [ref=e1770] [cursor=pointer]:
+          - generic [ref=e1771]:
+            - 'heading "Chương 259: Chương 259: Hoả miễn Lam Ngân thảo (3)" [level=4] [ref=e1772]'
+            - paragraph [ref=e1773]: 20/5/2026
+          - img [ref=e1774]
+        - generic [ref=e1776] [cursor=pointer]:
+          - generic [ref=e1777]:
+            - 'heading "Chương 260: Chương 260: Bí mật ẩn tàng, vũ hồn Thất Bảo Thạch (1)" [level=4] [ref=e1778]'
+            - paragraph [ref=e1779]: 20/5/2026
+          - img [ref=e1780]
+        - generic [ref=e1782] [cursor=pointer]:
+          - generic [ref=e1783]:
+            - 'heading "Chương 261: Chương 261: Bí mật ẩn tàng, vũ hồn Thất Bảo Thạch (2+3)" [level=4] [ref=e1784]'
+            - paragraph [ref=e1785]: 20/5/2026
+          - img [ref=e1786]
+        - generic [ref=e1788] [cursor=pointer]:
+          - generic [ref=e1789]:
+            - 'heading "Chương 262: Chương 262: Thất vị nhất thể dung hợp kỹ (1)" [level=4] [ref=e1790]'
+            - paragraph [ref=e1791]: 20/5/2026
+          - img [ref=e1792]
+        - generic [ref=e1794] [cursor=pointer]:
+          - generic [ref=e1795]:
+            - 'heading "Chương 263: Chương 263: Thất vị nhất thể dung hợp kỹ (2)" [level=4] [ref=e1796]'
+            - paragraph [ref=e1797]: 20/5/2026
+          - img [ref=e1798]
+        - generic [ref=e1800] [cursor=pointer]:
+          - generic [ref=e1801]:
+            - 'heading "Chương 264: Chương 264: Thất vị nhất thể dung hợp kỹ (3)" [level=4] [ref=e1802]'
+            - paragraph [ref=e1803]: 20/5/2026
+          - img [ref=e1804]
+        - generic [ref=e1806] [cursor=pointer]:
+          - generic [ref=e1807]:
+            - 'heading "Chương 265: Chương 265: Nhất xướng nhất họa" [level=4] [ref=e1808]'
+            - paragraph [ref=e1809]: 20/5/2026
+          - img [ref=e1810]
+        - generic [ref=e1812] [cursor=pointer]:
+          - generic [ref=e1813]:
+            - 'heading "Chương 266: Chương 266: Vũ hồn dung hợp kỹ, băng tuyết phiêu linh" [level=4] [ref=e1814]'
+            - paragraph [ref=e1815]: 20/5/2026
+          - img [ref=e1816]
+        - generic [ref=e1818] [cursor=pointer]:
+          - generic [ref=e1819]:
+            - 'heading "Chương 267: Chương 267: Băng Tuyết Phiêu Linh Băng Phượng Hoàng" [level=4] [ref=e1820]'
+            - paragraph [ref=e1821]: 20/5/2026
+          - img [ref=e1822]
+        - generic [ref=e1824] [cursor=pointer]:
+          - generic [ref=e1825]:
+            - 'heading "Chương 268: Chương 268: Thật sự là Lam Ngân Thảo bình thường sao?" [level=4] [ref=e1826]'
+            - paragraph [ref=e1827]: 20/5/2026
+          - img [ref=e1828]
+        - generic [ref=e1830] [cursor=pointer]:
+          - generic [ref=e1831]:
+            - 'heading "Chương 269: Chương 269: Bát mạch Bách hải trở nên thông suốt" [level=4] [ref=e1832]'
+            - paragraph [ref=e1833]: 20/5/2026
+          - img [ref=e1834]
+        - generic [ref=e1836] [cursor=pointer]:
+          - generic [ref=e1837]:
+            - 'heading "Chương 270: Chương 270: Liễu Nhị Long bị lừa (1 )" [level=4] [ref=e1838]'
+            - paragraph [ref=e1839]: 20/5/2026
+          - img [ref=e1840]
+        - generic [ref=e1842] [cursor=pointer]:
+          - generic [ref=e1843]:
+            - 'heading "Chương 271: Chương 271: Liễu Nhị Long bị lừa (2)" [level=4] [ref=e1844]'
+            - paragraph [ref=e1845]: 20/5/2026
+          - img [ref=e1846]
+        - generic [ref=e1848] [cursor=pointer]:
+          - generic [ref=e1849]:
+            - 'heading "Chương 272: Chương 272: Liễu Nhị Long bị lừa (3)" [level=4] [ref=e1850]'
+            - paragraph [ref=e1851]: 20/5/2026
+          - img [ref=e1852]
+        - generic [ref=e1854] [cursor=pointer]:
+          - generic [ref=e1855]:
+            - 'heading "Chương 273: Chương 273: Vua của loài hoa, Quân lâm quần phương (1)" [level=4] [ref=e1856]'
+            - paragraph [ref=e1857]: 20/5/2026
+          - img [ref=e1858]
+        - generic [ref=e1860] [cursor=pointer]:
+          - generic [ref=e1861]:
+            - 'heading "Chương 274: Chương 274: Vua của loài hoa, Quân lâm quần phương (2)" [level=4] [ref=e1862]'
+            - paragraph [ref=e1863]: 20/5/2026
+          - img [ref=e1864]
+        - generic [ref=e1866] [cursor=pointer]:
+          - generic [ref=e1867]:
+            - 'heading "Chương 275: Chương 275: Vua của loài hoa, Quân lâm quần phương (3)" [level=4] [ref=e1868]'
+            - paragraph [ref=e1869]: 20/5/2026
+          - img [ref=e1870]
+        - generic [ref=e1872] [cursor=pointer]:
+          - generic [ref=e1873]:
+            - 'heading "Chương 276: Chương 276: Hồn kỹ cùng tuyệt học Đường Môn dung hợp" [level=4] [ref=e1874]'
+            - paragraph [ref=e1875]: 20/5/2026
+          - img [ref=e1876]
+        - generic [ref=e1878] [cursor=pointer]:
+          - generic [ref=e1879]:
+            - 'heading "Chương 277: Chương 277: Đường Tam đấu Hoả Vũ" [level=4] [ref=e1880]'
+            - paragraph [ref=e1881]: 20/5/2026
+          - img [ref=e1882]
+        - generic [ref=e1884] [cursor=pointer]:
+          - generic [ref=e1885]:
+            - 'heading "Chương 278: Chương 278: Phượng Hoàng cuồng dã" [level=4] [ref=e1886]'
+            - paragraph [ref=e1887]: 20/5/2026
+          - img [ref=e1888]
+        - generic [ref=e1890] [cursor=pointer]:
+          - generic [ref=e1891]:
+            - 'heading "Chương 279: Chương 279: Nụ hôn của Hỏa Vũ cùng Tiểu Vũ" [level=4] [ref=e1892]'
+            - paragraph [ref=e1893]: 20/5/2026
+          - img [ref=e1894]
+        - generic [ref=e1896] [cursor=pointer]:
+          - generic [ref=e1897]:
+            - 'heading "Chương 280: Chương 280: Đại sư bày mưu tính kế (1)" [level=4] [ref=e1898]'
+            - paragraph [ref=e1899]: 20/5/2026
+          - img [ref=e1900]
+        - generic [ref=e1902] [cursor=pointer]:
+          - generic [ref=e1903]:
+            - 'heading "Chương 281: Chương 281: Đại sư bày mưu tính kế (2)" [level=4] [ref=e1904]'
+            - paragraph [ref=e1905]: 20/5/2026
+          - img [ref=e1906]
+        - generic [ref=e1908] [cursor=pointer]:
+          - generic [ref=e1909]:
+            - 'heading "Chương 282: Chương 282: Đại sư bày mưu tính kế (3)" [level=4] [ref=e1910]'
+            - paragraph [ref=e1911]: 20/5/2026
+          - img [ref=e1912]
+        - generic [ref=e1914] [cursor=pointer]:
+          - generic [ref=e1915]:
+            - 'heading "Chương 283: Chương 283: Kỳ Nhung Thông Thiên, Hổ phá Long (1)" [level=4] [ref=e1916]'
+            - paragraph [ref=e1917]: 20/5/2026
+          - img [ref=e1918]
+        - generic [ref=e1920] [cursor=pointer]:
+          - generic [ref=e1921]:
+            - 'heading "Chương 284: Chương 284: Kỳ Nhung Thông Thiên, Hổ phá Long (2)" [level=4] [ref=e1922]'
+            - paragraph [ref=e1923]: 20/5/2026
+          - img [ref=e1924]
+        - generic [ref=e1926] [cursor=pointer]:
+          - generic [ref=e1927]:
+            - 'heading "Chương 285: Chương 285: Kỳ Nhung Thông Thiên, Hổ phá Long (3)" [level=4] [ref=e1928]'
+            - paragraph [ref=e1929]: 20/5/2026
+          - img [ref=e1930]
+        - generic [ref=e1932] [cursor=pointer]:
+          - generic [ref=e1933]:
+            - 'heading "Chương 286: Chương 286: Hạo Thiên Chuy, Loạn Phi Phong" [level=4] [ref=e1934]'
+            - paragraph [ref=e1935]: 20/5/2026
+          - img [ref=e1936]
+        - generic [ref=e1938] [cursor=pointer]:
+          - generic [ref=e1939]:
+            - 'heading "Chương 287: Chương 287: Tổng quyết tái, Võ Hồn thành" [level=4] [ref=e1940]'
+            - paragraph [ref=e1941]: 20/5/2026
+          - img [ref=e1942]
+        - generic [ref=e1944] [cursor=pointer]:
+          - generic [ref=e1945]:
+            - 'heading "Chương 288: Chương 288: Một vị Phong Hào Đấu La yêu hoa" [level=4] [ref=e1946]'
+            - paragraph [ref=e1947]: 20/5/2026
+          - img [ref=e1948]
+        - generic [ref=e1950] [cursor=pointer]:
+          - generic [ref=e1951]:
+            - 'heading "Chương 289: Chương 289: Bốn vị phong hào đấu la (1+2)" [level=4] [ref=e1952]'
+            - paragraph [ref=e1953]: 20/5/2026
+          - img [ref=e1954]
+        - generic [ref=e1956] [cursor=pointer]:
+          - generic [ref=e1957]:
+            - 'heading "Chương 290: Chương 290: Bốn vị phong hào đấu la (3)" [level=4] [ref=e1958]'
+            - paragraph [ref=e1959]: 20/5/2026
+          - img [ref=e1960]
+        - generic [ref=e1962] [cursor=pointer]:
+          - generic [ref=e1963]:
+            - 'heading "Chương 291: Chương 291: Giáo Hoàng Bỉ Bỉ Đông" [level=4] [ref=e1964]'
+            - paragraph [ref=e1965]: 20/5/2026
+          - img [ref=e1966]
+        - generic [ref=e1968] [cursor=pointer]:
+          - generic [ref=e1969]:
+            - 'heading "Chương 292: Chương 292: Tinh La hoàng gia học viện" [level=4] [ref=e1970]'
+            - paragraph [ref=e1971]: 20/5/2026
+          - img [ref=e1972]
+        - generic [ref=e1974] [cursor=pointer]:
+          - generic [ref=e1975]:
+            - 'heading "Chương 293: Chương 293: Biến dị kỹ năng của Vạn năm hồn kỹ" [level=4] [ref=e1976]'
+            - paragraph [ref=e1977]: 20/5/2026
+          - img [ref=e1978]
+        - generic [ref=e1980] [cursor=pointer]:
+          - generic [ref=e1981]:
+            - 'heading "Chương 294: Chương 294: Thân thế của U Minh Bạch Hổ" [level=4] [ref=e1982]'
+            - paragraph [ref=e1983]: 20/5/2026
+          - img [ref=e1984]
+        - generic [ref=e1986] [cursor=pointer]:
+          - generic [ref=e1987]:
+            - 'heading "Chương 295: Chương 295: Khiếp sợ, Thất quái dung hợp kỹ" [level=4] [ref=e1988]'
+            - paragraph [ref=e1989]: 20/5/2026
+          - img [ref=e1990]
+        - generic [ref=e1992] [cursor=pointer]:
+          - generic [ref=e1993]:
+            - 'heading "Chương 296: Chương 296: Khí hồn chân thân - Ám Kim Hạo Thiên Chuy" [level=4] [ref=e1994]'
+            - paragraph [ref=e1995]: 20/5/2026
+          - img [ref=e1996]
+        - generic [ref=e1998] [cursor=pointer]:
+          - generic [ref=e1999]:
+            - 'heading "Chương 297: Chương 297: Thực lực hoàn chỉnh của Sử Lai Khắc Thất Quái" [level=4] [ref=e2000]'
+            - paragraph [ref=e2001]: 20/5/2026
+          - img [ref=e2002]
+        - generic [ref=e2004] [cursor=pointer]:
+          - generic [ref=e2005]:
+            - 'heading "Chương 298: Chương 298: Đường Môn đệ thập, Bức Dực Luân Hồi" [level=4] [ref=e2006]'
+            - paragraph [ref=e2007]: 20/5/2026
+          - img [ref=e2008]
+        - generic [ref=e2010] [cursor=pointer]:
+          - generic [ref=e2011]:
+            - 'heading "Chương 299: Chương 299: Tiểu Vũ không phải là người" [level=4] [ref=e2012]'
+            - paragraph [ref=e2013]: 20/5/2026
+          - img [ref=e2014]
+        - generic [ref=e2016] [cursor=pointer]:
+          - generic [ref=e2017]:
+            - 'heading "Chương 300: Chương 300: Hạo Thiên dương oai, một bắt đầu mới" [level=4] [ref=e2018]'
+            - paragraph [ref=e2019]: 20/5/2026
+          - img [ref=e2020]
+        - generic [ref=e2022] [cursor=pointer]:
+          - generic [ref=e2023]:
+            - 'heading "Chương 301: Chương 301: Kỹ năng của Trí tuệ đầu cốt - Tử Cực Thần Quang" [level=4] [ref=e2024]'
+            - paragraph [ref=e2025]: 20/5/2026
+          - img [ref=e2026]
+        - generic [ref=e2028] [cursor=pointer]:
+          - generic [ref=e2029]:
+            - 'heading "Chương 302: Chương 302: Tám mươi mốt chuy" [level=4] [ref=e2030]'
+            - paragraph [ref=e2031]: 20/5/2026
+          - img [ref=e2032]
+        - generic [ref=e2034] [cursor=pointer]:
+          - generic [ref=e2035]:
+            - 'heading "Chương 303: Chương 303: Chuy pháp đại thành, sát lục chi khí" [level=4] [ref=e2036]'
+            - paragraph [ref=e2037]: 20/5/2026
+          - img [ref=e2038]
+        - generic [ref=e2040] [cursor=pointer]:
+          - generic [ref=e2041]:
+            - 'heading "Chương 304: Chương 304: Vũ hồn chân diện mục - Lam Ngân Hoàng" [level=4] [ref=e2042]'
+            - paragraph [ref=e2043]: 20/5/2026
+          - img [ref=e2044]
+        - generic [ref=e2046] [cursor=pointer]:
+          - generic [ref=e2047]:
+            - 'heading "Chương 305: Chương 305: Sát Lục Chi Đô" [level=4] [ref=e2048]'
+            - paragraph [ref=e2049]: 20/5/2026
+          - img [ref=e2050]
+        - generic [ref=e2052] [cursor=pointer]:
+          - generic [ref=e2053]:
+            - 'heading "Chương 306: Chương 306: Địa Ngục Sát Lục Trường" [level=4] [ref=e2054]'
+            - paragraph [ref=e2055]: 20/5/2026
+          - img [ref=e2056]
+        - generic [ref=e2058] [cursor=pointer]:
+          - generic [ref=e2059]:
+            - 'heading "Chương 307: Chương 307: Sát Lục Chi Vương" [level=4] [ref=e2060]'
+            - paragraph [ref=e2061]: 20/5/2026
+          - img [ref=e2062]
+        - generic [ref=e2064] [cursor=pointer]:
+          - generic [ref=e2065]:
+            - 'heading "Chương 308: Chương 308: Máu trên tế điện, Địa Ngục Lộ" [level=4] [ref=e2066]'
+            - paragraph [ref=e2067]: 20/5/2026
+          - img [ref=e2068]
+        - generic [ref=e2070] [cursor=pointer]:
+          - generic [ref=e2071]:
+            - 'heading "Chương 309: Chương 309: Ám Kim Biên Bức Vương ba đầu" [level=4] [ref=e2072]'
+            - paragraph [ref=e2073]: 20/5/2026
+          - img [ref=e2074]
+        - generic [ref=e2076] [cursor=pointer]:
+          - generic [ref=e2077]:
+            - 'heading "Chương 310: Chương 310: Thập Thủ Liệt Dương Xà" [level=4] [ref=e2078]'
+            - paragraph [ref=e2079]: 20/5/2026
+          - img [ref=e2080]
+        - generic [ref=e2082] [cursor=pointer]:
+          - generic [ref=e2083]:
+            - 'heading "Chương 311: Chương 311: Lam Ngân lĩnh vực cùng Sát Thần lĩnh vực" [level=4] [ref=e2084]'
+            - paragraph [ref=e2085]: 20/5/2026
+          - img [ref=e2086]
+        - generic [ref=e2088] [cursor=pointer]:
+          - generic [ref=e2089]:
+            - 'heading "Chương 312: Chương 312: Nguyệt Hiên, cô cô" [level=4] [ref=e2090]'
+            - paragraph [ref=e2091]: 20/5/2026
+          - img [ref=e2092]
+        - generic [ref=e2094] [cursor=pointer]:
+          - generic [ref=e2095]:
+            - 'heading "Chương 313: Chương 313: duyên hoa tẩy tẫn, viên dung như ý" [level=4] [ref=e2096]'
+            - paragraph [ref=e2097]: 20/5/2026
+          - img [ref=e2098]
+        - generic [ref=e2100] [cursor=pointer]:
+          - generic [ref=e2101]:
+            - 'heading "Chương 314: Chương 314: Mẫu thân Đường Tam, Lam ngân hoàng mười vạn năm" [level=4] [ref=e2102]'
+            - paragraph [ref=e2103]: 20/5/2026
+          - img [ref=e2104]
+        - generic [ref=e2106] [cursor=pointer]:
+          - generic [ref=e2107]:
+            - 'heading "Chương 315: Chương 315: Di vật của mẫu thân, xương đùi phải Lam ngân hoàng" [level=4] [ref=e2108]'
+            - paragraph [ref=e2109]: 20/5/2026
+          - img [ref=e2110]
+        - generic [ref=e2112] [cursor=pointer]:
+          - generic [ref=e2113]:
+            - 'heading "Chương 316: Chương 316: Trở Về Hạo Thiên Tông (1)" [level=4] [ref=e2114]'
+            - paragraph [ref=e2115]: 20/5/2026
+          - img [ref=e2116]
+        - generic [ref=e2118] [cursor=pointer]:
+          - generic [ref=e2119]:
+            - 'heading "Chương 317: Chương 317: Trở Về Hạo Thiên Tông (2)" [level=4] [ref=e2120]'
+            - paragraph [ref=e2121]: 20/5/2026
+          - img [ref=e2122]
+        - generic [ref=e2124] [cursor=pointer]:
+          - generic [ref=e2125]:
+            - 'heading "Chương 318: Chương 318: Trở Về Hạo Thiên Tông (3)" [level=4] [ref=e2126]'
+            - paragraph [ref=e2127]: 20/5/2026
+          - img [ref=e2128]
+        - generic [ref=e2130] [cursor=pointer]:
+          - generic [ref=e2131]:
+            - 'heading "Chương 319: Chương 319: Khiếu Thiên đấu la (1)" [level=4] [ref=e2132]'
+            - paragraph [ref=e2133]: 20/5/2026
+          - img [ref=e2134]
+        - generic [ref=e2136] [cursor=pointer]:
+          - generic [ref=e2137]:
+            - 'heading "Chương 320: Chương 320: Khiếu Thiên đấu la (2)" [level=4] [ref=e2138]'
+            - paragraph [ref=e2139]: 20/5/2026
+          - img [ref=e2140]
+        - generic [ref=e2142] [cursor=pointer]:
+          - generic [ref=e2143]:
+            - 'heading "Chương 321: Chương 321: Khiếu Thiên đấu la (3)" [level=4] [ref=e2144]'
+            - paragraph [ref=e2145]: 20/5/2026
+          - img [ref=e2146]
+        - generic [ref=e2148] [cursor=pointer]:
+          - generic [ref=e2149]:
+            - 'heading "Chương 322: Chương 322: Lực khống chế bá đạo của Lam Ngân Hoàng" [level=4] [ref=e2150]'
+            - paragraph [ref=e2151]: 20/5/2026
+          - img [ref=e2152]
+        - generic [ref=e2154] [cursor=pointer]:
+          - generic [ref=e2155]:
+            - 'heading "Chương 323: Chương 323: Đệ ngũ hồn kỹ - Lam Ngân Bá Vương Thương" [level=4] [ref=e2156]'
+            - paragraph [ref=e2157]: 20/5/2026
+          - img [ref=e2158]
+        - generic [ref=e2160] [cursor=pointer]:
+          - generic [ref=e2161]:
+            - 'heading "Chương 324: Chương 324: Hư Không Quỷ Ảnh Mê Tung" [level=4] [ref=e2162]'
+            - paragraph [ref=e2163]: 20/5/2026
+          - img [ref=e2164]
+        - generic [ref=e2166] [cursor=pointer]:
+          - generic [ref=e2167]:
+            - 'heading "Chương 325: Chương 325: Sử Lai Khắc thất quái đoàn tụ" [level=4] [ref=e2168]'
+            - paragraph [ref=e2169]: 20/5/2026
+          - img [ref=e2170]
+        - generic [ref=e2172] [cursor=pointer]:
+          - generic [ref=e2173]:
+            - 'heading "Chương 326: Chương 326: Biến hóa sau năm năm (1)" [level=4] [ref=e2174]'
+            - paragraph [ref=e2175]: 20/5/2026
+          - img [ref=e2176]
+        - generic [ref=e2178] [cursor=pointer]:
+          - generic [ref=e2179]:
+            - 'heading "Chương 327: Chương 327: Biến hóa sau năm năm (2)" [level=4] [ref=e2180]'
+            - paragraph [ref=e2181]: 20/5/2026
+          - img [ref=e2182]
+        - generic [ref=e2184] [cursor=pointer]:
+          - generic [ref=e2185]:
+            - 'heading "Chương 328: Chương 328: Biến hóa sau năm năm (3)" [level=4] [ref=e2186]'
+            - paragraph [ref=e2187]: 20/5/2026
+          - img [ref=e2188]
+        - generic [ref=e2190] [cursor=pointer]:
+          - generic [ref=e2191]:
+            - 'heading "Chương 329: Chương 329: Đệ Lục Hồn Hoàn của Áo Tư Tạp (1)" [level=4] [ref=e2192]'
+            - paragraph [ref=e2193]: 20/5/2026
+          - img [ref=e2194]
+        - generic [ref=e2196] [cursor=pointer]:
+          - generic [ref=e2197]:
+            - 'heading "Chương 330: Chương 330: Đệ Lục Hồn Hoàn của Áo Tư Tạp (2)" [level=4] [ref=e2198]'
+            - paragraph [ref=e2199]: 20/5/2026
+          - img [ref=e2200]
+        - generic [ref=e2202] [cursor=pointer]:
+          - generic [ref=e2203]:
+            - 'heading "Chương 331: Chương 331: Đệ Lục Hồn Hoàn của Áo Tư Tạp (3)" [level=4] [ref=e2204]'
+            - paragraph [ref=e2205]: 20/5/2026
+          - img [ref=e2206]
+        - generic [ref=e2208] [cursor=pointer]:
+          - generic [ref=e2209]:
+            - 'heading "Chương 332: Chương 332: Lam Ngân lĩnh vực chính thức uy lực" [level=4] [ref=e2210]'
+            - paragraph [ref=e2211]: 20/5/2026
+          - img [ref=e2212]
+        - generic [ref=e2214] [cursor=pointer]:
+          - generic [ref=e2215]:
+            - 'heading "Chương 333: Chương 333: Va chạm với cấp bậc Hồn Đấu La" [level=4] [ref=e2216]'
+            - paragraph [ref=e2217]: 20/5/2026
+          - img [ref=e2218]
+        - generic [ref=e2220] [cursor=pointer]:
+          - generic [ref=e2221]:
+            - 'heading "Chương 334: Chương 334: Liệp hồn, diệt môn" [level=4] [ref=e2222]'
+            - paragraph [ref=e2223]: 20/5/2026
+          - img [ref=e2224]
+        - generic [ref=e2226] [cursor=pointer]:
+          - generic [ref=e2227]:
+            - 'heading "Chương 335: Chương 335: Gặp lại Hồ Liệt Na" [level=4] [ref=e2228]'
+            - paragraph [ref=e2229]: 20/5/2026
+          - img [ref=e2230]
+        - generic [ref=e2232] [cursor=pointer]:
+          - generic [ref=e2233]:
+            - 'heading "Chương 336: Chương 336: Tiềm phục thành công" [level=4] [ref=e2234]'
+            - paragraph [ref=e2235]: 20/5/2026
+          - img [ref=e2236]
+        - generic [ref=e2238] [cursor=pointer]:
+          - generic [ref=e2239]:
+            - 'heading "Chương 337: Chương 337: Tiểu Vũ, người yêu của ta, cuối cùng cũng gặp lại" [level=4] [ref=e2240]'
+            - paragraph [ref=e2241]: 20/5/2026
+          - img [ref=e2242]
+        - generic [ref=e2244] [cursor=pointer]:
+          - generic [ref=e2245]:
+            - 'heading "Chương 338: Chương 338: Tử chiến trong rừng rậm" [level=4] [ref=e2246]'
+            - paragraph [ref=e2247]: 20/5/2026
+          - img [ref=e2248]
+        - generic [ref=e2250] [cursor=pointer]:
+          - generic [ref=e2251]:
+            - 'heading "Chương 339: Chương 339: Vận mệnh đồng dạng, hồn hoàn mười vạn năm của Đường Tam" [level=4] [ref=e2252]'
+            - paragraph [ref=e2253]: 20/5/2026
+          - img [ref=e2254]
+        - generic [ref=e2256] [cursor=pointer]:
+          - generic [ref=e2257]:
+            - 'heading "Chương 340: Chương 340: Hy vọng phục hồi" [level=4] [ref=e2258]'
+            - paragraph [ref=e2259]: 20/5/2026
+          - img [ref=e2260]
+        - generic [ref=e2262] [cursor=pointer]:
+          - generic [ref=e2263]:
+            - 'heading "Chương 341: Chương 341: Bát Chu Mâu tiến hoá" [level=4] [ref=e2264]'
+            - paragraph [ref=e2265]: 20/5/2026
+          - img [ref=e2266]
+        - generic [ref=e2268] [cursor=pointer]:
+          - generic [ref=e2269]:
+            - 'heading "Chương 342: Chương 342: Hoàng thất bí tân" [level=4] [ref=e2270]'
+            - paragraph [ref=e2271]: 20/5/2026
+          - img [ref=e2272]
+        - generic [ref=e2274] [cursor=pointer]:
+          - generic [ref=e2275]:
+            - 'heading "Chương 343: Chương 343: Nguyên nhân Bát Chu Mâu tiến hoá khải giáp" [level=4] [ref=e2276]'
+            - paragraph [ref=e2277]: 20/5/2026
+          - img [ref=e2278]
+        - generic [ref=e2280] [cursor=pointer]:
+          - generic [ref=e2281]:
+            - 'heading "Chương 344: Chương 344: Áo Tư Tạp trở về, phục chế kính tượng tràng" [level=4] [ref=e2282]'
+            - paragraph [ref=e2283]: 20/5/2026
+          - img [ref=e2284]
+        - generic [ref=e2286] [cursor=pointer]:
+          - generic [ref=e2287]:
+            - 'heading "Chương 345: Chương 345: Áo Tư Tạp, Trữ Vinh Vinh" [level=4] [ref=e2288]'
+            - paragraph [ref=e2289]: 20/5/2026
+          - img [ref=e2290]
+        - generic [ref=e2292] [cursor=pointer]:
+          - generic [ref=e2293]:
+            - 'heading "Chương 346: Chương 346: Lực Chi Nhất Tộc" [level=4] [ref=e2294]'
+            - paragraph [ref=e2295]: 20/5/2026
+          - img [ref=e2296]
+        - generic [ref=e2298] [cursor=pointer]:
+          - generic [ref=e2299]:
+            - 'heading "Chương 347: Chương 347: Tứ đại gia tộc đơn thuộc tính" [level=4] [ref=e2300]'
+            - paragraph [ref=e2301]: 20/5/2026
+          - img [ref=e2302]
+        - generic [ref=e2304] [cursor=pointer]:
+          - generic [ref=e2305]:
+            - 'heading "Chương 348: Chương 348: Ba vị khách bỉ ổi" [level=4] [ref=e2306]'
+            - paragraph [ref=e2307]: 20/5/2026
+          - img [ref=e2308]
+        - generic [ref=e2310] [cursor=pointer]:
+          - generic [ref=e2311]:
+            - 'heading "Chương 349: Chương 349: Ngự chi nhất tộc" [level=4] [ref=e2312]'
+            - paragraph [ref=e2313]: 20/5/2026
+          - img [ref=e2314]
+        - generic [ref=e2316] [cursor=pointer]:
+          - generic [ref=e2317]:
+            - 'heading "Chương 350: Chương 350: Đối trận, cùng bản giáp cự tê so phòng ngự" [level=4] [ref=e2318]'
+            - paragraph [ref=e2319]: 20/5/2026
+          - img [ref=e2320]
+        - generic [ref=e2322] [cursor=pointer]:
+          - generic [ref=e2323]:
+            - 'heading "Chương 351: Chương 351: Phá phòng, Loạn Phi Phong chi uy" [level=4] [ref=e2324]'
+            - paragraph [ref=e2325]: 20/5/2026
+          - img [ref=e2326]
+        - generic [ref=e2328] [cursor=pointer]:
+          - generic [ref=e2329]:
+            - 'heading "Chương 352: Chương 352: Ngự Chi Nhất Tộc nhập Đường Môn" [level=4] [ref=e2330]'
+            - paragraph [ref=e2331]: 20/5/2026
+          - img [ref=e2332]
+        - generic [ref=e2334] [cursor=pointer]:
+          - generic [ref=e2335]:
+            - 'heading "Chương 353: Chương 353: Quỷ Ảnh Mê Tung đấu thuần mẫn" [level=4] [ref=e2336]'
+            - paragraph [ref=e2337]: 20/5/2026
+          - img [ref=e2338]
+        - generic [ref=e2340] [cursor=pointer]:
+          - generic [ref=e2341]:
+            - 'heading "Chương 354: Chương 354: Đệ lục hồn kỹ của Đường Tam, Tiểu Vũ hiện thân" [level=4] [ref=e2342]'
+            - paragraph [ref=e2343]: 20/5/2026
+          - img [ref=e2344]
+        - generic [ref=e2346] [cursor=pointer]:
+          - generic [ref=e2347]:
+            - 'heading "Chương 355: Chương 355: Thủy tinh huyết long tham" [level=4] [ref=e2348]'
+            - paragraph [ref=e2349]: 20/5/2026
+          - img [ref=e2350]
+        - generic [ref=e2352] [cursor=pointer]:
+          - generic [ref=e2353]:
+            - 'heading "Chương 356: Chương 356: Đường Tam chiến Dương Vô Địch" [level=4] [ref=e2354]'
+            - paragraph [ref=e2355]: 20/5/2026
+          - img [ref=e2356]
+        - generic [ref=e2358] [cursor=pointer]:
+          - generic [ref=e2359]:
+            - 'heading "Chương 357: Chương 357: Đệ lục hồn kỹ của Đường Tam: Hư vô, bạo sát bát đoạn suất" [level=4] [ref=e2360]'
+            - paragraph [ref=e2361]: 20/5/2026
+          - img [ref=e2362]
+        - generic [ref=e2364] [cursor=pointer]:
+          - generic [ref=e2365]:
+            - 'heading "Chương 358: Chương 358: Tiểu Vũ sống lại, hai phần có một" [level=4] [ref=e2366]'
+            - paragraph [ref=e2367]: 20/5/2026
+          - img [ref=e2368]
+        - generic [ref=e2370] [cursor=pointer]:
+          - generic [ref=e2371]:
+            - 'heading "Chương 359: Chương 359: Chênh lệch năm năm, một đấu ba" [level=4] [ref=e2372]'
+            - paragraph [ref=e2373]: 20/5/2026
+          - img [ref=e2374]
+        - generic [ref=e2376] [cursor=pointer]:
+          - generic [ref=e2377]:
+            - 'heading "Chương 360: Chương 360: Ý đồ khi đến của tứ nguyên tố học viện" [level=4] [ref=e2378]'
+            - paragraph [ref=e2379]: 20/5/2026
+          - img [ref=e2380]
+        - generic [ref=e2382] [cursor=pointer]:
+          - generic [ref=e2383]:
+            - 'heading "Chương 361: Chương 361: Kim chúc chi đô, Canh Tân Thành" [level=4] [ref=e2384]'
+            - paragraph [ref=e2385]: 20/5/2026
+          - img [ref=e2386]
+        - generic [ref=e2388] [cursor=pointer]:
+          - generic [ref=e2389]:
+            - 'heading "Chương 362: Chương 362: Tượng thần Lâu Cao" [level=4] [ref=e2390]'
+            - paragraph [ref=e2391]: 20/5/2026
+          - img [ref=e2392]
+        - generic [ref=e2394] [cursor=pointer]:
+          - generic [ref=e2395]:
+            - 'heading "Chương 363: Chương 363: Thực sự cút khỏi đây đi" [level=4] [ref=e2396]'
+            - paragraph [ref=e2397]: 20/5/2026
+          - img [ref=e2398]
+        - generic [ref=e2400] [cursor=pointer]:
+          - generic [ref=e2401]:
+            - 'heading "Chương 364: Chương 364: Hàn Tâm Thiết Tinh cùng Thâm Hải Trầm Ngân" [level=4] [ref=e2402]'
+            - paragraph [ref=e2403]: 20/5/2026
+          - img [ref=e2404]
+        - generic [ref=e2406] [cursor=pointer]:
+          - generic [ref=e2407]:
+            - 'heading "Chương 365: Chương 365: Đêm trăng thanh gió mát giết người" [level=4] [ref=e2408]'
+            - paragraph [ref=e2409]: 20/5/2026
+          - img [ref=e2410]
+        - generic [ref=e2412] [cursor=pointer]:
+          - generic [ref=e2413]:
+            - 'heading "Chương 366: Chương 366: Thần khí Bát Bảo Như Ý Nhuyễn Giáp" [level=4] [ref=e2414]'
+            - paragraph [ref=e2415]: 20/5/2026
+          - img [ref=e2416]
+        - generic [ref=e2418] [cursor=pointer]:
+          - generic [ref=e2419]:
+            - 'heading "Chương 367: Chương 367: Đường Môn năm đường" [level=4] [ref=e2420]'
+            - paragraph [ref=e2421]: 20/5/2026
+          - img [ref=e2422]
+        - generic [ref=e2424] [cursor=pointer]:
+          - generic [ref=e2425]:
+            - 'heading "Chương 368: Chương 368: Cung đình biến động, địch nhân hiện" [level=4] [ref=e2426]'
+            - paragraph [ref=e2427]: 20/5/2026
+          - img [ref=e2428]
+        - generic [ref=e2430] [cursor=pointer]:
+          - generic [ref=e2431]:
+            - 'heading "Chương 369: Chương 369: Cầu Gai đấu la, Xà Mâu Đấu La – Phá Hồn Thương" [level=4] [ref=e2432]'
+            - paragraph [ref=e2433]: 20/5/2026
+          - img [ref=e2434]
+        - generic [ref=e2436] [cursor=pointer]:
+          - generic [ref=e2437]:
+            - 'heading "Chương 370: Chương 370: Sát Thần Lĩnh Vực VS Thiên Sứ lĩnh vực" [level=4] [ref=e2438]'
+            - paragraph [ref=e2439]: 20/5/2026
+          - img [ref=e2440]
+        - generic [ref=e2442] [cursor=pointer]:
+          - generic [ref=e2443]:
+            - 'heading "Chương 371: Chương 371: Loạn Phi Phong Chi Vũ - Hồn Kỹ Tự Nghĩ ra" [level=4] [ref=e2444]'
+            - paragraph [ref=e2445]: 20/5/2026
+          - img [ref=e2446]
+        - generic [ref=e2448] [cursor=pointer]:
+          - generic [ref=e2449]:
+            - 'heading "Chương 372: Chương 372: Tiểu Vũ sống lại một phần tư" [level=4] [ref=e2450]'
+            - paragraph [ref=e2451]: 20/5/2026
+          - img [ref=e2452]
+        - generic [ref=e2454] [cursor=pointer]:
+          - generic [ref=e2455]:
+            - 'heading "Chương 373: Chương 373: Sáu khối hồn cốt, thiên sứ thần trang" [level=4] [ref=e2456]'
+            - paragraph [ref=e2457]: 20/5/2026
+          - img [ref=e2458]
+        - generic [ref=e2460] [cursor=pointer]:
+          - generic [ref=e2461]:
+            - 'heading "Chương 374: Chương 374: Phong Hào Đấu La chín mươi chín cấp" [level=4] [ref=e2462]'
+            - paragraph [ref=e2463]: 20/5/2026
+          - img [ref=e2464]
+        - generic [ref=e2466] [cursor=pointer]:
+          - generic [ref=e2467]:
+            - 'heading "Chương 375: Chương 375: Ma Quỷ đảo hay Hải Thần đảo" [level=4] [ref=e2468]'
+            - paragraph [ref=e2469]: 20/5/2026
+          - img [ref=e2470]
+        - generic [ref=e2472] [cursor=pointer]:
+          - generic [ref=e2473]:
+            - 'heading "Chương 376: Chương 376: Lai lịch của ba vị tuyệt thế Đấu La" [level=4] [ref=e2474]'
+            - paragraph [ref=e2475]: 20/5/2026
+          - img [ref=e2476]
+        - generic [ref=e2478] [cursor=pointer]:
+          - generic [ref=e2479]:
+            - 'heading "Chương 377: Chương 377: Hạnh phúc của Đường Tam và Tiểu Vũ, đính hôn" [level=4] [ref=e2480]'
+            - paragraph [ref=e2481]: 20/5/2026
+          - img [ref=e2482]
+        - generic [ref=e2484] [cursor=pointer]:
+          - generic [ref=e2485]:
+            - 'heading "Chương 378: Chương 378: Sử Lai Khắc thất quái đoàn tụ" [level=4] [ref=e2486]'
+            - paragraph [ref=e2487]: 20/5/2026
+          - img [ref=e2488]
+        - generic [ref=e2490] [cursor=pointer]:
+          - generic [ref=e2491]:
+            - 'heading "Chương 379: Chương 379: Bảo vật trấn quốc tặng Đường Tam, Hãn Hải Kiền Khôn Tráo" [level=4] [ref=e2492]'
+            - paragraph [ref=e2493]: 20/5/2026
+          - img [ref=e2494]
+        - generic [ref=e2496] [cursor=pointer]:
+          - generic [ref=e2497]:
+            - 'heading "Chương 380: Chương 380: Hãn Hải Kiền Khôn Tráo" [level=4] [ref=e2498]'
+            - paragraph [ref=e2499]: 20/5/2026
+          - img [ref=e2500]
+        - generic [ref=e2502] [cursor=pointer]:
+          - generic [ref=e2503]:
+            - 'heading "Chương 381: Chương 381: Ám ảnh thợ săn" [level=4] [ref=e2504]'
+            - paragraph [ref=e2505]: 20/5/2026
+          - img [ref=e2506]
+        - generic [ref=e2508] [cursor=pointer]:
+          - generic [ref=e2509]:
+            - 'heading "Chương 382: Chương 382: Đệ tứ thủ pháp của Đường Môn: Thiên Linh Nhất Dạ" [level=4] [ref=e2510]'
+            - paragraph [ref=e2511]: 20/5/2026
+          - img [ref=e2512]
+        - generic [ref=e2514] [cursor=pointer]:
+          - generic [ref=e2515]:
+            - 'heading "Chương 383: Chương 383: Khát máu cuồng hóa cơn lốc đùi phải: Thiên Linh Nhất Dạ" [level=4] [ref=e2516]'
+            - paragraph [ref=e2517]: 20/5/2026
+          - img [ref=e2518]
+        - generic [ref=e2520] [cursor=pointer]:
+          - generic [ref=e2521]:
+            - 'heading "Chương 384: Chương 384: Hãn Hải Đại Đấu Hồn Tràng: Thiên Linh Nhất Dạ" [level=4] [ref=e2522]'
+            - paragraph [ref=e2523]: 20/5/2026
+          - img [ref=e2524]
+        - generic [ref=e2526] [cursor=pointer]:
+          - generic [ref=e2527]:
+            - 'heading "Chương 385: Chương 385: Không nên sùng bái ca, ca chỉ là một truyền thuyết: Thiên Linh Nhất Dạ" [level=4] [ref=e2528]'
+            - paragraph [ref=e2529]: 20/5/2026
+          - img [ref=e2530]
+        - generic [ref=e2532] [cursor=pointer]:
+          - generic [ref=e2533]:
+            - 'heading "Chương 386: Chương 386: Biển Kiều Mỹ: Thiên Linh Nhất Dạ" [level=4] [ref=e2534]'
+            - paragraph [ref=e2535]: 20/5/2026
+          - img [ref=e2536]
+        - generic [ref=e2538] [cursor=pointer]:
+          - generic [ref=e2539]:
+            - 'heading "Chương 387: Chương 387: Ma Kình Hải Vực: Thiên Linh Nhất Dạ" [level=4] [ref=e2540]'
+            - paragraph [ref=e2541]: 20/5/2026
+          - img [ref=e2542]
+        - generic [ref=e2544] [cursor=pointer]:
+          - generic [ref=e2545]:
+            - 'heading "Chương 388: Chương 388: Vượt quá thập vạn niên, bá chủ trong biển: Thiên Linh Nhất Dạ" [level=4] [ref=e2546]'
+            - paragraph [ref=e2547]: 20/5/2026
+          - img [ref=e2548]
+        - generic [ref=e2550] [cursor=pointer]:
+          - generic [ref=e2551]:
+            - 'heading "Chương 389: Chương 389: Hiểm tử hoàn sinh, Tái ông thất mã: Thiên Linh Nhất Dạ" [level=4] [ref=e2552]'
+            - paragraph [ref=e2553]: 20/5/2026
+          - img [ref=e2554]
+        - generic [ref=e2556] [cursor=pointer]:
+          - generic [ref=e2557]:
+            - 'heading "Chương 390: Chương 390: Thần y bái sư: Thiên Linh Nhất Dạ" [level=4] [ref=e2558]'
+            - paragraph [ref=e2559]: 20/5/2026
+          - img [ref=e2560]
+        - generic [ref=e2562] [cursor=pointer]:
+          - generic [ref=e2563]:
+            - 'heading "Chương 391: Chương 391: Hừng hực tử trân châu: Thiên Linh Nhất Dạ" [level=4] [ref=e2564]'
+            - paragraph [ref=e2565]: 20/5/2026
+          - img [ref=e2566]
+        - generic [ref=e2568] [cursor=pointer]:
+          - generic [ref=e2569]:
+            - 'heading "Chương 392: Chương 392: Chủ nhân, muốn phục vụ sao?: Thiên Linh Nhất Dạ" [level=4] [ref=e2570]'
+            - paragraph [ref=e2571]: 20/5/2026
+          - img [ref=e2572]
+        - generic [ref=e2574] [cursor=pointer]:
+          - generic [ref=e2575]:
+            - 'heading "Chương 393: Chương 393: cung phụng hải thần, hải thần đảo: Thiên Linh Nhất Dạ" [level=4] [ref=e2576]'
+            - paragraph [ref=e2577]: 20/5/2026
+          - img [ref=e2578]
+        - generic [ref=e2580] [cursor=pointer]:
+          - generic [ref=e2581]:
+            - 'heading "Chương 394: Chương 394: Tị thủy càn khôn tráo: Thiên Linh Nhất Dạ" [level=4] [ref=e2582]'
+            - paragraph [ref=e2583]: 20/5/2026
+          - img [ref=e2584]
+        - generic [ref=e2586] [cursor=pointer]:
+          - generic [ref=e2587]:
+            - 'heading "Chương 395: Chương 395: Hải Mã thánh trụ, hắc cấp Lục Khảo: Thiên Linh Nhất Dạ" [level=4] [ref=e2588]'
+            - paragraph [ref=e2589]: 20/5/2026
+          - img [ref=e2590]
+        - generic [ref=e2592] [cursor=pointer]:
+          - generic [ref=e2593]:
+            - 'heading "Chương 396: Chương 396: Đỉnh cấp thất khảo và Hoàng cấp nhất khảo: Thiên Linh Nhất Dạ" [level=4] [ref=e2594]'
+            - paragraph [ref=e2595]: 20/5/2026
+          - img [ref=e2596]
+        - generic [ref=e2598] [cursor=pointer]:
+          - generic [ref=e2599]:
+            - 'heading "Chương 397: Chương 397: Hải Thần cửu khảo, tam xoa kích lạc ấn: Thiên Linh Nhất Dạ" [level=4] [ref=e2600]'
+            - paragraph [ref=e2601]: 20/5/2026
+          - img [ref=e2602]
+        - generic [ref=e2604] [cursor=pointer]:
+          - generic [ref=e2605]:
+            - 'heading "Chương 398: Chương 398: Ánh sáng hải thần (1): Thiên Linh Nhất Dạ" [level=4] [ref=e2606]'
+            - paragraph [ref=e2607]: 20/5/2026
+          - img [ref=e2608]
+        - generic [ref=e2610] [cursor=pointer]:
+          - generic [ref=e2611]:
+            - 'heading "Chương 399: Chương 399: Ánh sáng hải thần (2): Thiên Linh Nhất Dạ" [level=4] [ref=e2612]'
+            - paragraph [ref=e2613]: 20/5/2026
+          - img [ref=e2614]
+        - generic [ref=e2616] [cursor=pointer]:
+          - generic [ref=e2617]:
+            - 'heading "Chương 400: Chương 400: Huyền bí của Hải Thần ánh sáng: Thiên Linh Nhất Dạ" [level=4] [ref=e2618]'
+            - paragraph [ref=e2619]: 20/5/2026
+          - img [ref=e2620]
+        - generic [ref=e2622] [cursor=pointer]:
+          - generic [ref=e2623]:
+            - 'heading "Chương 401: Chương 401: Thần tứ hồn hoàn - hồn hoàn thần ban: Thiên Linh Nhất Dạ" [level=4] [ref=e2624]'
+            - paragraph [ref=e2625]: 20/5/2026
+          - img [ref=e2626]
+        - generic [ref=e2628] [cursor=pointer]:
+          - generic [ref=e2629]:
+            - 'heading "Chương 402: Chương 402: Thiên Sứ cùng La Sát: Thiên Linh Nhất Dạ" [level=4] [ref=e2630]'
+            - paragraph [ref=e2631]: 20/5/2026
+          - img [ref=e2632]
+        - generic [ref=e2634] [cursor=pointer]:
+          - generic [ref=e2635]:
+            - 'heading "Chương 403: Chương 403: Mười vạn năm-hồn hoàn thứ bảy của Đường Tam: Thiên Linh Nhất Dạ" [level=4] [ref=e2636]'
+            - paragraph [ref=e2637]: 20/5/2026
+          - img [ref=e2638]
+        - generic [ref=e2640] [cursor=pointer]:
+          - generic [ref=e2641]:
+            - 'heading "Chương 404: Chương 404: Xuyên qua,hải thần ánh sáng (1): Thiên Linh Nhất Dạ" [level=4] [ref=e2642]'
+            - paragraph [ref=e2643]: 20/5/2026
+          - img [ref=e2644]
+        - generic [ref=e2646] [cursor=pointer]:
+          - generic [ref=e2647]:
+            - 'heading "Chương 405: Chương 405: Xuyên qua,hải thần ánh sáng (2): Thiên Linh Nhất Dạ" [level=4] [ref=e2648]'
+            - paragraph [ref=e2649]: 20/5/2026
+          - img [ref=e2650]
+        - generic [ref=e2652] [cursor=pointer]:
+          - generic [ref=e2653]:
+            - 'heading "Chương 406: Chương 406: Hai người cùng lúc vượt qua Hải Thần ánh sáng (1): Thiên Linh Nhất Dạ" [level=4] [ref=e2654]'
+            - paragraph [ref=e2655]: 20/5/2026
+          - img [ref=e2656]
+        - generic [ref=e2658] [cursor=pointer]:
+          - generic [ref=e2659]:
+            - 'heading "Chương 407: Chương 407: Hai người cùng lúc vượt qua Hải Thần ánh sáng (2): Thiên Linh Nhất Dạ" [level=4] [ref=e2660]'
+            - paragraph [ref=e2661]: 20/5/2026
+          - img [ref=e2662]
+        - generic [ref=e2664] [cursor=pointer]:
+          - generic [ref=e2665]:
+            - 'heading "Chương 408: Chương 408: Đường Tam át chủ bài, kĩ năng tiến hóa sát thần lĩnh vực: Thiên Linh Nhất Dạ" [level=4] [ref=e2666]'
+            - paragraph [ref=e2667]: 20/5/2026
+          - img [ref=e2668]
+        - generic [ref=e2670] [cursor=pointer]:
+          - generic [ref=e2671]:
+            - 'heading "Chương 409: Chương 409: Hồn kĩ thứ bảy đáng khinh của Áo Tư Lạp" [level=4] [ref=e2672]'
+            - paragraph [ref=e2673]: 20/5/2026
+          - img [ref=e2674]
+        - generic [ref=e2676] [cursor=pointer]:
+          - generic [ref=e2677]:
+            - 'heading "Chương 410: Chương 410: Hồn Thú Mười Vạn Năm, Ma Hồn Đại Bạch Sa Vương" [level=4] [ref=e2678]'
+            - paragraph [ref=e2679]: 20/5/2026
+          - img [ref=e2680]
+        - generic [ref=e2682] [cursor=pointer]:
+          - generic [ref=e2683]:
+            - 'heading "Chương 411: Chương 411: Ma Hồn Đại Bạch Sa Vương Lỗ Mãng" [level=4] [ref=e2684]'
+            - paragraph [ref=e2685]: 20/5/2026
+          - img [ref=e2686]
+        - generic [ref=e2688] [cursor=pointer]:
+          - generic [ref=e2689]:
+            - 'heading "Chương 412: Chương 412: Vũ Hồn chân thân của Tà Hỏa phượng hoàng" [level=4] [ref=e2690]'
+            - paragraph [ref=e2691]: 20/5/2026
+          - img [ref=e2692]
+        - generic [ref=e2694] [cursor=pointer]:
+          - generic [ref=e2695]:
+            - 'heading "Chương 413: Chương 413: Hỏa phượng hoàng bảy đầu" [level=4] [ref=e2696]'
+            - paragraph [ref=e2697]: 20/5/2026
+          - img [ref=e2698]
+        - generic [ref=e2700] [cursor=pointer]:
+          - generic [ref=e2701]:
+            - 'heading "Chương 414: Chương 414: Phượng Hoàng Lĩnh Vực" [level=4] [ref=e2702]'
+            - paragraph [ref=e2703]: 20/5/2026
+          - img [ref=e2704]
+        - generic [ref=e2706] [cursor=pointer]:
+          - generic [ref=e2707]:
+            - 'heading "Chương 415: Chương 415: Triều tịch luyện thể" [level=4] [ref=e2708]'
+            - paragraph [ref=e2709]: 20/5/2026
+          - img [ref=e2710]
+        - generic [ref=e2712] [cursor=pointer]:
+          - generic [ref=e2713]:
+            - 'heading "Chương 416: Chương 416: Cảnh giới cuối cùng của Tử Cực Ma Đồng, Hạo Hãn (mênh mông)" [level=4] [ref=e2714]'
+            - paragraph [ref=e2715]: 20/5/2026
+          - img [ref=e2716]
+        - generic [ref=e2718] [cursor=pointer]:
+          - generic [ref=e2719]:
+            - 'heading "Chương 417: Chương 417: Đệ tứ khảo, Sa Kình cuộc chiến" [level=4] [ref=e2720]'
+            - paragraph [ref=e2721]: 20/5/2026
+          - img [ref=e2722]
+        - generic [ref=e2724] [cursor=pointer]:
+          - generic [ref=e2725]:
+            - 'heading "Chương 418: Chương 418: Xảo sát tà ma hổ kình" [level=4] [ref=e2726]'
+            - paragraph [ref=e2727]: 20/5/2026
+          - img [ref=e2728]
+        - generic [ref=e2730] [cursor=pointer]:
+          - generic [ref=e2731]:
+            - 'heading "Chương 419: Chương 419: Hồn hoàn thứ tám của Đường Tam" [level=4] [ref=e2732]'
+            - paragraph [ref=e2733]: 20/5/2026
+          - img [ref=e2734]
+        - generic [ref=e2736] [cursor=pointer]:
+          - generic [ref=e2737]:
+            - 'heading "Chương 420: Chương 420: Hồn cốt chân trái mười vạn năm của Tà Ma" [level=4] [ref=e2738]'
+            - paragraph [ref=e2739]: 20/5/2026
+          - img [ref=e2740]
+        - generic [ref=e2742] [cursor=pointer]:
+          - generic [ref=e2743]:
+            - 'heading "Chương 421: Chương 421: Khảo nghiệm thứ năm, khiêu chiến phong hào đấu la" [level=4] [ref=e2744]'
+            - paragraph [ref=e2745]: 20/5/2026
+          - img [ref=e2746]
+        - generic [ref=e2748] [cursor=pointer]:
+          - generic [ref=e2749]:
+            - 'heading "Chương 422: Chương 422: Hải Mã Thánh Trụ cuộc chiến" [level=4] [ref=e2750]'
+            - paragraph [ref=e2751]: 20/5/2026
+          - img [ref=e2752]
+        - generic [ref=e2754] [cursor=pointer]:
+          - generic [ref=e2755]:
+            - 'heading "Chương 423: Chương 423: Tà mâu bạch hổ đấu Hải chi mâu" [level=4] [ref=e2756]'
+            - paragraph [ref=e2757]: 20/5/2026
+          - img [ref=e2758]
+        - generic [ref=e2760] [cursor=pointer]:
+          - generic [ref=e2761]:
+            - 'heading "Chương 424: Chương 424: Thời khắc Tiểu Vũ hiến tế lại hiện ra" [level=4] [ref=e2762]'
+            - paragraph [ref=e2763]: 20/5/2026
+          - img [ref=e2764]
+        - generic [ref=e2766] [cursor=pointer]:
+          - generic [ref=e2767]:
+            - 'heading "Chương 425: Chương 425: Khiêu chiến Hải Tinh Thánh Trụ" [level=4] [ref=e2768]'
+            - paragraph [ref=e2769]: 20/5/2026
+          - img [ref=e2770]
+        - generic [ref=e2772] [cursor=pointer]:
+          - generic [ref=e2773]:
+            - 'heading "Chương 426: Chương 426: Hải Ma Nữ, Nhân Ngư Công chúa?" [level=4] [ref=e2774]'
+            - paragraph [ref=e2775]: 20/5/2026
+          - img [ref=e2776]
+        - generic [ref=e2778] [cursor=pointer]:
+          - generic [ref=e2779]:
+            - 'heading "Chương 427: Chương 427: Đệ ngũ hồn hoàn của Đường Tam tiến hóa mười vạn năm" [level=4] [ref=e2780]'
+            - paragraph [ref=e2781]: 20/5/2026
+          - img [ref=e2782]
+        - generic [ref=e2784] [cursor=pointer]:
+          - generic [ref=e2785]:
+            - 'heading "Chương 428: Chương 428: Hải Long Đấu La" [level=4] [ref=e2786]'
+            - paragraph [ref=e2787]: 20/5/2026
+          - img [ref=e2788]
+        - generic [ref=e2790] [cursor=pointer]:
+          - generic [ref=e2791]:
+            - 'heading "Chương 429: Chương 429: Khống Hạc Cầm Long, Hạo Thiên phi chuy" [level=4] [ref=e2792]'
+            - paragraph [ref=e2793]: 20/5/2026
+          - img [ref=e2794]
+        - generic [ref=e2796] [cursor=pointer]:
+          - generic [ref=e2797]:
+            - 'heading "Chương 430: Chương 430: Đệ lục khảo, công kích của Hải Thần Đấu La" [level=4] [ref=e2798]'
+            - paragraph [ref=e2799]: 20/5/2026
+          - img [ref=e2800]
+        - generic [ref=e2802] [cursor=pointer]:
+          - generic [ref=e2803]:
+            - 'heading "Chương 431: Chương 431: Hải Thần Đấu La, vô hạn tiếp cận với thần thực lực" [level=4] [ref=e2804]'
+            - paragraph [ref=e2805]: 20/5/2026
+          - img [ref=e2806]
+        - generic [ref=e2808] [cursor=pointer]:
+          - generic [ref=e2809]:
+            - 'heading "Chương 432: Chương 432: Mượn thế vượt qua kiểm tra, phá tan đệ lục khảo" [level=4] [ref=e2810]'
+            - paragraph [ref=e2811]: 20/5/2026
+          - img [ref=e2812]
+        - generic [ref=e2814] [cursor=pointer]:
+          - generic [ref=e2815]:
+            - 'heading "Chương 433: Chương 433: Hải Thần thần vị, con đường thành thần" [level=4] [ref=e2816]'
+            - paragraph [ref=e2817]: 20/5/2026
+          - img [ref=e2818]
+        - generic [ref=e2820] [cursor=pointer]:
+          - generic [ref=e2821]:
+            - 'heading "Chương 434: Chương 434: Rút ra thần khí Hải Thần Tam Xoa Kích" [level=4] [ref=e2822]'
+            - paragraph [ref=e2823]: 20/5/2026
+          - img [ref=e2824]
+        - generic [ref=e2826] [cursor=pointer]:
+          - generic [ref=e2827]:
+            - 'heading "Chương 435: Chương 435: Hải Thần Tam Xoa Kích, nặng mười vạn tám ngàn cân" [level=4] [ref=e2828]'
+            - paragraph [ref=e2829]: 20/5/2026
+          - img [ref=e2830]
+        - generic [ref=e2832] [cursor=pointer]:
+          - generic [ref=e2833]:
+            - 'heading "Chương 436: Chương 436: Thu hoạch cùng chia tay sau bốn năm" [level=4] [ref=e2834]'
+            - paragraph [ref=e2835]: 20/5/2026
+          - img [ref=e2836]
+        - generic [ref=e2838] [cursor=pointer]:
+          - generic [ref=e2839]:
+            - 'heading "Chương 437: Chương 437: Võ Hồn đế quốc" [level=4] [ref=e2840]'
+            - paragraph [ref=e2841]: 20/5/2026
+          - img [ref=e2842]
+        - generic [ref=e2844] [cursor=pointer]:
+          - generic [ref=e2845]:
+            - 'heading "Chương 438: Chương 438: Uy lực của Hải Thần Tam Xoa Kích" [level=4] [ref=e2846]'
+            - paragraph [ref=e2847]: 20/5/2026
+          - img [ref=e2848]
+        - generic [ref=e2850] [cursor=pointer]:
+          - generic [ref=e2851]:
+            - 'heading "Chương 439: Chương 439: Sát Lục chi vương tái hiện" [level=4] [ref=e2852]'
+            - paragraph [ref=e2853]: 20/5/2026
+          - img [ref=e2854]
+        - generic [ref=e2856] [cursor=pointer]:
+          - generic [ref=e2857]:
+            - 'heading "Chương 440: Chương 440: Sát Lục chi vương chính là ông cố!" [level=4] [ref=e2858]'
+            - paragraph [ref=e2859]: 20/5/2026
+          - img [ref=e2860]
+        - generic [ref=e2862] [cursor=pointer]:
+          - generic [ref=e2863]:
+            - 'heading "Chương 441: Chương 441: Nguy cơ của hai đại thần thú" [level=4] [ref=e2864]'
+            - paragraph [ref=e2865]: 20/5/2026
+          - img [ref=e2866]
+        - generic [ref=e2868] [cursor=pointer]:
+          - generic [ref=e2869]:
+            - 'heading "Chương 442: Chương 442: Đường Tam lần đầu tiên giao thủ cùng Bỉ Bỉ Đông" [level=4] [ref=e2870]'
+            - paragraph [ref=e2871]: 20/5/2026
+          - img [ref=e2872]
+        - generic [ref=e2874] [cursor=pointer]:
+          - generic [ref=e2875]:
+            - 'heading "Chương 443: Chương 443: Kĩ năng của Hải Thần, Hoàng Kim Thập Tam Kích" [level=4] [ref=e2876]'
+            - paragraph [ref=e2877]: 20/5/2026
+          - img [ref=e2878]
+        - generic [ref=e2880] [cursor=pointer]:
+          - generic [ref=e2881]:
+            - 'heading "Chương 444: Chương 444: Sâm lâm chi vương hiến tế- Hồn hoàn thứ chín của Đường Tam" [level=4] [ref=e2882]'
+            - paragraph [ref=e2883]: 20/5/2026
+          - img [ref=e2884]
+        - generic [ref=e2886] [cursor=pointer]:
+          - generic [ref=e2887]:
+            - 'heading "Chương 445: Chương 445: Nơi sống lại, Lạc Nhật sâm lâm" [level=4] [ref=e2888]'
+            - paragraph [ref=e2889]: 20/5/2026
+          - img [ref=e2890]
+        - generic [ref=e2892] [cursor=pointer]:
+          - generic [ref=e2893]:
+            - 'heading "Chương 446: Chương 446: Sống lại đi, người yêu của ta" [level=4] [ref=e2894]'
+            - paragraph [ref=e2895]: 20/5/2026
+          - img [ref=e2896]
+        - generic [ref=e2898] [cursor=pointer]:
+          - generic [ref=e2899]:
+            - 'heading "Chương 447: Chương 447: Tiến hóa cuối cùng của Lam Ngân Lĩnh Vực- Hải Nạp Bách Xuyên" [level=4] [ref=e2900]'
+            - paragraph [ref=e2901]: 20/5/2026
+          - img [ref=e2902]
+        - generic [ref=e2904] [cursor=pointer]:
+          - generic [ref=e2905]:
+            - 'heading "Chương 448: Chương 448: Đại lễ dâng đến cửa" [level=4] [ref=e2906]'
+            - paragraph [ref=e2907]: 20/5/2026
+          - img [ref=e2908]
+        - generic [ref=e2910] [cursor=pointer]:
+          - generic [ref=e2911]:
+            - 'heading "Chương 449: Chương 449: Thiết hán nhu tình" [level=4] [ref=e2912]'
+            - paragraph [ref=e2913]: 20/5/2026
+          - img [ref=e2914]
+        - generic [ref=e2916] [cursor=pointer]:
+          - generic [ref=e2917]:
+            - 'heading "Chương 450: Chương 450: Trở về Hạo Thiên Tông" [level=4] [ref=e2918]'
+            - paragraph [ref=e2919]: 20/5/2026
+          - img [ref=e2920]
+        - generic [ref=e2922] [cursor=pointer]:
+          - generic [ref=e2923]:
+            - 'heading "Chương 451: Chương 451: Thái Thản Khung Thương Phá cùng Thiên Thanh Trì Độn Thần Trảo" [level=4] [ref=e2924]'
+            - paragraph [ref=e2925]: 20/5/2026
+          - img [ref=e2926]
+        - generic [ref=e2928] [cursor=pointer]:
+          - generic [ref=e2929]:
+            - 'heading "Chương 452: Chương 452: Tông môn thủ tịch, Hạo Thiên lệnh" [level=4] [ref=e2930]'
+            - paragraph [ref=e2931]: 20/5/2026
+          - img [ref=e2932]
+        - generic [ref=e2934] [cursor=pointer]:
+          - generic [ref=e2935]:
+            - 'heading "Chương 453: Chương 453: Thần Tượng Di Vật - Tuyệt Thế Ám Khí" [level=4] [ref=e2936]'
+            - paragraph [ref=e2937]: 20/5/2026
+          - img [ref=e2938]
+        - generic [ref=e2940] [cursor=pointer]:
+          - generic [ref=e2941]:
+            - 'heading "Chương 454: Chương 454: Đường gia quân-chín mươi ba cấp-đế sư" [level=4] [ref=e2942]'
+            - paragraph [ref=e2943]: 20/5/2026
+          - img [ref=e2944]
+        - generic [ref=e2946] [cursor=pointer]:
+          - generic [ref=e2947]:
+            - 'heading "Chương 455: Chương 455: Thiên Đấu đại quân" [level=4] [ref=e2948]'
+            - paragraph [ref=e2949]: 20/5/2026
+          - img [ref=e2950]
+        - generic [ref=e2952] [cursor=pointer]:
+          - generic [ref=e2953]:
+            - 'heading "Chương 456: Chương 456: Thất quái bảo vệ tuyến tiếp viện" [level=4] [ref=e2954]'
+            - paragraph [ref=e2955]: 20/5/2026
+          - img [ref=e2956]
+        - generic [ref=e2958] [cursor=pointer]:
+          - generic [ref=e2959]:
+            - 'heading "Chương 457: Chương 457: Hồn kỹ thứ chín của Đường Tam" [level=4] [ref=e2960]'
+            - paragraph [ref=e2961]: 20/5/2026
+          - img [ref=e2962]
+        - generic [ref=e2964] [cursor=pointer]:
+          - generic [ref=e2965]:
+            - 'heading "Chương 458: Chương 458: Thiên Thanh Tịch Diệt Lôi Đình" [level=4] [ref=e2966]'
+            - paragraph [ref=e2967]: 20/5/2026
+          - img [ref=e2968]
+        - generic [ref=e2970] [cursor=pointer]:
+          - generic [ref=e2971]:
+            - 'heading "Chương 459: Chương 459: Tái chiến Bỉ Bỉ Đông, Đường gia quân thể hiện uy phong" [level=4] [ref=e2972]'
+            - paragraph [ref=e2973]: 20/5/2026
+          - img [ref=e2974]
+        - generic [ref=e2976] [cursor=pointer]:
+          - generic [ref=e2977]:
+            - 'heading "Chương 460: Chương 460: Tử Cực Ma Đồng : Tu La Ma Quang" [level=4] [ref=e2978]'
+            - paragraph [ref=e2979]: 20/5/2026
+          - img [ref=e2980]
+        - generic [ref=e2982] [cursor=pointer]:
+          - generic [ref=e2983]:
+            - 'heading "Chương 461: Chương 461: Định kế tổng tiến công: Tu La Ma Quang" [level=4] [ref=e2984]'
+            - paragraph [ref=e2985]: 20/5/2026
+          - img [ref=e2986]
+        - generic [ref=e2988] [cursor=pointer]:
+          - generic [ref=e2989]:
+            - 'heading "Chương 462: Chương 462: Chiến trường của một người: Tu La Ma Quang" [level=4] [ref=e2990]'
+            - paragraph [ref=e2991]: 20/5/2026
+          - img [ref=e2992]
+        - generic [ref=e2994] [cursor=pointer]:
+          - generic [ref=e2995]:
+            - 'heading "Chương 463: Chương 463: Đường Môn tuyệt đỉnh- Phật Nộ Đường Liên: Tu La Ma Quang" [level=4] [ref=e2996]'
+            - paragraph [ref=e2997]: 20/5/2026
+          - img [ref=e2998]
+        - generic [ref=e3000] [cursor=pointer]:
+          - generic [ref=e3001]:
+            - 'heading "Chương 464: Chương 464: Sáu đại cung phụng, đỉnh cao đấu la: Tu La Ma Quang" [level=4] [ref=e3002]'
+            - paragraph [ref=e3003]: 20/5/2026
+          - img [ref=e3004]
+        - generic [ref=e3006] [cursor=pointer]:
+          - generic [ref=e3007]:
+            - 'heading "Chương 465: Chương 465: Đánh tan, huynh đệ cung phụng chín mươi sáu cấp: Tu La Ma Quang" [level=4] [ref=e3008]'
+            - paragraph [ref=e3009]: 20/5/2026
+          - img [ref=e3010]
+        - generic [ref=e3012] [cursor=pointer]:
+          - generic [ref=e3013]:
+            - 'heading "Chương 466: Chương 466: Hạo Thiên Chuy chân chính, trạng thái Hạo Thiên Đấu La: Tu La Ma Quang" [level=4] [ref=e3014]'
+            - paragraph [ref=e3015]: 20/5/2026
+          - img [ref=e3016]
+        - generic [ref=e3018] [cursor=pointer]:
+          - generic [ref=e3019]:
+            - 'heading "Chương 467: Chương 467: Hạo Thiên tông thần kĩ, Đại Tu Di Chuy: Tu La Ma Quang" [level=4] [ref=e3020]'
+            - paragraph [ref=e3021]: 20/5/2026
+          - img [ref=e3022]
+        - generic [ref=e3024] [cursor=pointer]:
+          - generic [ref=e3025]:
+            - 'heading "Chương 468: Chương 468: Thiên Sứ đệ cửu khảo: Truyền thừa thần vị" [level=4] [ref=e3026]'
+            - paragraph [ref=e3027]: 20/5/2026
+          - img [ref=e3028]
+        - generic [ref=e3030] [cursor=pointer]:
+          - generic [ref=e3031]:
+            - 'heading "Chương 469: Chương 469: Ám Ma Tà Thần Hổ : Tà Thần phụ thể" [level=4] [ref=e3032]'
+            - paragraph [ref=e3033]: 20/5/2026
+          - img [ref=e3034]
+        - generic [ref=e3036] [cursor=pointer]:
+          - generic [ref=e3037]:
+            - 'heading "Chương 470: Chương 470: Siêu cấp hồn thú thông minh tuyệt đỉnh: Tà Thần phụ thể" [level=4] [ref=e3038]'
+            - paragraph [ref=e3039]: 20/5/2026
+          - img [ref=e3040]
+        - generic [ref=e3042] [cursor=pointer]:
+          - generic [ref=e3043]:
+            - 'heading "Chương 471: Chương 471: Cuộc chiến phản lão hoàn đồng, Hạo Thiên Chuy đệ tứ hồn hoàn: Tà Thần phụ thể" [level=4] [ref=e3044]'
+            - paragraph [ref=e3045]: 20/5/2026
+          - img [ref=e3046]
+        - generic [ref=e3048] [cursor=pointer]:
+          - generic [ref=e3049]:
+            - 'heading "Chương 472: Chương 472: Bát chu mâu tiến hóa thần cấp: Tà Thần phụ thể" [level=4] [ref=e3050]'
+            - paragraph [ref=e3051]: 20/5/2026
+          - img [ref=e3052]
+        - generic [ref=e3054] [cursor=pointer]:
+          - generic [ref=e3055]:
+            - 'heading "Chương 473: Chương 473: Chín vạn năm! Ba huynh đệ Thiên Quân Nghĩ hoàng: Tà Thần phụ thể" [level=4] [ref=e3056]'
+            - paragraph [ref=e3057]: 20/5/2026
+          - img [ref=e3058]
+        - generic [ref=e3060] [cursor=pointer]:
+          - generic [ref=e3061]:
+            - 'heading "Chương 474: Chương 474: Khắc tinh của hồn thú loại côn trùng, thần cấp Bát Chu Mâu: Tà Thần phụ thể" [level=4] [ref=e3062]'
+            - paragraph [ref=e3063]: 20/5/2026
+          - img [ref=e3064]
+        - generic [ref=e3066] [cursor=pointer]:
+          - generic [ref=e3067]:
+            - 'heading "Chương 475: Chương 475: Thà làm ngọc vỡ, không làm ngói lành: Tà Thần phụ thể" [level=4] [ref=e3068]'
+            - paragraph [ref=e3069]: 20/5/2026
+          - img [ref=e3070]
+        - generic [ref=e3072] [cursor=pointer]:
+          - generic [ref=e3073]:
+            - 'heading "Chương 476: Chương 476: Trận chiến đầu tiên với Thiên Sứ thần cấp: Tà Thần phụ thể" [level=4] [ref=e3074]'
+            - paragraph [ref=e3075]: 20/5/2026
+          - img [ref=e3076]
+        - generic [ref=e3078] [cursor=pointer]:
+          - generic [ref=e3079]:
+            - 'heading "Chương 477: Chương 477: Hồn hoàn thứ mười - Hồn hoàn thần cấp: Tà Thần phụ thể" [level=4] [ref=e3080]'
+            - paragraph [ref=e3081]: 20/5/2026
+          - img [ref=e3082]
+        - generic [ref=e3084] [cursor=pointer]:
+          - generic [ref=e3085]:
+            - 'heading "Chương 478: Chương 478: Ý nghĩa sâu xa của Đại Tu Di Chuy: Tạc hoàn (Bùng nổ hồn hoàn)" [level=4] [ref=e3086]'
+            - paragraph [ref=e3087]: 20/5/2026
+          - img [ref=e3088]
+        - generic [ref=e3090] [cursor=pointer]:
+          - generic [ref=e3091]:
+            - 'heading "Chương 479: Chương 479: Tuyệt đối áp chế - Đại Tu Di Hạo Thiên Chuy: Tạc hoàn (Bùng nổ hồn hoàn)" [level=4] [ref=e3092]'
+            - paragraph [ref=e3093]: 20/5/2026
+          - img [ref=e3094]
+        - generic [ref=e3096] [cursor=pointer]:
+          - generic [ref=e3097]:
+            - 'heading "Chương 480: Chương 480: Đệ nhất Đường môn - Quan Âm Hữu Lệ: Tạc hoàn (Bùng nổ hồn hoàn)" [level=4] [ref=e3098]'
+            - paragraph [ref=e3099]: 20/5/2026
+          - img [ref=e3100]
+        - generic [ref=e3102] [cursor=pointer]:
+          - generic [ref=e3103]:
+            - 'heading "Chương 481: Chương 481: Thái Dương Thánh Kiếm: Tạc hoàn (Bùng nổ hồn hoàn)" [level=4] [ref=e3104]'
+            - paragraph [ref=e3105]: 20/5/2026
+          - img [ref=e3106]
+        - generic [ref=e3108] [cursor=pointer]:
+          - generic [ref=e3109]:
+            - 'heading "Chương 482: Chương 482: Sự truy sát của thần cấp trong lòng đất: Tạc hoàn (Bùng nổ hồn hoàn)" [level=4] [ref=e3110]'
+            - paragraph [ref=e3111]: 20/5/2026
+          - img [ref=e3112]
+        - generic [ref=e3114] [cursor=pointer]:
+          - generic [ref=e3115]:
+            - 'heading "Chương 483: Chương 483: Hải Thần giáng lâm: Tạc hoàn (Bùng nổ hồn hoàn)" [level=4] [ref=e3116]'
+            - paragraph [ref=e3117]: 20/5/2026
+          - img [ref=e3118]
+        - generic [ref=e3120] [cursor=pointer]:
+          - generic [ref=e3121]:
+            - 'heading "Chương 484: Chương 484: Mục tiêu : Thâm Hải Ma Kình Vương" [level=4] [ref=e3122]'
+            - paragraph [ref=e3123]: 20/5/2026
+          - img [ref=e3124]
+        - generic [ref=e3126] [cursor=pointer]:
+          - generic [ref=e3127]:
+            - 'heading "Chương 485: Chương 485: Chiến đấu đi! Thâm Hải Ma Kình Vương: Thâm Hải Ma Kình Vương" [level=4] [ref=e3128]'
+            - paragraph [ref=e3129]: 20/5/2026
+          - img [ref=e3130]
+        - generic [ref=e3132] [cursor=pointer]:
+          - generic [ref=e3133]:
+            - 'heading "Chương 486: Chương 486: Kém thần một đường, trăm vạn năm hồn thú: Thâm Hải Ma Kình Vương" [level=4] [ref=e3134]'
+            - paragraph [ref=e3135]: 20/5/2026
+          - img [ref=e3136]
+        - generic [ref=e3138] [cursor=pointer]:
+          - generic [ref=e3139]:
+            - 'heading "Chương 487: Chương 487: Đường Tam VS Thâm Hải Ma Kình Vương: Thâm Hải Ma Kình Vương" [level=4] [ref=e3140]'
+            - paragraph [ref=e3141]: 20/5/2026
+          - img [ref=e3142]
+        - generic [ref=e3144] [cursor=pointer]:
+          - generic [ref=e3145]:
+            - 'heading "Chương 488: Chương 488: Tiêu diệt Ma kình vương, Sát Thần lĩnh vực biến dị: Thâm Hải Ma Kình Vương" [level=4] [ref=e3146]'
+            - paragraph [ref=e3147]: 20/5/2026
+          - img [ref=e3148]
+        - generic [ref=e3150] [cursor=pointer]:
+          - generic [ref=e3151]:
+            - 'heading "Chương 489: Chương 489: Trăm vạn năm hồn hoàn cùng Trăm vạn năm hồn cốt: Thâm Hải Ma Kình Vương" [level=4] [ref=e3152]'
+            - paragraph [ref=e3153]: 20/5/2026
+          - img [ref=e3154]
+        - generic [ref=e3156] [cursor=pointer]:
+          - generic [ref=e3157]:
+            - 'heading "Chương 490: Chương 490: Bảo bối trong đầu Thâm Hải Ma Kình Vương: Thâm Hải Ma Kình Vương" [level=4] [ref=e3158]'
+            - paragraph [ref=e3159]: 20/5/2026
+          - img [ref=e3160]
+        - generic [ref=e3162] [cursor=pointer]:
+          - generic [ref=e3163]:
+            - 'heading "Chương 491: Chương 491: Hai lựa chọn truyền thừa: Hải Thần hay Tu La Thần?" [level=4] [ref=e3164]'
+            - paragraph [ref=e3165]: 20/5/2026
+          - img [ref=e3166]
+        - generic [ref=e3168] [cursor=pointer]:
+          - generic [ref=e3169]:
+            - 'heading "Chương 492: Chương 492: Truyền thừa bắt đầu, Hải Thần Đấu La hiến tế: Hải Thần hay Tu La Thần?" [level=4] [ref=e3170]'
+            - paragraph [ref=e3171]: 20/5/2026
+          - img [ref=e3172]
+        - generic [ref=e3174] [cursor=pointer]:
+          - generic [ref=e3175]:
+            - 'heading "Chương 493: Chương 493: Hải Thần và Tu La thần: Hải Thần hay Tu La Thần?" [level=4] [ref=e3176]'
+            - paragraph [ref=e3177]: 20/5/2026
+          - img [ref=e3178]
+        - generic [ref=e3180] [cursor=pointer]:
+          - generic [ref=e3181]:
+            - 'heading "Chương 494: Chương 494: Rút ra Hồn cốt, Hải Thần tám cánh: Hải Thần hay Tu La Thần?" [level=4] [ref=e3182]'
+            - paragraph [ref=e3183]: 20/5/2026
+          - img [ref=e3184]
+        - generic [ref=e3186] [cursor=pointer]:
+          - generic [ref=e3187]:
+            - 'heading "Chương 495: Chương 495: Một chữ tình, tâm linh cảm ứng giải cứu: Hải Thần hay Tu La Thần?" [level=4] [ref=e3188]'
+            - paragraph [ref=e3189]: 20/5/2026
+          - img [ref=e3190]
+        - generic [ref=e3192] [cursor=pointer]:
+          - generic [ref=e3193]:
+            - 'heading "Chương 496: Chương 496: Tấm thân xử nam của ta chỉ dành cho Tiểu Vũ, Hải Thần thần trang: Hải Thần hay Tu La Thần?" [level=4] [ref=e3194]'
+            - paragraph [ref=e3195]: 20/5/2026
+          - img [ref=e3196]
+        - generic [ref=e3198] [cursor=pointer]:
+          - generic [ref=e3199]:
+            - 'heading "Chương 497: Chương 497: Hải Thần Đường Tam: Hải Thần hay Tu La Thần?" [level=4] [ref=e3200]'
+            - paragraph [ref=e3201]: 20/5/2026
+          - img [ref=e3202]
+        - generic [ref=e3204] [cursor=pointer]:
+          - generic [ref=e3205]:
+            - 'heading "Chương 498: Chương 498: Hải Thần và Thiên Sứ Thần: Hải Thần hay Tu La Thần?" [level=4] [ref=e3206]'
+            - paragraph [ref=e3207]: 20/5/2026
+          - img [ref=e3208]
+        - generic [ref=e3210] [cursor=pointer]:
+          - generic [ref=e3211]:
+            - 'heading "Chương 499: Chương 499: Sóng biếc, Hải Thần, xanh thẳm vô tận: Hải Thần hay Tu La Thần?" [level=4] [ref=e3212]'
+            - paragraph [ref=e3213]: 20/5/2026
+          - img [ref=e3214]
+        - generic [ref=e3216] [cursor=pointer]:
+          - generic [ref=e3217]:
+            - 'heading "Chương 500: Chương 500: Thực Thần và Cửu Thải Thần Nữ: Hải Thần hay Tu La Thần?" [level=4] [ref=e3218]'
+            - paragraph [ref=e3219]: 20/5/2026
+          - img [ref=e3220]
+        - generic [ref=e3222] [cursor=pointer]:
+          - generic [ref=e3223]:
+            - 'heading "Chương 501: Chương 501: Thất quái phong hào cùng Tu La thần lực tái sinh: Hải Thần hay Tu La Thần?" [level=4] [ref=e3224]'
+            - paragraph [ref=e3225]: 20/5/2026
+          - img [ref=e3226]
+        - generic [ref=e3228] [cursor=pointer]:
+          - generic [ref=e3229]:
+            - 'heading "Chương 502: Chương 502: Lựa chọn của Tiểu Vũ, Ma Kiếm nhập thể: Hải Thần hay Tu La Thần?" [level=4] [ref=e3230]'
+            - paragraph [ref=e3231]: 20/5/2026
+          - img [ref=e3232]
+        - generic [ref=e3234] [cursor=pointer]:
+          - generic [ref=e3235]:
+            - 'heading "Chương 503: Chương 503: Gia Lăng quan, song thần hàng lâm: Hải Thần hay Tu La Thần?" [level=4] [ref=e3236]'
+            - paragraph [ref=e3237]: 20/5/2026
+          - img [ref=e3238]
+        - generic [ref=e3240] [cursor=pointer]:
+          - generic [ref=e3241]:
+            - 'heading "Chương 504: Chương 504: Tuyệt thế song thần, quyết chiến trên cao mười dặm: Hải Thần hay Tu La Thần?" [level=4] [ref=e3242]'
+            - paragraph [ref=e3243]: 20/5/2026
+          - img [ref=e3244]
+        - generic [ref=e3246] [cursor=pointer]:
+          - generic [ref=e3247]:
+            - 'heading "Chương 505: Chương 505: Siêu cấp dung hợp kỹ - U Minh Bạch Hổ: Hải Thần hay Tu La Thần?" [level=4] [ref=e3248]'
+            - paragraph [ref=e3249]: 20/5/2026
+          - img [ref=e3250]
+        - generic [ref=e3252] [cursor=pointer]:
+          - generic [ref=e3253]:
+            - 'heading "Chương 506: Chương 506: Lục quái phát uy, binh lâm thành hạ: Hải Thần hay Tu La Thần?" [level=4] [ref=e3254]'
+            - paragraph [ref=e3255]: 20/5/2026
+          - img [ref=e3256]
+        - generic [ref=e3258] [cursor=pointer]:
+          - generic [ref=e3259]:
+            - 'heading "Chương 507: Chương 507: Cửu Bảo Vô Địch Thần Quang: Hải Thần hay Tu La Thần?" [level=4] [ref=e3260]'
+            - paragraph [ref=e3261]: 20/5/2026
+          - img [ref=e3262]
+        - generic [ref=e3264] [cursor=pointer]:
+          - generic [ref=e3265]:
+            - 'heading "Chương 508: Chương 508: Toàn thành tràn ngập lục u u: Hải Thần hay Tu La Thần?" [level=4] [ref=e3266]'
+            - paragraph [ref=e3267]: 20/5/2026
+          - img [ref=e3268]
+        - generic [ref=e3270] [cursor=pointer]:
+          - generic [ref=e3271]:
+            - 'heading "Chương 509: Chương 509: Thái dương Thiên sứ: Hải Thần hay Tu La Thần?" [level=4] [ref=e3272]'
+            - paragraph [ref=e3273]: 20/5/2026
+          - img [ref=e3274]
+        - generic [ref=e3276] [cursor=pointer]:
+          - generic [ref=e3277]:
+            - 'heading "Chương 510: Chương 510: La Sát thần xuất hiện: Hải Thần hay Tu La Thần?" [level=4] [ref=e3278]'
+            - paragraph [ref=e3279]: 20/5/2026
+          - img [ref=e3280]
+        - generic [ref=e3282] [cursor=pointer]:
+          - generic [ref=e3283]:
+            - 'heading "Chương 511: Chương 511: Thiên sứ cùng La sát" [level=4] [ref=e3284]'
+            - paragraph [ref=e3285]: 20/5/2026
+          - img [ref=e3286]
+        - generic [ref=e3288] [cursor=pointer]:
+          - generic [ref=e3289]:
+            - 'heading "Chương 512: Hải Thần Vẫn Lạc" [level=4] [ref=e3290]'
+            - paragraph [ref=e3291]: 18/5/2026
+          - img [ref=e3292]
+        - generic [ref=e3294] [cursor=pointer]:
+          - generic [ref=e3295]:
+            - 'heading "Chương 513: Dung Hợp Hoàn Mỹ- Thần Quang Phục Sinh" [level=4] [ref=e3296]'
+            - paragraph [ref=e3297]: 18/5/2026
+          - img [ref=e3298]
+        - generic [ref=e3300] [cursor=pointer]:
+          - generic [ref=e3301]:
+            - 'heading "Chương 514: Thần Hồn Về Vị Trí Cũ- Hải Thần Trở Lại" [level=4] [ref=e3302]'
+            - paragraph [ref=e3303]: 18/5/2026
+          - img [ref=e3304]
+        - generic [ref=e3306] [cursor=pointer]:
+          - generic [ref=e3307]:
+            - 'heading "Chương 515: Quyết Chiến Cuối Cùng" [level=4] [ref=e3308]'
+            - paragraph [ref=e3309]: 18/5/2026
+          - img [ref=e3310]
+        - generic [ref=e3312] [cursor=pointer]:
+          - generic [ref=e3313]:
+            - 'heading "Chương 516: Hoàn Mỹ Dung Hợp Chi Song Thần Chiến Song Thần" [level=4] [ref=e3314]'
+            - paragraph [ref=e3315]: 18/5/2026
+          - img [ref=e3316]
+        - generic [ref=e3318] [cursor=pointer]:
+          - generic [ref=e3319]:
+            - 'heading "Chương 517: Đại Kết Cục, Một Điều Kiện Cuối Cùng!" [level=4] [ref=e3320]'
+            - paragraph [ref=e3321]: 18/5/2026
+          - img [ref=e3322]
