@@ -384,8 +384,8 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
               {showScrapeConfirm && (
                 <button
                   onClick={handleStartScrape}
-                  disabled={isUpdating}
-                  className="px-6 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors disabled:opacity-50 flex items-center justify-center gap-2 flex-1 sm:flex-initial"
+                  disabled={isUpdating || (latestChapterInfo ? latestChapterInfo.chapter_number <= chapters.length : true)}
+                  className="px-6 py-3 bg-red-600 text-white rounded-full font-medium hover:bg-red-700 transition-colors disabled:bg-muted disabled:text-muted-foreground disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 flex-1 sm:flex-initial"
                 >
                   {isUpdating && showScrapeConfirm ? 'Đang cào...' : 'Cào'}
                 </button>

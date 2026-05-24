@@ -166,7 +166,15 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     const saved = localStorage.getItem('reader_enableAutoScroll');
     return saved !== 'false'; // Default true
   });
-  const [shouldAutoResume, setShouldAutoResume] = useState(false);
+  const [shouldAutoResume, setShouldAutoResume] = useState(() => {
+    if (initialChapter?.id) {
+      const positions = localStorage.getItem('reading_positions') || '{}';
+      const positionsMap = JSON.parse(positions);
+      const position = positionsMap[initialChapter.id];
+      return position ? position.isPlaying === true : false;
+    }
+    return false;
+  });
   const [sleepTimer, setSleepTimer] = useState<number | null>(() => {
     const saved = localStorage.getItem('reader_sleepTimer');
     return saved ? Number(saved) : null;
@@ -178,6 +186,15 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
   const handlePlayPauseRef = React.useRef<any>(null);
   const goToNextChapterRef = React.useRef<any>(null);
   const goToPreviousChapterRef = React.useRef<any>(null);
+  const isProgrammaticScrollRef = React.useRef(false);
+  const scrollTimeoutRef = React.useRef<any>(null);
+  const lastComputedIndexRef = React.useRef(0);
+  const isPositionRestoredRef = React.useRef(false);
+
+  // Keep lastComputedIndexRef in sync with currentParagraphIndex state
+  useEffect(() => {
+    lastComputedIndexRef.current = currentParagraphIndex;
+  }, [currentParagraphIndex]);
 
   // Keep ref callbacks up to date on every render to prevent closures in Media Session handlers
   useEffect(() => {
@@ -460,12 +477,12 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
   // Save reading position periodically and on unmount
   useEffect(() => {
     const saveInterval = setInterval(() => {
-      if (chapter?.id) {
+      if (chapter?.id && isPositionRestoredRef.current) {
         const positions = localStorage.getItem('reading_positions') || '{}';
         const positionsMap = JSON.parse(positions);
 
         positionsMap[chapter.id] = {
-          paragraphIndex: currentParagraphIndex,
+          paragraphIndex: lastComputedIndexRef.current,
           isPlaying: isPlaying,
           timestamp: new Date().toISOString(),
         };
@@ -477,13 +494,26 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
 
     return () => {
       clearInterval(saveInterval);
+      
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      if (!isPositionRestoredRef.current) {
+        console.log('[Cleanup] Ignored saving because position was not yet restored for chapter', chapter?.id);
+        return;
+      }
+
+      const finalIndex = lastComputedIndexRef.current;
+      console.log('[Cleanup] Final save paragraph index:', finalIndex);
+
       // Final save on unmount
       if (chapter?.id) {
         const positions = localStorage.getItem('reading_positions') || '{}';
         const positionsMap = JSON.parse(positions);
 
         positionsMap[chapter.id] = {
-          paragraphIndex: currentParagraphIndex,
+          paragraphIndex: finalIndex,
           isPlaying: isPlaying,
           timestamp: new Date().toISOString(),
         };
@@ -493,7 +523,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
 
         // Sync to Supabase if logged in
         if (user && chapter?.story_id) {
-          const scrollPos = content?.paragraphs?.length ? currentParagraphIndex / content.paragraphs.length : 0;
+          const scrollPos = content?.paragraphs?.length ? finalIndex / content.paragraphs.length : 0;
           supabase
             .from('reading_history')
             .upsert({
@@ -529,6 +559,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
         if (paragraphIndex >= 0 && paragraphIndex < content.paragraphs.length) {
           console.log('[ReadingScreen] Restored scroll position from DB:', paragraphIndex);
           setCurrentParagraphIndex(paragraphIndex);
+          lastComputedIndexRef.current = paragraphIndex;
           
           // Save back to local storage positions so we don't fetch DB repeatedly
           const positions = localStorage.getItem('reading_positions') || '{}';
@@ -545,7 +576,11 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
             if (contentRef.current) {
               const paragraphElement = contentRef.current.querySelector(`[data-paragraph-index="${paragraphIndex}"]`);
               if (paragraphElement) {
+                isProgrammaticScrollRef.current = true;
                 paragraphElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                setTimeout(() => {
+                  isProgrammaticScrollRef.current = false;
+                }, 1000);
               }
             }
           }, 150);
@@ -574,6 +609,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
           speakParagraph(0);
         }, 50);
       }
+    } finally {
+      isPositionRestoredRef.current = true;
     }
   };
 
@@ -585,7 +622,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
       if (restored) {
         console.log('Position restored, paragraphIndex:', restored.paragraphIndex, 'isPlaying:', restored.isPlaying);
         // Always restore position if found
-        if (shouldAutoResume || restored.isPlaying) {
+        if (shouldAutoResume) {
           // Auto-resume if was playing or explicitly requested
           console.log('Auto-resuming from paragraph', restored.paragraphIndex);
           setShouldAutoResume(false);
@@ -600,21 +637,29 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
           if (contentRef.current) {
             const paragraphElement = contentRef.current.querySelector(`[data-paragraph-index="${restored.paragraphIndex}"]`);
             if (paragraphElement) {
+              isProgrammaticScrollRef.current = true;
               paragraphElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              setTimeout(() => {
+                isProgrammaticScrollRef.current = false;
+              }, 1000);
             }
           }
         }, 150);
       } else if (user) {
         // No local positions, fetch from Supabase DB
         restoreReadingPositionFromDB();
-      } else if (shouldAutoResume) {
-        // No saved position, but auto-resume requested (chapter change)
-        console.log('No saved position, starting from 0');
-        setShouldAutoResume(false);
-        setIsPlaying(true);
-        setTimeout(() => {
-          speakParagraph(0);
-        }, 50);
+      } else {
+        // No local positions, no user -> start from 0
+        isPositionRestoredRef.current = true;
+        if (shouldAutoResume) {
+          // No saved position, but auto-resume requested (chapter change)
+          console.log('No saved position, starting from 0');
+          setShouldAutoResume(false);
+          setIsPlaying(true);
+          setTimeout(() => {
+            speakParagraph(0);
+          }, 50);
+        }
       }
     }
   }, [content]);
@@ -669,6 +714,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
 
     if (position && position.paragraphIndex >= 0) {
       setCurrentParagraphIndex(position.paragraphIndex);
+      lastComputedIndexRef.current = position.paragraphIndex;
+      isPositionRestoredRef.current = true;
       return position;
     }
 
@@ -778,7 +825,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     // Reset paragraph index and content before changing chapter
     setCurrentParagraphIndex(0);
     setContent(null);
-    setShouldAutoResume(autoResume || wasPlaying);
+    setShouldAutoResume(wasPlaying);
+    isPositionRestoredRef.current = false;
     
     // Change chapter
     setChapter(newChapter);
@@ -807,13 +855,13 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
 
   const goToNextChapter = async () => {
     if (currentChapterIndex < chapters.length - 1) {
-      await changeChapter(chapters[currentChapterIndex + 1], true);
+      await changeChapter(chapters[currentChapterIndex + 1], false);
     }
   };
 
   const goToPreviousChapter = async () => {
     if (currentChapterIndex > 0) {
-      await changeChapter(chapters[currentChapterIndex - 1], true);
+      await changeChapter(chapters[currentChapterIndex - 1], false);
     }
   };
 
@@ -939,10 +987,62 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
      }
    };
 
+  const syncParagraphIndexFromScroll = () => {
+    if (!contentRef.current || !content) return;
+    const container = contentRef.current;
+    const paragraphs = container.querySelectorAll('[data-paragraph-index]');
+    if (paragraphs.length === 0) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    // Sticky header Y offset is roughly 60px
+    const targetLine = containerRect.top + 60;
+    
+    let foundIndex = 0;
+    for (let i = 0; i < paragraphs.length; i++) {
+      const p = paragraphs[i];
+      const pRect = p.getBoundingClientRect();
+      if (pRect.top <= targetLine && pRect.bottom >= targetLine) {
+        foundIndex = parseInt(p.getAttribute('data-paragraph-index') || '0', 10);
+        break;
+      }
+    }
+    
+    if (foundIndex === 0) {
+      let minDistance = Infinity;
+      paragraphs.forEach((p) => {
+        const pRect = p.getBoundingClientRect();
+        const distance = Math.abs(pRect.top - targetLine);
+        if (distance < minDistance) {
+          minDistance = distance;
+          foundIndex = parseInt(p.getAttribute('data-paragraph-index') || '0', 10);
+        }
+      });
+    }
+    
+    return foundIndex;
+  };
+
   const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
     const element = e.currentTarget;
     const scrollProgress = (element.scrollTop / (element.scrollHeight - element.clientHeight)) * 100;
     setProgress(scrollProgress);
+
+    // Update paragraph index based on scroll position in non-playing mode
+    if (!isPlaying && !isProgrammaticScrollRef.current) {
+      const foundIndex = syncParagraphIndexFromScroll();
+      if (foundIndex !== undefined) {
+        console.log('[handleScroll] Scrolled paragraph:', foundIndex);
+        lastComputedIndexRef.current = foundIndex;
+      }
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+      scrollTimeoutRef.current = setTimeout(() => {
+        if (isProgrammaticScrollRef.current) return;
+        setCurrentParagraphIndex(lastComputedIndexRef.current);
+      }, 150);
+    }
   };
 
   return (

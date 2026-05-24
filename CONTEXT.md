@@ -1648,20 +1648,32 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 
 ---
 
-## 2026-05-23 21:54 - Điều chỉnh Scraper để cào từ chương đầu tiên và Build APK
+## 2026-05-24 18:55 - Tự động lưu vị trí cuộn & Sửa lỗi tự động phát Audio khi chuyển chương
 
-**Vấn đề**:
-- Muốn điều chỉnh cơ chế cào chương mới của truyện: cào từ đầu (`chapter_start: 1`) để có thể tự động vá/bù các chương bị lỗi/thiếu ở giữa truyện thay vì chỉ cào từ chương mới nhất (`currentTotal + 1`).
-- Cần thực hiện build lại APK phiên bản debug chứa các thay đổi trên.
+**Yêu cầu**:
+1. Lưu vị trí đọc hiện tại của chương vào bộ nhớ local (điện thoại) để tự động khôi phục khi người dùng quay lại hoặc thay đổi thiết bị (thông qua Supabase).
+2. Sửa hành vi tự động phát âm thanh khi chuyển sang chương mới: chỉ tự động phát nếu người dùng đang nghe dở dang ở chương trước, không tự động phát nếu người dùng chỉ đang đọc chay (không nghe audio).
 
 **Giải pháp đã thực hiện**:
-1. **Cập nhật UI/UX cào truyện**:
-   - Sửa tham số truyền vào hàm gọi Supabase Edge Function `trigger-scraper` tại [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx#L85-L93) để chuyển `chapter_start` cố định là `1` và `chapter_limit` là `0`. Việc này giúp scraper quét từ chương 1 và bỏ qua các chương đã có trên Cloudflare R2, chỉ cào các chương thực sự còn thiếu.
-2. **Build APK debug**:
-   - Chạy lệnh Gradle build `.\gradlew assembleDebug` từ thư mục dự án Android [web_react/android](file:///e:/projects_window/reader-hub/web_react/android).
-3. **Commit & Push GitHub**:
-   - Commit thay đổi trong file [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx) và [CONTEXT.md](file:///e:/projects_window/reader-hub/CONTEXT.md) rồi push lên GitHub.
+1. **Lưu vị trí cuộn động (Dynamic Scroll Tracking & Saving)**:
+   - Thêm `scrollTimeoutRef` (debounce), `isProgrammaticScrollRef` (phân biệt cuộn thủ công vs tự động khi khôi phục vị trí) và `lastComputedIndexRef` (đồng bộ tức thì).
+   - Nâng cấp `handleScroll`: Khi người dùng cuộn thủ công (không phát audio), tính toán đoạn văn (paragraph) gần Y offset 60px (trừ sticky header) của viewport nhất thông qua hàm helper `syncParagraphIndexFromScroll()`.
+   - Kết quả tính toán được lưu **ngay lập tức** vào `lastComputedIndexRef.current` thay vì chờ debounce 150ms của state React, đồng thời vẫn debounce việc gọi `setCurrentParagraphIndex` để cập nhật giao diện mà không gây giật lag.
+   - Khi unmount màn hình (`ReadingScreen`), hàm dọn dẹp (cleanup) của `useEffect` sẽ đọc trực tiếp giá trị của `lastComputedIndexRef.current` để ghi vào LocalStorage và đồng bộ lên Supabase, khắc phục triệt để lỗi race-condition (người dùng vuốt cuộn rồi ấn nút Back ngay lập tức khiến state chưa kịp cập nhật, dẫn tới lưu đè vị trí cũ).
+   - Khi khôi phục vị trí (`scrollIntoView`), thiết lập `isProgrammaticScrollRef.current = true` tạm thời trong 1 giây để tránh vòng lặp phản hồi của sự kiện cuộn ghi đè lại vị trí đọc.
+2. **Quy tắc chuyển chương và phát Audio hợp lý**:
+   - Khởi tạo giá trị `shouldAutoResume` khi mở màn hình đọc dựa trên trạng thái `isPlaying` được ghi nhận từ phiên trước của chương đó.
+   - Sửa hàm `changeChapter` để cờ `shouldAutoResume` chỉ lưu trạng thái phát hiện tại (`wasPlaying`) thay vì `autoResume || wasPlaying`.
+   - Cập nhật các nút chuyển chương `goToNextChapter` và `goToPreviousChapter` gọi `changeChapter` với tham số `autoResume = false`.
+   - Thay đổi điều kiện tự động phát trong `useEffect` nạp nội dung từ `if (shouldAutoResume || restored.isPlaying)` thành `if (shouldAutoResume)`, đảm bảo ứng dụng không đột ngột tự phát nhạc của một chương cũ có cờ `isPlaying === true` khi người dùng chỉ đang đọc chay chương hiện tại.
+3. **Vô hiệu hóa nút Cào (Scrape) khi không có chương mới**:
+   - Cập nhật [DetailScreen.tsx](file:///e:/projects_window/reader-hub/web_react/src/app/screens/DetailScreen.tsx#L384-L392): Sửa điều kiện `disabled` của nút cào truyện. Nút này sẽ bị vô hiệu hóa nếu đang trong tiến trình cập nhật (`isUpdating` là true) hoặc nếu số chương của nguồn nhỏ hơn hoặc bằng số chương hiện có trong cơ sở dữ liệu (`latestChapterInfo.chapter_number <= chapters.length`).
+   - Sử dụng các class Tailwind `disabled:bg-muted disabled:text-muted-foreground disabled:cursor-not-allowed` để làm xám nút và khóa tương tác chuột của người dùng một cách trực quan khi không có chương mới.
 
 **Kết quả**:
-- ✅ Ứng dụng đã được cập nhật logic cào bù chương thiếu.
-- ✅ Gradle build thành công, tạo ra file APK debug mới tại [app-debug.apk](file:///e:/projects_window/reader-hub/web_react/android/app/build/outputs/apk/debug/app-debug.apk).
+- ✅ Vị trí đọc tự động cập nhật chính xác theo đoạn văn khi người dùng cuộn trang.
+- ✅ Khắc phục triệt để lỗi không lưu vị trí khi người dùng cuộn nhanh rồi thoát màn hình ngay lập tức (race-condition).
+- ✅ Âm thanh không tự phát khi chuyển chương nếu người dùng đang đọc chay.
+- ✅ Âm thanh tiếp tục phát mượt mà xuyên suốt các chương nếu người dùng đang bật audio.
+- ✅ Nút Cào bị xám (vô hiệu hóa) chính xác khi kiểm tra cập nhật và phát hiện không có chương mới nào từ nguồn.
+- ✅ Vite build và Gradle build debug APK thành công không có bất kỳ lỗi nào.
