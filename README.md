@@ -2,45 +2,6 @@
 
 A cloud-native audiobook/story reading platform with **server-side scraping (GitHub Actions)** + **on-device TTS (Text-to-Speech)**. 100% free-tier infrastructure.
 
----
-
-## Architecture
-
-```mermaid
-graph TB
-    subgraph "Data Pipeline"
-        CRON["Cron / Supabase Edge Function"]
-        GA["GitHub Actions Runner"]
-        PROXY["Free Proxy Pool"]
-        WEB["Source Websites"]
-    end
-
-    subgraph "Storage Layer"
-        SUPA["Supabase PostgreSQL\nSingapore Region\nmetadata, users, chapters"]
-        R2["Cloudflare R2\nJSON content, cover images"]
-    end
-
-    subgraph "Client"
-        APP["React Web App (web_react)"]
-        MOBILE["Flutter Mobile App (mobile_flutter)"]
-        TTS["Web Speech API / Native TTS"]
-        AUTH["Supabase Auth"]
-    end
-
-    CRON -->|repository_dispatch| GA
-    GA -->|via proxy| PROXY --> WEB
-    GA -->|upload JSON| R2
-    GA -->|update metadata| SUPA
-    APP -->|query chapters| SUPA
-    APP -->|fetch content| R2
-    APP -->|text speech| TTS
-    APP -->|login/register| AUTH
-    MOBILE -->|query chapters| SUPA
-    MOBILE -->|fetch content| R2
-    MOBILE -->|text speech| TTS
-    MOBILE -->|login/register| AUTH
-```
-
 ## Features
 
 - **Automated scraping**: Crawl story content from multiple sources (TruyenFull, MeTruyenChu, TruyenDich) via GitHub Actions
@@ -197,42 +158,3 @@ class NewSiteParser(BaseSiteParser):
 ```
 
 Register the site config in `sites_config.py`. When a domain changes, you only edit one file.
-
----
-
-## 🇻🇳 Bản tiếng Việt
-
-### Giới thiệu
-
-**Reader Hub** là hệ thống đọc truyện audio (văn học mạng) hoạt động theo mô hình **Server-side Scraping** (cào dữ liệu từ phía máy chủ qua GitHub Actions) kết hợp **On-device TTS** (tổng hợp giọng nói ngay trên thiết bị người dùng). Toàn bộ hạ tầng đều sử dụng các dịch vụ Cloud miễn phí.
-
-### Tính năng
-
-- **Cào truyện tự động**: Tự động lấy nội dung từ TruyenFull, MeTruyenChu, TruyenDich qua GitHub Actions
-- **Đọc truyện bằng giọng nói**: TTS trực tiếp trên thiết bị, không cần tải file audio
-- **Đa nền tảng**: Web (React) + Mobile (Flutter — Android, iOS, Windows, Linux, macOS)
-- **Proxy miễn phí**: Tự động thu thập và xoay vòng proxy từ nhiều nguồn công cộng
-- **Tìm kiếm đa nguồng**: Gửi một truy vấn, tìm kiếm đồng thời trên nhiều website
-- **Kiến trúc plugin**: Dễ dàng thêm nguồn truyện mới mà không sửa logic lõi
-
-### Hướng dẫn cài đặt nhanh
-
-```bash
-# Web App
-cd web_react
-pnpm install
-pnpm dev
-
-# Mobile App
-cd mobile_flutter
-flutter pub get
-flutter run
-
-# Scraper (chạy thử local)
-cd scraper
-pip install -r requirements.txt
-playwright install chromium
-python test_local.py
-```
-
-> **Lưu ý**: Cần tạo project Supabase (region Singapore) và bucket Cloudflare R2 trước khi chạy. Xem hướng dẫn chi tiết phần tiếng Anh ở trên.
