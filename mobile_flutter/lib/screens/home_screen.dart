@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../services/supabase_service.dart';
 import '../services/r2_service.dart';
 import '../theme.dart';
-import 'story_detail_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -286,11 +286,7 @@ class _StoryCard extends StatelessWidget {
 
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (_) => StoryDetailScreen(slug: story['slug']),
-          ),
-        );
+        context.go('/home/story/${story['slug']}');
       },
       child: Container(
         decoration: BoxDecoration(

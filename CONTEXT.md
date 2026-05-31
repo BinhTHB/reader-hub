@@ -1723,3 +1723,36 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Build thành công (1660 modules, 2.16s)
 - ✅ Không còn lỗi TypeScript/compilation
 - ✅ Cơ chế phát âm thanh chuyển chương mượt mà: `getVoices()` → `cancel()` → `speak()` reset hoàn toàn Chrome speech engine trước mỗi utterance mới
+
+---
+
+## 2026-05-25 18:10 - Thiết lập và xây dựng Bản đồ tri thức (Graphify Knowledge Graph) cho Reader Hub
+
+**Yêu cầu**: Xây dựng bản đồ tri thức hoàn chỉnh cho toàn bộ hệ thống dự án Reader Hub (bao gồm module Python Scraper, React Web App và Flutter Mobile App) phục vụ cho việc định tuyến thông minh và tối ưu hóa truy vấn thông tin dự án.
+
+**Giải pháp đã thực hiện**:
+1. **Cấu hình & Tích hợp**:
+   - Chạy lệnh cài đặt `graphify antigravity install` để thiết lập quy tắc hoạt động (`rules/graphify.md`) và workflow (`workflows/graphify.md`) trong dự án.
+   - Viết các script helper để tự động phát hiện Python interpreter từ môi trường `uv` (`C:\Users\ADMIN\AppData\Roaming\uv\tools\graphifyy\Scripts\python.exe`) và lưu vào cấu hình.
+2. **Quét dữ liệu & Lọc tài nguyên**:
+   - Quét tổng cộng 278 file trong codebase (khoảng 122,072 từ).
+   - Lọc bỏ các tệp nhạy cảm (như `.env.example`) và lọc bỏ 61 file ảnh/assets tĩnh (icons, splash screen) không mang ý nghĩa nghiệp vụ để tối ưu hóa tài nguyên.
+3. **Phân tích cú pháp AST & Trích xuất tri thức (Extraction)**:
+   - Chạy trích xuất cấu trúc AST cho 188 file mã nguồn (.ts, .tsx, .dart, .py, .java, .cpp), tạo ra 2088 nodes và 4608 edges.
+   - Khắc phục lỗi bug của thư viện `graphify` khi xử lý pattern `.` trong `pnpm-workspace.yaml` bằng cách sao lưu và phục hồi tạm thời file trong lúc chạy trích xuất.
+   - Tiến hành trích xuất tri thức ngữ nghĩa (semantic extraction) cho 29 file tài liệu cấu hình, hướng dẫn (.md, .txt, .yaml, .yml), thu hoạch thêm 24 node và 20 edge bổ sung.
+4. **Hợp nhất, Gom cụm & Gán nhãn**:
+   - Hợp nhất dữ liệu thành đồ thị hoàn chỉnh gồm **2108 nodes** và **3800 edges**, phân chia thành **178 communities**.
+   - Định nghĩa và gán nhãn chi tiết cho các cụm cộng đồng chính (ví dụ: "Story Parser Engine", "Supabase Realtime Connection", "Android Audio Foreground Service", "React Application Components", "Shadcn UI Components", v.v.).
+   - Xuất bản đồ tri thức ra 3 dạng file:
+     * `graphify-out/graph.json` - Dữ liệu thô của đồ thị.
+     * `graphify-out/graph.html` - Đồ thị tương tác dạng web D3.js.
+     * `graphify-out/GRAPH_REPORT.md` - Báo cáo kiểm định cấu trúc dự án.
+5. **Kiểm tra Benchmark**:
+   - Thực hiện so sánh hiệu quả nạp ngữ cảnh truy vấn: Bản đồ tri thức giúp giảm tối đa **25.5 lần** số lượng token tiêu tốn cho mỗi câu hỏi kiến trúc so với phương pháp nạp thô toàn bộ code (naive full-corpus).
+
+**Kết quả**:
+- ✅ Bản đồ tri thức `graphify-out/` được khởi tạo đầy đủ và chính xác.
+- ✅ Báo cáo `GRAPH_REPORT.md` và giao diện đồ thị `graph.html` đã sẵn sàng sử dụng.
+- ✅ Thiết lập post-commit và post-checkout git hooks để tự động cập nhật bản đồ tri thức sau mỗi lần commit.
+

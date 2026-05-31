@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'services/supabase_service.dart';
 import 'services/tts_service.dart';
-import 'screens/auth_screen.dart';
-import 'screens/home_screen.dart';
+import 'router.dart';
 import 'theme.dart';
 
 void main() async {
@@ -19,15 +18,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Reader Hub',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.light,
-      home: SupabaseService.isAuthenticated 
-          ? const HomeScreen() 
-          : const AuthScreen(),
+      routerConfig: AppRouter.create(),
     );
   }
 }

@@ -52,6 +52,9 @@ dependencies:
   
   # Shared preferences for local storage
   shared_preferences: ^2.2.3
+  
+  # Go Router for declarative routing
+  go_router: ^14.0.0
 
 dev_dependencies:
   flutter_test:

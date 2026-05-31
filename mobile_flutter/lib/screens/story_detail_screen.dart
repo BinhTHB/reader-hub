@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:go_router/go_router.dart';
 import '../services/supabase_service.dart';
 import '../services/r2_service.dart';
 import '../theme.dart';
-import 'reader_screen.dart';
 
 class StoryDetailScreen extends StatefulWidget {
   final String slug;

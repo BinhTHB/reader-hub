@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import '../services/supabase_service.dart';
-import 'home_screen.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
@@ -43,9 +43,7 @@ class _AuthScreenState extends State<AuthScreen> {
       }
 
       if (mounted) {
-        Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (_) => const HomeScreen()),
-        );
+        context.go('/home');
       }
     } catch (e) {
       setState(() {
@@ -59,9 +57,7 @@ class _AuthScreenState extends State<AuthScreen> {
   }
 
   void _skip() {
-    Navigator.of(context).pushReplacement(
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
+    context.go('/home');
   }
 
   @override
