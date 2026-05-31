@@ -1,0 +1,1422 @@
+{
+  "E:\\projects_window\\reader-hub\\opencode.json": {
+    "mtime": 1778735383.4529717,
+    "ast_hash": "1b0661fe7fd7072566813b12cd9fac0b",
+    "semantic_hash": "1b0661fe7fd7072566813b12cd9fac0b"
+  },
+  "E:\\projects_window\\reader-hub\\.opencode\\package.json": {
+    "mtime": 1778735537.0725508,
+    "ast_hash": "1b2ba934088c76fd223ea26ab0397498",
+    "semantic_hash": "1b2ba934088c76fd223ea26ab0397498"
+  },
+  "E:\\projects_window\\reader-hub\\artifacts\\replace_text.py": {
+    "mtime": 1779189306.7229059,
+    "ast_hash": "49c920eb4519d78e9b157ffb6bcdb233",
+    "semantic_hash": "49c920eb4519d78e9b157ffb6bcdb233"
+  },
+  "E:\\projects_window\\reader-hub\\artifacts\\test_text.py": {
+    "mtime": 1779189259.2289653,
+    "ast_hash": "cc1e8d822a52505ca18030804478f27d",
+    "semantic_hash": "cc1e8d822a52505ca18030804478f27d"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\.dart_tool\\package_config.json": {
+    "mtime": 1779106150.804185,
+    "ast_hash": "4f78b7ef5fe553a60f01b86b7c4f4bf4",
+    "semantic_hash": "4f78b7ef5fe553a60f01b86b7c4f4bf4"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\.dart_tool\\package_graph.json": {
+    "mtime": 1779106150.8057091,
+    "ast_hash": "e52cd408cf9ef862fc3d4425ac49d561",
+    "semantic_hash": "e52cd408cf9ef862fc3d4425ac49d561"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\.dart_tool\\dartpad\\web_plugin_registrant.dart": {
+    "mtime": 1779106151.0908632,
+    "ast_hash": "333f87ae8824742fac165bf1492e0cd0",
+    "semantic_hash": "333f87ae8824742fac165bf1492e0cd0"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\build.gradle.kts": {
+    "mtime": 1778946258.788817,
+    "ast_hash": "803fe22651fbe96ed401eb0b66a492d1",
+    "semantic_hash": "803fe22651fbe96ed401eb0b66a492d1"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\gradlew": {
+    "mtime": 1778946259.8612754,
+    "ast_hash": "7f1cd7eb3f75a1dc85cd37753972a6e2",
+    "semantic_hash": "7f1cd7eb3f75a1dc85cd37753972a6e2"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\settings.gradle.kts": {
+    "mtime": 1778946258.9186945,
+    "ast_hash": "f276a44edd917afd836899357fdae60e",
+    "semantic_hash": "f276a44edd917afd836899357fdae60e"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\app\\build.gradle.kts": {
+    "mtime": 1778946258.772312,
+    "ast_hash": "39e84e61afb33e76362636fe8c49dfe3",
+    "semantic_hash": "39e84e61afb33e76362636fe8c49dfe3"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\app\\src\\main\\java\\io\\flutter\\plugins\\GeneratedPluginRegistrant.java": {
+    "mtime": 1778946310.1804829,
+    "ast_hash": "bcefc3245b7b4cca79a40df3eba9682e",
+    "semantic_hash": "bcefc3245b7b4cca79a40df3eba9682e"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\app\\src\\main\\kotlin\\com\\readerhub\\reader_hub\\MainActivity.kt": {
+    "mtime": 1778946258.7824817,
+    "ast_hash": "5d863eee1835fcd85f43a4821fd03bf6",
+    "semantic_hash": "5d863eee1835fcd85f43a4821fd03bf6"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Flutter\\flutter_export_environment.sh": {
+    "mtime": 1779106151.0127168,
+    "ast_hash": "72e85870100ab67521e8e728e5ec4421",
+    "semantic_hash": "72e85870100ab67521e8e728e5ec4421"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Flutter\\ephemeral\\flutter_lldb_helper.py": {
+    "mtime": 1779106151.0082018,
+    "ast_hash": "98fc75412162af387e2e3461e4e58094",
+    "semantic_hash": "98fc75412162af387e2e3461e4e58094"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\AppDelegate.swift": {
+    "mtime": 1778945247.5988235,
+    "ast_hash": "9e1de9c329a3fe4931876063de95132b",
+    "semantic_hash": "9e1de9c329a3fe4931876063de95132b"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\GeneratedPluginRegistrant.h": {
+    "mtime": 1778946265.2924712,
+    "ast_hash": "decb9041b5e91a07e66f4664e5dac408",
+    "semantic_hash": "decb9041b5e91a07e66f4664e5dac408"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\GeneratedPluginRegistrant.m": {
+    "mtime": 1778946310.2059197,
+    "ast_hash": "020e0371a74ba2b111347f4f4b98cfeb",
+    "semantic_hash": "020e0371a74ba2b111347f4f4b98cfeb"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Runner-Bridging-Header.h": {
+    "mtime": 1778945247.6044016,
+    "ast_hash": "7ad7b5cea096132de13ba526b2b9efbe",
+    "semantic_hash": "7ad7b5cea096132de13ba526b2b9efbe"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\SceneDelegate.swift": {
+    "mtime": 1778945247.6044016,
+    "ast_hash": "0c3e86af131f6a9e547c80b5ed058914",
+    "semantic_hash": "0c3e86af131f6a9e547c80b5ed058914"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json": {
+    "mtime": 1778945247.6003542,
+    "ast_hash": "31a08e429403e265cabfb31b3d65f049",
+    "semantic_hash": "31a08e429403e265cabfb31b3d65f049"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\Contents.json": {
+    "mtime": 1778945247.6023943,
+    "ast_hash": "b9e927ac17345f2d5f052fe68a3487f9",
+    "semantic_hash": "b9e927ac17345f2d5f052fe68a3487f9"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\RunnerTests\\RunnerTests.swift": {
+    "mtime": 1778946259.217289,
+    "ast_hash": "24e5d095048eb86c30423f4e04b6e57b",
+    "semantic_hash": "24e5d095048eb86c30423f4e04b6e57b"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\config.dart": {
+    "mtime": 1779162860.1401665,
+    "ast_hash": "fa247eb638f53df04a35118d78abdc33",
+    "semantic_hash": "fa247eb638f53df04a35118d78abdc33"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\main.dart": {
+    "mtime": 1780148460.6146138,
+    "ast_hash": "4bc37c6211403791476fa892b5bf5cf4",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\theme.dart": {
+    "mtime": 1779033695.5666356,
+    "ast_hash": "7a248a6ebc525d6403441d012052fdfa",
+    "semantic_hash": "7a248a6ebc525d6403441d012052fdfa"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\screens\\auth_screen.dart": {
+    "mtime": 1780148471.9821224,
+    "ast_hash": "7b8c3be231aca8f3c997b7e170a26188",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\screens\\home_screen.dart": {
+    "mtime": 1780148479.956519,
+    "ast_hash": "a5678692c29622c5c2a599b8ccc27984",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\screens\\reader_screen.dart": {
+    "mtime": 1778952809.6559384,
+    "ast_hash": "831a284c2fcbcb465ad61b4d5142dda0",
+    "semantic_hash": "831a284c2fcbcb465ad61b4d5142dda0"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\screens\\story_detail_screen.dart": {
+    "mtime": 1780148483.7427864,
+    "ast_hash": "351026d08391274e34e9601845963bc8",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\services\\r2_service.dart": {
+    "mtime": 1778952527.8852968,
+    "ast_hash": "80221accb1c78ba29d0e8c0d5a2e2e4e",
+    "semantic_hash": "80221accb1c78ba29d0e8c0d5a2e2e4e"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\services\\supabase_service.dart": {
+    "mtime": 1778946478.3988502,
+    "ast_hash": "230c497805e2fa031254a4aabec7f0b3",
+    "semantic_hash": "230c497805e2fa031254a4aabec7f0b3"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\services\\tts_service.dart": {
+    "mtime": 1779106155.6459894,
+    "ast_hash": "6000f2bb1747ab6c4f31a4b499230cf3",
+    "semantic_hash": "6000f2bb1747ab6c4f31a4b499230cf3"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\linux\\flutter\\generated_plugin_registrant.cc": {
+    "mtime": 1778946310.189001,
+    "ast_hash": "638422954f06f3ff805e3bb23521f938",
+    "semantic_hash": "638422954f06f3ff805e3bb23521f938"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\linux\\flutter\\generated_plugin_registrant.h": {
+    "mtime": 1778946265.2857442,
+    "ast_hash": "d295462c9da9f7fef22dc86c34492318",
+    "semantic_hash": "d295462c9da9f7fef22dc86c34492318"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\linux\\runner\\main.cc": {
+    "mtime": 1778945247.6074016,
+    "ast_hash": "539395bcd63dba20afed0838d136189f",
+    "semantic_hash": "539395bcd63dba20afed0838d136189f"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\linux\\runner\\my_application.cc": {
+    "mtime": 1778946259.286327,
+    "ast_hash": "43ad92e98f5ea4051899766e818ee524",
+    "semantic_hash": "43ad92e98f5ea4051899766e818ee524"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\linux\\runner\\my_application.h": {
+    "mtime": 1778945247.6084094,
+    "ast_hash": "ffa1a7c0a2ad45a2c14a921596516ff8",
+    "semantic_hash": "ffa1a7c0a2ad45a2c14a921596516ff8"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Flutter\\GeneratedPluginRegistrant.swift": {
+    "mtime": 1778946310.209434,
+    "ast_hash": "98ec1423877715b12ab2f06c45d0ea12",
+    "semantic_hash": "98ec1423877715b12ab2f06c45d0ea12"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Flutter\\ephemeral\\flutter_export_environment.sh": {
+    "mtime": 1779106151.0142255,
+    "ast_hash": "069d7727de4f51496c76fbc12113cea1",
+    "semantic_hash": "069d7727de4f51496c76fbc12113cea1"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\AppDelegate.swift": {
+    "mtime": 1778945247.6109276,
+    "ast_hash": "4b52e0b89ebfef9baf45b04548c463d6",
+    "semantic_hash": "4b52e0b89ebfef9baf45b04548c463d6"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\MainFlutterWindow.swift": {
+    "mtime": 1778945247.6149688,
+    "ast_hash": "93c22dae2d93f3dc1402e121901f582b",
+    "semantic_hash": "93c22dae2d93f3dc1402e121901f582b"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Contents.json": {
+    "mtime": 1778945247.6124377,
+    "ast_hash": "1d48e925145d4b573a3b5d7960a1c585",
+    "semantic_hash": "1d48e925145d4b573a3b5d7960a1c585"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\RunnerTests\\RunnerTests.swift": {
+    "mtime": 1778946259.5141983,
+    "ast_hash": "8059f5d27a19c556eeafb49b3f9b7bdd",
+    "semantic_hash": "8059f5d27a19c556eeafb49b3f9b7bdd"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\test\\widget_test.dart": {
+    "mtime": 1778946259.8401864,
+    "ast_hash": "fcf930a4d88d043f10cf18a6bfb2bbec",
+    "semantic_hash": "fcf930a4d88d043f10cf18a6bfb2bbec"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\web\\manifest.json": {
+    "mtime": 1778946259.6354327,
+    "ast_hash": "a9a3b3f0c916e2a91001d016a3fd7528",
+    "semantic_hash": "a9a3b3f0c916e2a91001d016a3fd7528"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\flutter\\generated_plugin_registrant.cc": {
+    "mtime": 1778946310.1955533,
+    "ast_hash": "34c13fce3cedca639dfe5fcf4b35918b",
+    "semantic_hash": "34c13fce3cedca639dfe5fcf4b35918b"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\flutter\\generated_plugin_registrant.h": {
+    "mtime": 1778946265.2889585,
+    "ast_hash": "0ea33875f9f8e118f9c2ded03e2e2835",
+    "semantic_hash": "0ea33875f9f8e118f9c2ded03e2e2835"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\flutter_window.cpp": {
+    "mtime": 1778945247.6200235,
+    "ast_hash": "2f463f9b7da67a2d692a012f9ea85e0c",
+    "semantic_hash": "2f463f9b7da67a2d692a012f9ea85e0c"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\flutter_window.h": {
+    "mtime": 1778945247.6200235,
+    "ast_hash": "7defcc89d4a26d56e801241d624d48fb",
+    "semantic_hash": "7defcc89d4a26d56e801241d624d48fb"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\main.cpp": {
+    "mtime": 1778946259.7484846,
+    "ast_hash": "0feb933a7fb08f6c66ced8161dc589df",
+    "semantic_hash": "0feb933a7fb08f6c66ced8161dc589df"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\resource.h": {
+    "mtime": 1778945247.6205633,
+    "ast_hash": "1ade5dd15e613479a15e8832ed276f2b",
+    "semantic_hash": "1ade5dd15e613479a15e8832ed276f2b"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\utils.cpp": {
+    "mtime": 1778945247.6205633,
+    "ast_hash": "432461b09d862a2f8dadf380ff0e34e5",
+    "semantic_hash": "432461b09d862a2f8dadf380ff0e34e5"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\utils.h": {
+    "mtime": 1778945247.6205633,
+    "ast_hash": "fd81e143f5614eb6fd75efe539002853",
+    "semantic_hash": "fd81e143f5614eb6fd75efe539002853"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\win32_window.cpp": {
+    "mtime": 1778945247.6217244,
+    "ast_hash": "571eb8234dbc2661be03aa5f2a4d2fca",
+    "semantic_hash": "571eb8234dbc2661be03aa5f2a4d2fca"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\win32_window.h": {
+    "mtime": 1778945247.6217244,
+    "ast_hash": "7569387d58711ab975940f4df3b4bcda",
+    "semantic_hash": "7569387d58711ab975940f4df3b4bcda"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\check_sites.py": {
+    "mtime": 1779106156.8466103,
+    "ast_hash": "680dff793811ea4d7e2de13e03a79596",
+    "semantic_hash": "680dff793811ea4d7e2de13e03a79596"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\parsers.py": {
+    "mtime": 1779116371.0058517,
+    "ast_hash": "3541bc033465aba69e0bcc73833eb716",
+    "semantic_hash": "3541bc033465aba69e0bcc73833eb716"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\proxy_rotator.py": {
+    "mtime": 1778591750.6306226,
+    "ast_hash": "6bf76ca2dcb9d3a3e1b4a0b8f3a24f87",
+    "semantic_hash": "6bf76ca2dcb9d3a3e1b4a0b8f3a24f87"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\r2_uploader.py": {
+    "mtime": 1779120605.0141802,
+    "ast_hash": "e9fe2bfc9e54b0099b0714abeddf5ad9",
+    "semantic_hash": "e9fe2bfc9e54b0099b0714abeddf5ad9"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\scraper.py": {
+    "mtime": 1779201182.4058247,
+    "ast_hash": "180b598d03d506b434226684a710c69a",
+    "semantic_hash": "180b598d03d506b434226684a710c69a"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\scratch_check_job.py": {
+    "mtime": 1779168390.246704,
+    "ast_hash": "acd73136cfbf524968399f12d386738d",
+    "semantic_hash": "acd73136cfbf524968399f12d386738d"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\search_sources.py": {
+    "mtime": 1779107787.8527143,
+    "ast_hash": "0ce3734d2f7d543088ab439ba98fae35",
+    "semantic_hash": "0ce3734d2f7d543088ab439ba98fae35"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\sites_config.py": {
+    "mtime": 1779105444.5513456,
+    "ast_hash": "ec4545cdd31416339a1897e3d09ede63",
+    "semantic_hash": "ec4545cdd31416339a1897e3d09ede63"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\supabase_client.py": {
+    "mtime": 1779201109.756641,
+    "ast_hash": "c8845a5fd423bea7a337ef0cb722cffa",
+    "semantic_hash": "c8845a5fd423bea7a337ef0cb722cffa"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\test_all_chapters.py": {
+    "mtime": 1778735798.2078235,
+    "ast_hash": "59cf5d1f2dd6c08a9df1c7181f18501a",
+    "semantic_hash": "59cf5d1f2dd6c08a9df1c7181f18501a"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\test_local.py": {
+    "mtime": 1778772686.4731967,
+    "ast_hash": "01c09fb7594ea8681639ab749cd69462",
+    "semantic_hash": "01c09fb7594ea8681639ab749cd69462"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\test_pagination.py": {
+    "mtime": 1778735758.9828956,
+    "ast_hash": "2b2ccec10b2477bc1fe24b008ee1e811",
+    "semantic_hash": "2b2ccec10b2477bc1fe24b008ee1e811"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\test_pagination_api.py": {
+    "mtime": 1778735778.0606585,
+    "ast_hash": "1bd304e60c9e43bcccb01ec754904f4e",
+    "semantic_hash": "1bd304e60c9e43bcccb01ec754904f4e"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\test_pagination_full.py": {
+    "mtime": 1778735877.3332443,
+    "ast_hash": "850d32f796465ebeb43bb036972bcff9",
+    "semantic_hash": "850d32f796465ebeb43bb036972bcff9"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\test_parsers.py": {
+    "mtime": 1779106046.361498,
+    "ast_hash": "a8a8ac2e43448949d767bc312e0d0818",
+    "semantic_hash": "a8a8ac2e43448949d767bc312e0d0818"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\test_r2.py": {
+    "mtime": 1778772874.7629087,
+    "ast_hash": "8879bedb73fe504ab15f484b1f7a8e04",
+    "semantic_hash": "8879bedb73fe504ab15f484b1f7a8e04"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\test_truyendich.py": {
+    "mtime": 1779105736.2877293,
+    "ast_hash": "20c2fc48d0e6106fd5983f12ec760443",
+    "semantic_hash": "20c2fc48d0e6106fd5983f12ec760443"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\parsers.py": {
+    "mtime": 1779189430.113688,
+    "ast_hash": "77d77bda69c6ac2dd2f8c2584a141662",
+    "semantic_hash": "77d77bda69c6ac2dd2f8c2584a141662"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\proxy_rotator.py": {
+    "mtime": 1779195982.512249,
+    "ast_hash": "5dc348b2ed7c64a17e6072051610c24f",
+    "semantic_hash": "5dc348b2ed7c64a17e6072051610c24f"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\r2_uploader.py": {
+    "mtime": 1779186137.8028631,
+    "ast_hash": "ac9a69aaa0643dd6c43102ea6c644e88",
+    "semantic_hash": "ac9a69aaa0643dd6c43102ea6c644e88"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\scraper.py": {
+    "mtime": 1779201178.1821449,
+    "ast_hash": "69ffc363e8295ce7a78ff1354515861a",
+    "semantic_hash": "69ffc363e8295ce7a78ff1354515861a"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\search_sources.py": {
+    "mtime": 1779186537.7965136,
+    "ast_hash": "caa848af69ce730512dbf000f036ca27",
+    "semantic_hash": "caa848af69ce730512dbf000f036ca27"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\sites_config.py": {
+    "mtime": 1779194095.8863997,
+    "ast_hash": "f62541408ed46f36a8330e7d0dfce53b",
+    "semantic_hash": "f62541408ed46f36a8330e7d0dfce53b"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\supabase_client.py": {
+    "mtime": 1779201104.279231,
+    "ast_hash": "dece8d030d358dc2f03fc6169aa2d3d0",
+    "semantic_hash": "dece8d030d358dc2f03fc6169aa2d3d0"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\test_local.py": {
+    "mtime": 1779186547.2372763,
+    "ast_hash": "8a9438e6f5a34e3bb6f4dd37bfcc936f",
+    "semantic_hash": "8a9438e6f5a34e3bb6f4dd37bfcc936f"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\bypasses\\navigator_plugins.js": {
+    "mtime": 1779188138.4678743,
+    "ast_hash": "524803544d88908dab684363a4789ba9",
+    "semantic_hash": "524803544d88908dab684363a4789ba9"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\bypasses\\notification_permission.js": {
+    "mtime": 1779188139.6015234,
+    "ast_hash": "c4074600f3807ab7095d7b5401222d84",
+    "semantic_hash": "c4074600f3807ab7095d7b5401222d84"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\bypasses\\pdf_viewer.js": {
+    "mtime": 1779188140.1160483,
+    "ast_hash": "9c18a87be24068b421d5022493b2958f",
+    "semantic_hash": "9c18a87be24068b421d5022493b2958f"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\bypasses\\playwright_fingerprint.js": {
+    "mtime": 1779188140.6151538,
+    "ast_hash": "c2553d1bd95d270f306837280b5c68da",
+    "semantic_hash": "c2553d1bd95d270f306837280b5c68da"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\bypasses\\screen_props.js": {
+    "mtime": 1779188141.0877378,
+    "ast_hash": "2533076238b79d935d7fbe39c0e17dd8",
+    "semantic_hash": "2533076238b79d935d7fbe39c0e17dd8"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\bypasses\\webdriver_fully.js": {
+    "mtime": 1779188141.5552576,
+    "ast_hash": "7a7dc0ab6fca2f2b45e66d349e7c518d",
+    "semantic_hash": "7a7dc0ab6fca2f2b45e66d349e7c518d"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\bypasses\\window_chrome.js": {
+    "mtime": 1779188142.1722388,
+    "ast_hash": "8f57ec57c5c751d40a53e270723fc57b",
+    "semantic_hash": "8f57ec57c5c751d40a53e270723fc57b"
+  },
+  "E:\\projects_window\\reader-hub\\supabase\\functions\\search-sources\\index.ts": {
+    "mtime": 1779108015.421392,
+    "ast_hash": "481b3f4ff48bd8a73104d06653be939f",
+    "semantic_hash": "481b3f4ff48bd8a73104d06653be939f"
+  },
+  "E:\\projects_window\\reader-hub\\supabase\\functions\\trigger-scraper\\index.ts": {
+    "mtime": 1779278445.8638089,
+    "ast_hash": "66a105a9074906166e0ed4c478e6c864",
+    "semantic_hash": "66a105a9074906166e0ed4c478e6c864"
+  },
+  "E:\\projects_window\\reader-hub\\supabase\\migrations\\001_initial_schema.sql": {
+    "mtime": 1779174278.93556,
+    "ast_hash": "10a932ddff36a35ec8f20bf20a4c7286",
+    "semantic_hash": "10a932ddff36a35ec8f20bf20a4c7286"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\capacitor.config.json": {
+    "mtime": 1779092519.324695,
+    "ast_hash": "684dce6e578464c5ede11a6acc327f52",
+    "semantic_hash": "684dce6e578464c5ede11a6acc327f52"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\package.json": {
+    "mtime": 1779036563.3020816,
+    "ast_hash": "bc8fe5dc86118ee91e39f441adbdcb6e",
+    "semantic_hash": "bc8fe5dc86118ee91e39f441adbdcb6e"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\postcss.config.mjs": {
+    "mtime": 1779030709.0,
+    "ast_hash": "512ddfe3175b0d294ec1e4789f27885f",
+    "semantic_hash": "512ddfe3175b0d294ec1e4789f27885f"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\vite.config.ts": {
+    "mtime": 1779030709.0,
+    "ast_hash": "9347c67795b1fd4ca5530c712893f851",
+    "semantic_hash": "9347c67795b1fd4ca5530c712893f851"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\build.gradle": {
+    "mtime": 1778618299.0,
+    "ast_hash": "682315a426653617c6a74fc12bef55b6",
+    "semantic_hash": "682315a426653617c6a74fc12bef55b6"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\capacitor.settings.gradle": {
+    "mtime": 1779633453.959855,
+    "ast_hash": "fd1d1d8ca73d11ce51aac56b690bceb3",
+    "semantic_hash": "fd1d1d8ca73d11ce51aac56b690bceb3"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\gradlew": {
+    "mtime": 1778618299.0,
+    "ast_hash": "794669d78aef1dd5c7d889ef618b311a",
+    "semantic_hash": "794669d78aef1dd5c7d889ef618b311a"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\settings.gradle": {
+    "mtime": 1778618299.0,
+    "ast_hash": "f6cd925b3f859e23c3d819fe2459e0e4",
+    "semantic_hash": "f6cd925b3f859e23c3d819fe2459e0e4"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\variables.gradle": {
+    "mtime": 1778618299.0,
+    "ast_hash": "4b3fce8ea2a515a9d2e47e74757172ec",
+    "semantic_hash": "4b3fce8ea2a515a9d2e47e74757172ec"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\build.gradle": {
+    "mtime": 1779091188.454278,
+    "ast_hash": "bfd876127e091e6eedea9091ca123876",
+    "semantic_hash": "bfd876127e091e6eedea9091ca123876"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\capacitor.build.gradle": {
+    "mtime": 1779633453.959855,
+    "ast_hash": "28f33845ea9c156714f0fb555c993184",
+    "semantic_hash": "28f33845ea9c156714f0fb555c993184"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\androidTest\\java\\com\\getcapacitor\\myapp\\ExampleInstrumentedTest.java": {
+    "mtime": 1778618299.0,
+    "ast_hash": "fbaf7cc870c663eb52dcf218531c439d",
+    "semantic_hash": "fbaf7cc870c663eb52dcf218531c439d"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\capacitor.config.json": {
+    "mtime": 1779633453.85551,
+    "ast_hash": "0fd90292a6491972a7c502de6d4708cc",
+    "semantic_hash": "0fd90292a6491972a7c502de6d4708cc"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\capacitor.plugins.json": {
+    "mtime": 1779633453.9291472,
+    "ast_hash": "359985031ba29d8b0055519064780077",
+    "semantic_hash": "359985031ba29d8b0055519064780077"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\cordova.js": {
+    "mtime": 1779633453.9568558,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\cordova_plugins.js": {
+    "mtime": 1779633453.9568558,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\index-yd4HT9sw.js": {
+    "mtime": 1779633449.3311448,
+    "ast_hash": "ce26f2e8f2ea1e62eeb0c8f7f0b5e23e",
+    "semantic_hash": "ce26f2e8f2ea1e62eeb0c8f7f0b5e23e"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\web-Dm_CrviR.js": {
+    "mtime": 1779633449.3311448,
+    "ast_hash": "c2b19a014fd6dbd90b82bdd36d64fc8b",
+    "semantic_hash": "c2b19a014fd6dbd90b82bdd36d64fc8b"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\web-DuLH4YqF.js": {
+    "mtime": 1779633449.3311448,
+    "ast_hash": "9ee1da5f57a8982ca99869e8ee38ad7b",
+    "semantic_hash": "9ee1da5f57a8982ca99869e8ee38ad7b"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\java\\com\\readerhub\\app\\MainActivity.java": {
+    "mtime": 1779091787.0643845,
+    "ast_hash": "bc44882c8c77d6ec83e2bf1353931d74",
+    "semantic_hash": "bc44882c8c77d6ec83e2bf1353931d74"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\java\\com\\readerhub\\audioservice\\AudioForegroundService.java": {
+    "mtime": 1779368648.8873813,
+    "ast_hash": "5d185af9ea1aff59c37fea1a5c4c54ce",
+    "semantic_hash": "5d185af9ea1aff59c37fea1a5c4c54ce"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\java\\com\\readerhub\\audioservice\\AudioServicePlugin.java": {
+    "mtime": 1779368521.4617214,
+    "ast_hash": "00246516fd58e22bc1801d2a437c4eff",
+    "semantic_hash": "00246516fd58e22bc1801d2a437c4eff"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\test\\java\\com\\getcapacitor\\myapp\\ExampleUnitTest.java": {
+    "mtime": 1778618299.0,
+    "ast_hash": "e91b4501c14da821682fa5c26a16d616",
+    "semantic_hash": "e91b4501c14da821682fa5c26a16d616"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\capacitor-audio-service\\package.json": {
+    "mtime": 1779092513.4458888,
+    "ast_hash": "68a4cbfca76bddd8844939d26b519624",
+    "semantic_hash": "68a4cbfca76bddd8844939d26b519624"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\capacitor-cordova-android-plugins\\build.gradle": {
+    "mtime": 1779633453.9609826,
+    "ast_hash": "2af61653d70c95d20802c8b5c433ba90",
+    "semantic_hash": "2af61653d70c95d20802c8b5c433ba90"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\capacitor-cordova-android-plugins\\cordova.variables.gradle": {
+    "mtime": 1779633453.9609826,
+    "ast_hash": "d2372a0ae9aa60abb8d03e7f06bf9194",
+    "semantic_hash": "d2372a0ae9aa60abb8d03e7f06bf9194"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\main.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "51dad133822f0eec82675f1d05c8719f",
+    "semantic_hash": "51dad133822f0eec82675f1d05c8719f"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\App.tsx": {
+    "mtime": 1779277001.3722413,
+    "ast_hash": "98438cac99531c146409338735673799",
+    "semantic_hash": "98438cac99531c146409338735673799"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\BookCard.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "0c868a148ee4b6d3321e30e81ab79284",
+    "semantic_hash": "0c868a148ee4b6d3321e30e81ab79284"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\BottomNav.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "df2e1988eda0c2297f5ef5573944c214",
+    "semantic_hash": "df2e1988eda0c2297f5ef5573944c214"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\EmptyState.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "bb17b408761ca754faa8f1fab1cd5a90",
+    "semantic_hash": "bb17b408761ca754faa8f1fab1cd5a90"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\Skeleton.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "29c24890ba9071c98099d698aec1f021",
+    "semantic_hash": "29c24890ba9071c98099d698aec1f021"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\figma\\ImageWithFallback.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "cf265545a904ec8dfc50a4dd25209a79",
+    "semantic_hash": "cf265545a904ec8dfc50a4dd25209a79"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\accordion.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "b70c6a9ebee8874bb4e5880da21a4f44",
+    "semantic_hash": "b70c6a9ebee8874bb4e5880da21a4f44"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\alert-dialog.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "fffdba13911be5058cb47ae712dd00b6",
+    "semantic_hash": "fffdba13911be5058cb47ae712dd00b6"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\alert.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "162e5c706a1cd900d863fd5a19a56507",
+    "semantic_hash": "162e5c706a1cd900d863fd5a19a56507"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\aspect-ratio.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "2c1c30af12401d88f8df52c3c235ed67",
+    "semantic_hash": "2c1c30af12401d88f8df52c3c235ed67"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\avatar.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "c8fcbe36f44f9d68c45ce38546bdda9c",
+    "semantic_hash": "c8fcbe36f44f9d68c45ce38546bdda9c"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\badge.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "027ca1b168b5a31ec381898dd0fad1d8",
+    "semantic_hash": "027ca1b168b5a31ec381898dd0fad1d8"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\breadcrumb.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "ffaa516f002d988d1a3d2cffb2a5f175",
+    "semantic_hash": "ffaa516f002d988d1a3d2cffb2a5f175"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\button.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "2a2ce95de39f4f4849f70bb615492ab7",
+    "semantic_hash": "2a2ce95de39f4f4849f70bb615492ab7"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\calendar.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "f5fd009223e3652640773e98dcc5e59f",
+    "semantic_hash": "f5fd009223e3652640773e98dcc5e59f"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\card.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "1c1ec988ee2908e66b010798309baa58",
+    "semantic_hash": "1c1ec988ee2908e66b010798309baa58"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\carousel.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "c89d7f94c3d16dcf2d4e34f0b8034084",
+    "semantic_hash": "c89d7f94c3d16dcf2d4e34f0b8034084"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\chart.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "42ef994d83724dcaacbdddeaddf7b18b",
+    "semantic_hash": "42ef994d83724dcaacbdddeaddf7b18b"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\checkbox.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "513285928084159260a7f0f6735f77c8",
+    "semantic_hash": "513285928084159260a7f0f6735f77c8"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\collapsible.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "fb83308ef990f33e60b56b22c6adb007",
+    "semantic_hash": "fb83308ef990f33e60b56b22c6adb007"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\command.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "41e1d0c759f0327b879dfec678cfe781",
+    "semantic_hash": "41e1d0c759f0327b879dfec678cfe781"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\context-menu.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "d613a68dc16ac28500406d3ed7d1cc44",
+    "semantic_hash": "d613a68dc16ac28500406d3ed7d1cc44"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\dialog.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "d908f64f8ea05b532d292ff2cfc0f9d0",
+    "semantic_hash": "d908f64f8ea05b532d292ff2cfc0f9d0"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\drawer.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "eb7f3850284135ed58adeeb2205e739c",
+    "semantic_hash": "eb7f3850284135ed58adeeb2205e739c"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\dropdown-menu.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "88eba49303246bd059776e95106373e5",
+    "semantic_hash": "88eba49303246bd059776e95106373e5"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\form.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "7bd150b19048c2af09b63dd0a260b179",
+    "semantic_hash": "7bd150b19048c2af09b63dd0a260b179"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\hover-card.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "2225b5b5db78c8dde5f0aff6aa08458c",
+    "semantic_hash": "2225b5b5db78c8dde5f0aff6aa08458c"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\input-otp.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "a74758e038db3ef3301c58bd0ac01753",
+    "semantic_hash": "a74758e038db3ef3301c58bd0ac01753"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\input.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "3a32dac1fb72ab6a6893f806aac049e0",
+    "semantic_hash": "3a32dac1fb72ab6a6893f806aac049e0"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\label.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "06608274383a01446d19b9a7ed8148c3",
+    "semantic_hash": "06608274383a01446d19b9a7ed8148c3"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\menubar.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "c955592a9b680c223a6aa7ba5eca19af",
+    "semantic_hash": "c955592a9b680c223a6aa7ba5eca19af"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\navigation-menu.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "c6ecd95499ba6e8fe4d8fdd16be18d24",
+    "semantic_hash": "c6ecd95499ba6e8fe4d8fdd16be18d24"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\pagination.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "7531a02a3c7a33d56e2f668ffd7a0d35",
+    "semantic_hash": "7531a02a3c7a33d56e2f668ffd7a0d35"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\popover.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "3db5181d3777cead79949d25c31872aa",
+    "semantic_hash": "3db5181d3777cead79949d25c31872aa"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\progress.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "a21bc28c146d6e943b3204b095f17a74",
+    "semantic_hash": "a21bc28c146d6e943b3204b095f17a74"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\radio-group.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "25f34d829563805260a4b1234bfcac3f",
+    "semantic_hash": "25f34d829563805260a4b1234bfcac3f"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\resizable.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "dbedce80325c20ea43ce386433e87415",
+    "semantic_hash": "dbedce80325c20ea43ce386433e87415"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\scroll-area.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "ceed8816f5ac36bda5c970e49fed5347",
+    "semantic_hash": "ceed8816f5ac36bda5c970e49fed5347"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\select.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "7efb1603282cbfbd4bb752fc6aa16465",
+    "semantic_hash": "7efb1603282cbfbd4bb752fc6aa16465"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\separator.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "8011cea02bdcd4a2e666dacb82cf43d6",
+    "semantic_hash": "8011cea02bdcd4a2e666dacb82cf43d6"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\sheet.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "14f866a1ec7bd747f499b606f8e40cb3",
+    "semantic_hash": "14f866a1ec7bd747f499b606f8e40cb3"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\sidebar.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "6f2411b67de8153c8890d9688b636cb0",
+    "semantic_hash": "6f2411b67de8153c8890d9688b636cb0"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\skeleton.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "a71aca7b1a33fbf0e5ecd93015c7804f",
+    "semantic_hash": "a71aca7b1a33fbf0e5ecd93015c7804f"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\slider.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "276b72ee040e75c35385b068e6c279d2",
+    "semantic_hash": "276b72ee040e75c35385b068e6c279d2"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\sonner.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "ace3a6465858e1f9a441724008f2d921",
+    "semantic_hash": "ace3a6465858e1f9a441724008f2d921"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\switch.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "24628008ea7aeeecdd193ca7de846552",
+    "semantic_hash": "24628008ea7aeeecdd193ca7de846552"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\table.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "2066531279772875cba1f2c269fe23b4",
+    "semantic_hash": "2066531279772875cba1f2c269fe23b4"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\tabs.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "e85ffdace1c1d8b2e4c748c2877b9fe2",
+    "semantic_hash": "e85ffdace1c1d8b2e4c748c2877b9fe2"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\textarea.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "9aa996cfdc9b59dd5e9cce00e5fb8280",
+    "semantic_hash": "9aa996cfdc9b59dd5e9cce00e5fb8280"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\toggle-group.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "4bc07765706ef9a2e74f97de0fc0ecc0",
+    "semantic_hash": "4bc07765706ef9a2e74f97de0fc0ecc0"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\toggle.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "4c8cf865ef8acde9a3558cb8c21ecdc4",
+    "semantic_hash": "4c8cf865ef8acde9a3558cb8c21ecdc4"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\tooltip.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "7e731b948edb6f93cf7d1841d056e5bb",
+    "semantic_hash": "7e731b948edb6f93cf7d1841d056e5bb"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\use-mobile.ts": {
+    "mtime": 1779030709.0,
+    "ast_hash": "21f0293b823c5298aa735fc013840cff",
+    "semantic_hash": "21f0293b823c5298aa735fc013840cff"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\components\\ui\\utils.ts": {
+    "mtime": 1779030709.0,
+    "ast_hash": "d9837f38cc05303254571985e3164050",
+    "semantic_hash": "d9837f38cc05303254571985e3164050"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\hooks\\useTTS.ts": {
+    "mtime": 1779030709.0,
+    "ast_hash": "63a9ff47534fdc7e89655bffd2ffd4fa",
+    "semantic_hash": "63a9ff47534fdc7e89655bffd2ffd4fa"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\screens\\AuthScreen.tsx": {
+    "mtime": 1779174094.6358407,
+    "ast_hash": "41e01c8e1680f4f9b04dbfb2524c5356",
+    "semantic_hash": "41e01c8e1680f4f9b04dbfb2524c5356"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\screens\\DetailScreen.tsx": {
+    "mtime": 1779626300.6857145,
+    "ast_hash": "7f3c97f127024a7a271a84eb337a52e1",
+    "semantic_hash": "7f3c97f127024a7a271a84eb337a52e1"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\screens\\HomeScreen.tsx": {
+    "mtime": 1779038289.20689,
+    "ast_hash": "12c0b612ab3272f6ec6f54907a2f5e11",
+    "semantic_hash": "12c0b612ab3272f6ec6f54907a2f5e11"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\screens\\LibraryScreen.tsx": {
+    "mtime": 1779175118.0121405,
+    "ast_hash": "eb30514dffbf010a6fbd2d312bc6fefa",
+    "semantic_hash": "eb30514dffbf010a6fbd2d312bc6fefa"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\screens\\ProfileScreen.tsx": {
+    "mtime": 1779175248.9411674,
+    "ast_hash": "9b4fd0eb30fa0dd778e99ff6bf384499",
+    "semantic_hash": "9b4fd0eb30fa0dd778e99ff6bf384499"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\screens\\ReadingScreen.tsx": {
+    "mtime": 1779633058.4207153,
+    "ast_hash": "d9cc2749227fec2faba06928eec1c077",
+    "semantic_hash": "d9cc2749227fec2faba06928eec1c077"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\app\\screens\\ScrapeScreen.tsx": {
+    "mtime": 1779278430.2499833,
+    "ast_hash": "3a93b8539ff0a70ac150a8b0df1fadfa",
+    "semantic_hash": "3a93b8539ff0a70ac150a8b0df1fadfa"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\imports\\ThayD\u1ed5iMauN\u1ec1nVaThemTinhNangCao\\svg-eevstm7ywm.ts": {
+    "mtime": 1779030709.0,
+    "ast_hash": "69298e4c183b13d28639a1889f33b48c",
+    "semantic_hash": "69298e4c183b13d28639a1889f33b48c"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\imports\\ThayD\u1ed5iMauN\u1ec1nVaThemTinhNangCao\\ThayD\u1ed5iMauN\u1ec1nVaThemTinhNangCao.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "5472bfc9f3217fb0fd14d63f1c784f7b",
+    "semantic_hash": "5472bfc9f3217fb0fd14d63f1c784f7b"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\imports\\ThayD\u1ed5iMauN\u1ec1nVaThemTinhNangCao-1\\svg-ttpqsbm9ib.ts": {
+    "mtime": 1779030709.0,
+    "ast_hash": "5fa731289fe2b7971368f09c9672a51e",
+    "semantic_hash": "5fa731289fe2b7971368f09c9672a51e"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\imports\\ThayD\u1ed5iMauN\u1ec1nVaThemTinhNangCao-1\\ThayD\u1ed5iMauN\u1ec1nVaThemTinhNangCao.tsx": {
+    "mtime": 1779030709.0,
+    "ast_hash": "6e0ac0e9ecbdb6049250e215083c7fda",
+    "semantic_hash": "6e0ac0e9ecbdb6049250e215083c7fda"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\lib\\audioService.ts": {
+    "mtime": 1779279827.4073303,
+    "ast_hash": "a117f8d71870b9b65ebb712a6e09815a",
+    "semantic_hash": "a117f8d71870b9b65ebb712a6e09815a"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\lib\\audioServiceWeb.ts": {
+    "mtime": 1779104758.2850332,
+    "ast_hash": "cf4d8bc17db6fee66f664ade681850f4",
+    "semantic_hash": "cf4d8bc17db6fee66f664ade681850f4"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\lib\\mediaService.ts": {
+    "mtime": 1779277031.867498,
+    "ast_hash": "4ffd6afa612a36cf1560e366287b267e",
+    "semantic_hash": "4ffd6afa612a36cf1560e366287b267e"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\lib\\supabase.ts": {
+    "mtime": 1779031140.0020387,
+    "ast_hash": "9fe96b3f2a55cc8c623cdcbba5bf3304",
+    "semantic_hash": "9fe96b3f2a55cc8c623cdcbba5bf3304"
+  },
+  "E:\\projects_window\\reader-hub\\CONTEXT.md": {
+    "mtime": 1780199928.1626697,
+    "ast_hash": "e6c96a18b6c566977605294ee5d49551",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\scrapling_analysis.md": {
+    "mtime": 1779185245.5561204,
+    "ast_hash": "4f7c75c2ae1528716be54a8d3563ca7d",
+    "semantic_hash": "4f7c75c2ae1528716be54a8d3563ca7d"
+  },
+  "E:\\projects_window\\reader-hub\\sua.txt": {
+    "mtime": 1779622540.8204038,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "E:\\projects_window\\reader-hub\\.agents\\rules\\graphify.md": {
+    "mtime": 1779706946.6848834,
+    "ast_hash": "a0e4d192b9e2e17256124dbfc8e24e6a",
+    "semantic_hash": "a0e4d192b9e2e17256124dbfc8e24e6a"
+  },
+  "E:\\projects_window\\reader-hub\\.agents\\workflows\\graphify.md": {
+    "mtime": 1779706946.6858852,
+    "ast_hash": "84de69efd46ab0b8430393bd4188f8f2",
+    "semantic_hash": "84de69efd46ab0b8430393bd4188f8f2"
+  },
+  "E:\\projects_window\\reader-hub\\.github\\workflows\\scraper.yml": {
+    "mtime": 1779194095.8863997,
+    "ast_hash": "336022d30b9f757a2351f95f8a474fd0",
+    "semantic_hash": "336022d30b9f757a2351f95f8a474fd0"
+  },
+  "E:\\projects_window\\reader-hub\\.opencode\\rules.md": {
+    "mtime": 1779031425.889258,
+    "ast_hash": "149aac0042082a85fe22325f18318513",
+    "semantic_hash": "149aac0042082a85fe22325f18318513"
+  },
+  "E:\\projects_window\\reader-hub\\.opencode\\plans\\translation-feature.md": {
+    "mtime": 1779029045.786481,
+    "ast_hash": "96b1cec8f5e876d7fb9ecccfa3cf4197",
+    "semantic_hash": "96b1cec8f5e876d7fb9ecccfa3cf4197"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\analysis_options.yaml": {
+    "mtime": 1778946258.7575512,
+    "ast_hash": "9e65f4b9beebb674c0dc252f70a5c177",
+    "semantic_hash": "9e65f4b9beebb674c0dc252f70a5c177"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\pubspec.yaml": {
+    "mtime": 1780148443.9317577,
+    "ast_hash": "360cd316ff5cbef4766bdf04c55dbb61",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\README.md": {
+    "mtime": 1778945247.6034088,
+    "ast_hash": "f7ee1b402881509d197f34963e569927",
+    "semantic_hash": "f7ee1b402881509d197f34963e569927"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\linux\\CMakeLists.txt": {
+    "mtime": 1778946259.245649,
+    "ast_hash": "0aa25b543685c723bc7f8ec18c21e5f3",
+    "semantic_hash": "0aa25b543685c723bc7f8ec18c21e5f3"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\linux\\flutter\\CMakeLists.txt": {
+    "mtime": 1778945247.6074016,
+    "ast_hash": "2195470ce31675d31db5a37590d011f6",
+    "semantic_hash": "2195470ce31675d31db5a37590d011f6"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\linux\\runner\\CMakeLists.txt": {
+    "mtime": 1778945247.6074016,
+    "ast_hash": "30cc1614b16214b66c014af09ba699eb",
+    "semantic_hash": "30cc1614b16214b66c014af09ba699eb"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\web\\index.html": {
+    "mtime": 1778946259.6171436,
+    "ast_hash": "c9a54c94569ca33ae25346500818b9b8",
+    "semantic_hash": "c9a54c94569ca33ae25346500818b9b8"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\CMakeLists.txt": {
+    "mtime": 1778946259.668279,
+    "ast_hash": "9ad7db87a42e00665fd56e2f769843b6",
+    "semantic_hash": "9ad7db87a42e00665fd56e2f769843b6"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\flutter\\CMakeLists.txt": {
+    "mtime": 1778945247.618508,
+    "ast_hash": "bbf66fed5180bd9ae8198b8d7c4a0001",
+    "semantic_hash": "bbf66fed5180bd9ae8198b8d7c4a0001"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\windows\\runner\\CMakeLists.txt": {
+    "mtime": 1778945247.618508,
+    "ast_hash": "028602ab9754bffe716659ada7590d29",
+    "semantic_hash": "028602ab9754bffe716659ada7590d29"
+  },
+  "E:\\projects_window\\reader-hub\\scraper\\requirements.txt": {
+    "mtime": 1779164687.7442818,
+    "ast_hash": "70ef931a99c4a7f165c2d18fc75ec6b3",
+    "semantic_hash": "70ef931a99c4a7f165c2d18fc75ec6b3"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\README.md": {
+    "mtime": 1779193042.943017,
+    "ast_hash": "85e73264ff1455e22b2ae40db4b1af2d",
+    "semantic_hash": "85e73264ff1455e22b2ae40db4b1af2d"
+  },
+  "E:\\projects_window\\reader-hub\\scrapling\\requirements.txt": {
+    "mtime": 1779186122.2340496,
+    "ast_hash": "598b4c8f9ad9eb6c9b77a22d560bada3",
+    "semantic_hash": "598b4c8f9ad9eb6c9b77a22d560bada3"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\index.html": {
+    "mtime": 1779031654.3442008,
+    "ast_hash": "38f84f656a1659705eb4ae68a1b1cdd3",
+    "semantic_hash": "38f84f656a1659705eb4ae68a1b1cdd3"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\INTEGRATION_GUIDE.md": {
+    "mtime": 1779030709.0,
+    "ast_hash": "92b98cd01003bbc0638943e84fe6a06f",
+    "semantic_hash": "92b98cd01003bbc0638943e84fe6a06f"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\pnpm-workspace.yaml": {
+    "mtime": 1779030709.0,
+    "ast_hash": "568472a1cb971e6f9d8bd2e7f9bc9ccc",
+    "semantic_hash": "568472a1cb971e6f9d8bd2e7f9bc9ccc"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\README.md": {
+    "mtime": 1779030709.0,
+    "ast_hash": "53ae2d8f6218b8f97785668a08ec860b",
+    "semantic_hash": "53ae2d8f6218b8f97785668a08ec860b"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\TESTING_GUIDE.md": {
+    "mtime": 1779035741.785444,
+    "ast_hash": "f870538145341919f347635292daa790",
+    "semantic_hash": "f870538145341919f347635292daa790"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\index.html": {
+    "mtime": 1779633449.3311448,
+    "ast_hash": "07e01dea2a93dc2591464e9d8c04941a",
+    "semantic_hash": "07e01dea2a93dc2591464e9d8c04941a"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\guidelines\\Guidelines.md": {
+    "mtime": 1779030709.0,
+    "ast_hash": "5af43702d745a31480e9a483616bf246",
+    "semantic_hash": "5af43702d745a31480e9a483616bf246"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\src\\imports\\pasted_text\\reader-hub-ui-plan.md": {
+    "mtime": 1779030709.0,
+    "ast_hash": "5c91305ae5a4591688c1e54d0f30da00",
+    "semantic_hash": "5c91305ae5a4591688c1e54d0f30da00"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.png": {
+    "mtime": 1778945247.5917778,
+    "ast_hash": "13e9c72ec37fac220397aa819fa1ef2d",
+    "semantic_hash": "13e9c72ec37fac220397aa819fa1ef2d"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png": {
+    "mtime": 1778945247.5917778,
+    "ast_hash": "6270344430679711b81476e29878caa7",
+    "semantic_hash": "6270344430679711b81476e29878caa7"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.png": {
+    "mtime": 1778945247.59279,
+    "ast_hash": "a0a8db5985280b3679d99a820ae2db79",
+    "semantic_hash": "a0a8db5985280b3679d99a820ae2db79"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.png": {
+    "mtime": 1778945247.59279,
+    "ast_hash": "afe1b655b9f32da22f9a4301bb8e6ba8",
+    "semantic_hash": "afe1b655b9f32da22f9a4301bb8e6ba8"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.png": {
+    "mtime": 1778945247.59279,
+    "ast_hash": "57838d52c318faff743130c3fcfae0c6",
+    "semantic_hash": "57838d52c318faff743130c3fcfae0c6"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-1024x1024@1x.png": {
+    "mtime": 1778945294.1277015,
+    "ast_hash": "c785f8932297af4acd5f5ccb7630f01c",
+    "semantic_hash": "c785f8932297af4acd5f5ccb7630f01c"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-20x20@1x.png": {
+    "mtime": 1778945294.1312015,
+    "ast_hash": "a2f8558fb1d42514111fbbb19fb67314",
+    "semantic_hash": "a2f8558fb1d42514111fbbb19fb67314"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-20x20@2x.png": {
+    "mtime": 1778945294.1167922,
+    "ast_hash": "2247a840b6ee72b8a069208af170e5b1",
+    "semantic_hash": "2247a840b6ee72b8a069208af170e5b1"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-20x20@3x.png": {
+    "mtime": 1778945294.1372068,
+    "ast_hash": "1b3b1538136316263c7092951e923e9d",
+    "semantic_hash": "1b3b1538136316263c7092951e923e9d"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-29x29@1x.png": {
+    "mtime": 1778945294.1523108,
+    "ast_hash": "be8887071dd7ec39cb754d236aa9584f",
+    "semantic_hash": "be8887071dd7ec39cb754d236aa9584f"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-29x29@2x.png": {
+    "mtime": 1778945294.09621,
+    "ast_hash": "043119ef4faa026ff82bd03f241e5338",
+    "semantic_hash": "043119ef4faa026ff82bd03f241e5338"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-29x29@3x.png": {
+    "mtime": 1778945294.134207,
+    "ast_hash": "2b1452c4c1bda6177b4fbbb832df217f",
+    "semantic_hash": "2b1452c4c1bda6177b4fbbb832df217f"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-40x40@1x.png": {
+    "mtime": 1778945294.1012554,
+    "ast_hash": "2247a840b6ee72b8a069208af170e5b1",
+    "semantic_hash": "2247a840b6ee72b8a069208af170e5b1"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-40x40@2x.png": {
+    "mtime": 1778945294.1467996,
+    "ast_hash": "8245359312aea1b0d2412f79a07b0ca5",
+    "semantic_hash": "8245359312aea1b0d2412f79a07b0ca5"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-40x40@3x.png": {
+    "mtime": 1778945294.1062584,
+    "ast_hash": "5b3c0902200ce596e9848f22e1f0fe0e",
+    "semantic_hash": "5b3c0902200ce596e9848f22e1f0fe0e"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-60x60@2x.png": {
+    "mtime": 1778945294.1209872,
+    "ast_hash": "5b3c0902200ce596e9848f22e1f0fe0e",
+    "semantic_hash": "5b3c0902200ce596e9848f22e1f0fe0e"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-60x60@3x.png": {
+    "mtime": 1778945294.0911298,
+    "ast_hash": "e419d22a37bc40ba185aca1acb6d4ac6",
+    "semantic_hash": "e419d22a37bc40ba185aca1acb6d4ac6"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-76x76@1x.png": {
+    "mtime": 1778945294.1102602,
+    "ast_hash": "36c0d7a7132bdde18898ffdfcfcdc4d2",
+    "semantic_hash": "36c0d7a7132bdde18898ffdfcfcdc4d2"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-76x76@2x.png": {
+    "mtime": 1778945294.1573153,
+    "ast_hash": "643842917530acf4c5159ae851b0baf2",
+    "semantic_hash": "643842917530acf4c5159ae851b0baf2"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\AppIcon.appiconset\\Icon-App-83.5x83.5@2x.png": {
+    "mtime": 1778945294.1438012,
+    "ast_hash": "665cb5e3c5729da6d639d26eff47a503",
+    "semantic_hash": "665cb5e3c5729da6d639d26eff47a503"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\LaunchImage.png": {
+    "mtime": 1778945294.086056,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\LaunchImage@2x.png": {
+    "mtime": 1778945294.081056,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\ios\\Runner\\Assets.xcassets\\LaunchImage.imageset\\LaunchImage@3x.png": {
+    "mtime": 1778945294.0750155,
+    "ast_hash": "978c1bee49d7ad5fc1a4d81099b13e18",
+    "semantic_hash": "978c1bee49d7ad5fc1a4d81099b13e18"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_1024.png": {
+    "mtime": 1778945294.0582263,
+    "ast_hash": "c9becc9105f8cabce934d20c7bfb6aac",
+    "semantic_hash": "c9becc9105f8cabce934d20c7bfb6aac"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_128.png": {
+    "mtime": 1778945294.0098329,
+    "ast_hash": "3ded30823804caaa5ccc944067c54a36",
+    "semantic_hash": "3ded30823804caaa5ccc944067c54a36"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_16.png": {
+    "mtime": 1778945294.0308874,
+    "ast_hash": "8bf511604bc6ed0a6aeb380c5113fdcf",
+    "semantic_hash": "8bf511604bc6ed0a6aeb380c5113fdcf"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_256.png": {
+    "mtime": 1778945294.0634978,
+    "ast_hash": "dfe2c93d1536ae02f085cc63faa3430e",
+    "semantic_hash": "dfe2c93d1536ae02f085cc63faa3430e"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_32.png": {
+    "mtime": 1778945294.03889,
+    "ast_hash": "8e0ae58e362a6636bdfccbc04da2c58c",
+    "semantic_hash": "8e0ae58e362a6636bdfccbc04da2c58c"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_512.png": {
+    "mtime": 1778945294.0173438,
+    "ast_hash": "0ad44039155424738917502c69667699",
+    "semantic_hash": "0ad44039155424738917502c69667699"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\macos\\Runner\\Assets.xcassets\\AppIcon.appiconset\\app_icon_64.png": {
+    "mtime": 1778945294.0008268,
+    "ast_hash": "04e7b6ef05346c70b663ca1d97de3ad5",
+    "semantic_hash": "04e7b6ef05346c70b663ca1d97de3ad5"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\web\\favicon.png": {
+    "mtime": 1778945247.615976,
+    "ast_hash": "5dcef449791fa27946b3d35ad8803796",
+    "semantic_hash": "5dcef449791fa27946b3d35ad8803796"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\web\\icons\\Icon-192.png": {
+    "mtime": 1778945247.6169786,
+    "ast_hash": "ac9a721a12bbc803b44f645561ecb1e1",
+    "semantic_hash": "ac9a721a12bbc803b44f645561ecb1e1"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\web\\icons\\Icon-512.png": {
+    "mtime": 1778945247.6169786,
+    "ast_hash": "96e752610906ba2a93c65f8abe1645f1",
+    "semantic_hash": "96e752610906ba2a93c65f8abe1645f1"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\web\\icons\\Icon-maskable-192.png": {
+    "mtime": 1778945294.7590144,
+    "ast_hash": "c457ef57daa1d16f64b27b786ec2ea3c",
+    "semantic_hash": "c457ef57daa1d16f64b27b786ec2ea3c"
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\web\\icons\\Icon-maskable-512.png": {
+    "mtime": 1778945294.7580073,
+    "ast_hash": "301a7604d45b3e739efc881eb04896ea",
+    "semantic_hash": "301a7604d45b3e739efc881eb04896ea"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "acc976d4a36479233371a53021525c0c",
+    "semantic_hash": "acc976d4a36479233371a53021525c0c"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-land-hdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "f7a80786dd355bd39014e58027aa6e19",
+    "semantic_hash": "f7a80786dd355bd39014e58027aa6e19"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-land-mdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "acc976d4a36479233371a53021525c0c",
+    "semantic_hash": "acc976d4a36479233371a53021525c0c"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-land-xhdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "b8c72969bc1f78aab71a76035360d4af",
+    "semantic_hash": "b8c72969bc1f78aab71a76035360d4af"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-land-xxhdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "f87e988387b07d843905f38b084929fb",
+    "semantic_hash": "f87e988387b07d843905f38b084929fb"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-land-xxxhdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "055a69553b16b0bf5f72094a2e459fc7",
+    "semantic_hash": "055a69553b16b0bf5f72094a2e459fc7"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-port-hdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "5eb10d16c81338abe8bbc033d49638a8",
+    "semantic_hash": "5eb10d16c81338abe8bbc033d49638a8"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-port-mdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "d855a76a5070c8e6fcfd83a27549bdce",
+    "semantic_hash": "d855a76a5070c8e6fcfd83a27549bdce"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-port-xhdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "df100b2a36bdb98b711cca58941728de",
+    "semantic_hash": "df100b2a36bdb98b711cca58941728de"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-port-xxhdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "2c1b668364e815256f67b71dcdfa4d6e",
+    "semantic_hash": "2c1b668364e815256f67b71dcdfa4d6e"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\drawable-port-xxxhdpi\\splash.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "b5b1b22b59abe686c1df0d74a423d034",
+    "semantic_hash": "b5b1b22b59abe686c1df0d74a423d034"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "1956941339dd5fe36d5c66601c89a08d",
+    "semantic_hash": "1956941339dd5fe36d5c66601c89a08d"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_foreground.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "73b1e06d769fa08a9c3b8328cc15fd75",
+    "semantic_hash": "73b1e06d769fa08a9c3b8328cc15fd75"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-hdpi\\ic_launcher_round.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "f43e5674865a00186dd76183cf1f2f8e",
+    "semantic_hash": "f43e5674865a00186dd76183cf1f2f8e"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "7ed1b3739b83215d0c4a0b4a7f2dcab4",
+    "semantic_hash": "7ed1b3739b83215d0c4a0b4a7f2dcab4"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_foreground.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "5b77e8aec8b17eed320a97567c7cb8bf",
+    "semantic_hash": "5b77e8aec8b17eed320a97567c7cb8bf"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-mdpi\\ic_launcher_round.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "a49547a32c7d9b529af607b033811d81",
+    "semantic_hash": "a49547a32c7d9b529af607b033811d81"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "5689511ee4e41a367d0342f37ac48bdf",
+    "semantic_hash": "5689511ee4e41a367d0342f37ac48bdf"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_foreground.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "15cdded29b9877ac98c5931024c5da5d",
+    "semantic_hash": "15cdded29b9877ac98c5931024c5da5d"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xhdpi\\ic_launcher_round.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "c890fa4af62a63486d5dea62441ce7ab",
+    "semantic_hash": "c890fa4af62a63486d5dea62441ce7ab"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "a3285eeaedda8201f04e7737b9df8421",
+    "semantic_hash": "a3285eeaedda8201f04e7737b9df8421"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_foreground.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "4e9584ecc16d1fc75afb798688ce576f",
+    "semantic_hash": "4e9584ecc16d1fc75afb798688ce576f"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xxhdpi\\ic_launcher_round.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "14cde87848553e24d7106f56eb8ceb6f",
+    "semantic_hash": "14cde87848553e24d7106f56eb8ceb6f"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "9e029293ab1ae8e3a6a7b7d0b7177e46",
+    "semantic_hash": "9e029293ab1ae8e3a6a7b7d0b7177e46"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_foreground.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "ed3696b7c52d9747411a475dbe3fa34a",
+    "semantic_hash": "ed3696b7c52d9747411a475dbe3fa34a"
+  },
+  "E:\\projects_window\\reader-hub\\web_react\\android\\app\\src\\main\\res\\mipmap-xxxhdpi\\ic_launcher_round.png": {
+    "mtime": 1778618299.0,
+    "ast_hash": "85addb4159ecd3f76f02fbacd5ec86de",
+    "semantic_hash": "85addb4159ecd3f76f02fbacd5ec86de"
+  },
+  "E:\\projects_window\\reader-hub\\.opencode\\opencode.json": {
+    "mtime": 1779708314.5576515,
+    "ast_hash": "f2ae21510d07365eb2bce8159272c7a0",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\.opencode\\plugins\\graphify.js": {
+    "mtime": 1779708314.5576515,
+    "ast_hash": "32b67963417a30cb80544e0b2a56a98d",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\mobile_flutter\\lib\\router.dart": {
+    "mtime": 1780148453.4468322,
+    "ast_hash": "f3b45fe13ae06969406732995fa1ba49",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\AGENTS.md": {
+    "mtime": 1779974376.1864848,
+    "ast_hash": "71452001c2bb2de016018a040012186f",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\README.md": {
+    "mtime": 1780199223.9353902,
+    "ast_hash": "98ff12de47b693a81e39e766b0853225",
+    "semantic_hash": ""
+  },
+  "E:\\projects_window\\reader-hub\\README-vn.md": {
+    "mtime": 1780199223.9243932,
+    "ast_hash": "dbbcafbcd22b9492b53d7b70c58cac3b",
+    "semantic_hash": ""
+  }
+}
