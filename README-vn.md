@@ -2,14 +2,80 @@
 
 Hệ thống đọc truyện audio (văn học mạng) theo mô hình **Server-side Scraping (GitHub Actions)** + **On-device TTS (Text-to-Speech)**. Miễn phí 100%, triển khai hoàn toàn trên Cloud.
 
+## Kiến trúc
+
+```mermaid
+graph TB
+    subgraph "Data Pipeline"
+        CRON["Cron / Supabase Edge Function"]
+        GA["GitHub Actions Runner"]
+        PROXY["Free Proxy Pool"]
+        WEB["Source Websites"]
+    end
+
+    subgraph "Storage Layer"
+        SUPA["Supabase PostgreSQL\nSingapore Region\nmetadata, users, chapters"]
+        R2["Cloudflare R2\nJSON content, cover images"]
+    end
+
+    subgraph "Client"
+        APP["React Web App (web_react)"]
+        MOBILE["Flutter Mobile App (mobile_flutter)"]
+        TTS["Web Speech API / Native TTS"]
+        AUTH["Supabase Auth"]
+    end
+
+    CRON -->|repository_dispatch| GA
+    GA -->|via proxy| PROXY --> WEB
+    GA -->|upload JSON| R2
+    GA -->|update metadata| SUPA
+    APP -->|query chapters| SUPA
+    APP -->|fetch content| R2
+    APP -->|text speech| TTS
+    APP -->|login/register| AUTH
+    MOBILE -->|query chapters| SUPA
+    MOBILE -->|fetch content| R2
+    MOBILE -->|text speech| TTS
+    MOBILE -->|login/register| AUTH
+```
+
 ## Tính năng
 
 - **Cào truyện tự động**: Tự động lấy nội dung từ TruyenFull, MeTruyenChu, TruyenDich qua GitHub Actions
 - **Đọc truyện bằng giọng nói**: TTS trực tiếp trên thiết bị, không cần tải file audio
 - **Đa nền tảng**: Web (React) + Mobile (Flutter — Android, iOS, Windows, Linux, macOS)
 - **Proxy miễn phí**: Tự động thu thập và xoay vòng proxy từ nhiều nguồn công cộng
+- **Cloud-native**: Supabase (PostgreSQL + Auth) + Cloudflare R2 (storage)
 - **Tìm kiếm đa nguồng**: Gửi một truy vấn, tìm kiếm đồng thời trên nhiều website
 - **Kiến trúc plugin**: Dễ dàng thêm nguồn truyện mới mà không sửa logic lõi
+
+## Luồng tìm kiếm đa nguồng
+
+```mermaid
+sequenceDiagram
+    participant User as Người dùng
+    participant App as App
+    participant EF as Supabase Edge Function
+    participant TF as truyenfull.vision
+    participant MTC as metruyenchu.com.vn
+    participant GA as GitHub Actions
+
+    User->>App: Nhập tên truyện
+    App->>EF: POST /search-sources { query }
+    par Search song song
+        EF->>TF: HTTP GET /tim-kiem/?tukhoa=...
+        EF->>MTC: HTTP GET /search?q=...
+    end
+    TF-->>EF: HTML results
+    MTC-->>EF: HTML results
+    EF-->>App: { sources: [{ truyenfull: [...] }, { metruyenchu: [...] }] }
+    App->>User: Hiển thị kết quả theo nhóm nguồn
+    User->>App: Bấm "Cào" trên một kết quả
+    App->>EF: POST /trigger-scraper { source_url }
+    EF->>GA: repository_dispatch → scrape-story
+    GA->>TF: Nếu link TruyenFull → cào chapters
+    GA->>MTC: Nếu link MeTruyenChu → cào chapters
+```
 
 ## Cấu trúc dự án
 

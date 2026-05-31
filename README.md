@@ -2,6 +2,43 @@
 
 A cloud-native audiobook/story reading platform with **server-side scraping (GitHub Actions)** + **on-device TTS (Text-to-Speech)**. 100% free-tier infrastructure.
 
+## Architecture
+
+```mermaid
+graph TB
+    subgraph "Data Pipeline"
+        CRON["Cron / Supabase Edge Function"]
+        GA["GitHub Actions Runner"]
+        PROXY["Free Proxy Pool"]
+        WEB["Source Websites"]
+    end
+
+    subgraph "Storage Layer"
+        SUPA["Supabase PostgreSQL\nSingapore Region\nmetadata, users, chapters"]
+        R2["Cloudflare R2\nJSON content, cover images"]
+    end
+
+    subgraph "Client"
+        APP["React Web App (web_react)"]
+        MOBILE["Flutter Mobile App (mobile_flutter)"]
+        TTS["Web Speech API / Native TTS"]
+        AUTH["Supabase Auth"]
+    end
+
+    CRON -->|repository_dispatch| GA
+    GA -->|via proxy| PROXY --> WEB
+    GA -->|upload JSON| R2
+    GA -->|update metadata| SUPA
+    APP -->|query chapters| SUPA
+    APP -->|fetch content| R2
+    APP -->|text speech| TTS
+    APP -->|login/register| AUTH
+    MOBILE -->|query chapters| SUPA
+    MOBILE -->|fetch content| R2
+    MOBILE -->|text speech| TTS
+    MOBILE -->|login/register| AUTH
+```
+
 ## Features
 
 - **Automated scraping**: Crawl story content from multiple sources (TruyenFull, MeTruyenChu, TruyenDich) via GitHub Actions
@@ -11,6 +48,34 @@ A cloud-native audiobook/story reading platform with **server-side scraping (Git
 - **Cloud-native stack**: Supabase (PostgreSQL + Auth) + Cloudflare R2 (object storage)
 - **Multi-source search**: Simultaneous search across multiple story websites
 - **Parser plugin system**: Extensible architecture for adding new content sources
+
+## Multi-source search flow
+
+```mermaid
+sequenceDiagram
+    participant User as User
+    participant App as App
+    participant EF as Supabase Edge Function
+    participant TF as truyenfull.vision
+    participant MTC as metruyenchu.com.vn
+    participant GA as GitHub Actions
+
+    User->>App: Search query
+    App->>EF: POST /search-sources { query }
+    par Search in parallel
+        EF->>TF: HTTP GET /tim-kiem/?tukhoa=...
+        EF->>MTC: HTTP GET /search?q=...
+    end
+    TF-->>EF: HTML results
+    MTC-->>EF: HTML results
+    EF-->>App: { sources: [{ truyenfull: [...] }, { metruyenchu: [...] }] }
+    App->>User: Display results grouped by source
+    User->>App: Click "Scrape" on a result
+    App->>EF: POST /trigger-scraper { source_url }
+    EF->>GA: repository_dispatch → scrape-story
+    GA->>TF: If TruyenFull link → scrape chapters
+    GA->>MTC: If MeTruyenChu link → scrape chapters
+```
 
 ## Project structure
 
