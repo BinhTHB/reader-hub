@@ -265,17 +265,12 @@ class TruyenFullParser(BaseSiteParser):
             tag.decompose()
 
         paragraphs = []
-        p_tags = content_el.find_all("p")
-        if p_tags:
-            for p in p_tags:
-                text = self.clean_text(p.get_text())
-                if text and len(text) > 1:
-                    paragraphs.append(text)
-        else:
-            for line in content_el.get_text(separator="\n").split("\n"):
-                text = self.clean_text(line)
-                if text and len(text) > 1:
-                    paragraphs.append(text)
+        for br in content_el.find_all("br"):
+            br.replace_with("\n")
+        for line in content_el.get_text(separator="\n").split("\n"):
+            text = self.clean_text(line)
+            if text and len(text) > 1:
+                paragraphs.append(text)
 
         return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
 
@@ -361,6 +356,7 @@ class MeTruyenChuParser(BaseSiteParser):
     def parse_chapter_list(self, html: str) -> list[dict]:
         page = Selector(html)
         chapters = []
+        seen = set()
 
         for link in page.css(
             "#chapter-list a, .list-chapter a, ul.list-chapters a, .chapters a, "
@@ -372,6 +368,9 @@ class MeTruyenChuParser(BaseSiteParser):
             match = re.search(r"[Cc]hương\s+(\d+)", text)
             if match:
                 num = int(match.group(1))
+                if num in seen:
+                    continue
+                seen.add(num)
                 t_match = re.search(r"[Cc]hương\s+\d+\s*[:\-]\s*(.+)", text)
                 title = t_match.group(1).strip() if t_match else text
                 chapters.append({
@@ -400,18 +399,12 @@ class MeTruyenChuParser(BaseSiteParser):
             tag.decompose()
 
         paragraphs = []
-        p_tags = content_el.find_all("p")
-        if p_tags:
-            for p in p_tags:
-                text = self.clean_text(p.get_text())
-                if text and len(text) > 3:
-                    paragraphs.append(text)
-        
-        if not paragraphs:
-            for line in content_el.get_text(separator="\n").split("\n"):
-                text = self.clean_text(line)
-                if text and len(text) > 3:
-                    paragraphs.append(text)
+        for br in content_el.find_all("br"):
+            br.replace_with("\n")
+        for line in content_el.get_text(separator="\n").split("\n"):
+            text = self.clean_text(line)
+            if text and len(text) > 1:
+                paragraphs.append(text)
 
         return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
 
@@ -476,8 +469,18 @@ class MeTruyenChuParser(BaseSiteParser):
         """Extract HTML from JSON API response for pagination.
         API at /get/listchap/{id}?page={n} returns {"data": "<html>"}"""
         import json
+        import re
+        import html
+        
+        body_cleaned = response_body.strip()
+        # If it's wrapped in HTML/pre tags, extract the text inside the pre tag
+        if "<pre" in body_cleaned.lower():
+            match = re.search(r"<pre[^>]*>(.*?)</pre>", body_cleaned, re.DOTALL | re.IGNORECASE)
+            if match:
+                body_cleaned = match.group(1).strip()
+        
         try:
-            data = json.loads(response_body)
+            data = json.loads(body_cleaned)
             html_content = data.get("data", "")
             if html_content:
                 return html_content
@@ -681,17 +684,12 @@ class TruyenDichParser(BaseSiteParser):
             tag.decompose()
 
         paragraphs = []
-        p_tags = content_el.find_all("p")
-        if p_tags:
-            for p in p_tags:
-                text = self.clean_text(p.get_text())
-                if text and len(text) > 1:
-                    paragraphs.append(text)
-        else:
-            for line in content_el.get_text(separator="\n").split("\n"):
-                text = self.clean_text(line)
-                if text and len(text) > 1:
-                    paragraphs.append(text)
+        for br in content_el.find_all("br"):
+            br.replace_with("\n")
+        for line in content_el.get_text(separator="\n").split("\n"):
+            text = self.clean_text(line)
+            if text and len(text) > 1:
+                paragraphs.append(text)
 
         return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
 
@@ -819,19 +817,12 @@ class UUKanShuParser(BaseSiteParser):
             tag.decompose()
 
         paragraphs = []
-        # UUKanShu often separates text with double <br> or inside <p> or text nodes
-        p_tags = content_el.find_all("p")
-        if p_tags:
-            for p in p_tags:
-                text = self.clean_text(p.get_text())
-                if text and len(text) > 1:
-                    paragraphs.append(text)
-        
-        if not paragraphs:
-            for line in content_el.get_text(separator="\n").split("\n"):
-                text = self.clean_text(line)
-                if text and len(text) > 1:
-                    paragraphs.append(text)
+        for br in content_el.find_all("br"):
+            br.replace_with("\n")
+        for line in content_el.get_text(separator="\n").split("\n"):
+            text = self.clean_text(line)
+            if text and len(text) > 1:
+                paragraphs.append(text)
 
         return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
 

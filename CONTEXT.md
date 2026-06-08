@@ -1756,3 +1756,54 @@ Trong Step 2 (Vòng lặp phân trang cào danh sách chương), biến vòng l�
 - ✅ Báo cáo `GRAPH_REPORT.md` và giao diện đồ thị `graph.html` đã sẵn sàng sử dụng.
 - ✅ Thiết lập post-commit và post-checkout git hooks để tự động cập nhật bản đồ tri thức sau mỗi lần commit.
 
+---
+
+## 2026-06-08 - Sửa lỗi phân trang MeTruyenChu & Test Scrape thành công
+
+**Vấn đề**:
+Khi cào danh sách chương của nguồn `metruyenchu` từ trang số 2 trở đi, API phân trang trả về dữ liệu JSON bị bao bọc bởi mã HTML (`<html><body><pre>{"data": "..."}</pre></body></html>`). Điều này làm cho hàm `json.loads` bị lỗi dẫn đến không lấy được danh sách chương tiếp theo. Ngoài ra, việc lặp selector có thể dẫn đến trùng lặp danh sách chương.
+
+**Giải pháp**:
+1. **Fix API Response Parsing**:
+   - Cập nhật hàm `extract_html_from_api_response` trong `MeTruyenChuParser` ([parsers.py](file:///E:/projects/reader-hub/scrapling/parsers.py)) để tự động phát hiện và bóc tách nội dung JSON nằm bên trong thẻ `<pre>` trước khi phân giải.
+2. **De-duplicate Chapters**:
+   - Thêm cơ chế lọc trùng bằng `seen` set (dựa trên `chapter_number`) trong hàm `parse_chapter_list` của `MeTruyenChuParser` để tránh trùng lặp bản ghi.
+3. **End-to-End Test**:
+   - Chạy thử nghiệm cào một chương ở giữa (Chapter 120 của truyện *Hỏa Hệ Pháp Gia Tu Luyện Chỉ Nam*):
+     ```powershell
+     $env:STORY_SOURCE_URL="https://metruyenchuvn.com/hoa-he-phap-gia-tu-luyen-chi-nam"; $env:CHAPTER_START="120"; $env:CHAPTER_LIMIT="1"; python scraper.py
+     ```
+
+**Kết quả**:
+- ✅ Trích xuất thành công story ID và cào chính xác danh sách chương qua API phân trang (đã load qua trang 2 và lấy được chương 120).
+- ✅ Loại bỏ hoàn toàn các chương bị trùng lặp.
+- ✅ Chương 120 ("từng người tính kế") được cào thành công, tải nội dung và lưu trữ thành công lên Cloudflare R2 cũng như cập nhật metadata lên Supabase.
+- ✅ Scraper hoạt động trơn tru từ đầu đến cuối đối với nguồn MeTruyenChu.
+
+---
+
+## 2026-06-08 - Sửa lỗi cào thiếu cách dòng (Paragraph Spacing Fix)
+
+**Vấn đề**:
+Các chương khi cào về chỉ hiển thị 1 đoạn văn (1 paragraph) khổng lồ chứa hàng ngàn chữ mà không có xuống dòng/cách đoạn. 
+Nguyên nhân là do một số nguồn truyện (như MeTruyenChu) bao bọc toàn bộ nội dung chương trong duy nhất một thẻ `<p>`, và ngăn cách các đoạn bên trong bằng các thẻ `<br>`. Parser hiện tại sử dụng `content_el.find_all("p")` nên khi thấy thẻ `<p>`, nó lấy toàn bộ text và gộp lại làm mất các thẻ `<br>` dùng để xuống dòng.
+
+**Giải pháp**:
+1. **Paragraph Extraction Update**:
+   - Cập nhật hàm `parse_chapter_content` cho cả 4 bộ parser (`TruyenFullParser`, `MeTruyenChuParser`, `TruyenDichParser`, và `UUKanShuParser`) trong [parsers.py](file:///E:/projects/reader-hub/scrapling/parsers.py).
+   - Thay thế toàn bộ thẻ `<br>` thành ký tự xuống dòng `\n` bằng hàm `br.replace_with("\n")` trước khi trích xuất text.
+   - Sử dụng phương pháp chia đoạn bằng dòng mới `get_text(separator="\n").split("\n")` thay vì chỉ quét các thẻ `<p>`. Cách này hoạt động hoàn hảo cho cả hai kiểu cấu trúc trang (dùng thẻ `<p>` riêng lẻ hoặc dùng thẻ `<p>` bọc `<br>`).
+   - Đổi điều kiện lọc dòng từ `len(text) > 3` thành `len(text) > 1` để tránh bỏ sót các đoạn ngắn (như từ đơn thoại: "Có.", "Chạy!").
+2. **End-to-End Test**:
+   - Chạy thử nghiệm cào chương 121 của truyện *Hỏa Hệ Pháp Gia Tu Luyện Chỉ Nam* để kiểm chứng:
+     ```powershell
+     $env:STORY_SOURCE_URL="https://metruyenchuvn.com/hoa-he-phap-gia-tu-luyen-chi-nam"; $env:CHAPTER_START="121"; $env:CHAPTER_LIMIT="1"; python scraper.py
+     ```
+
+**Kết quả**:
+- ✅ Cào thành công và phân tách nội dung chương 121 thành chính xác **101 đoạn văn** (101 paragraphs), thay vì chỉ có 1 đoạn như trước.
+- ✅ Đã lưu trữ và upload tệp JSON sạch sẽ lên Cloudflare R2 và Supabase.
+- ✅ Khắc phục triệt để lỗi mất cách dòng trên toàn bộ hệ thống parser.
+
+
+
