@@ -102,4 +102,13 @@ class SupabaseService {
       'last_read_at': DateTime.now().toIso8601String(),
     });
   }
+
+  // Delete methods
+  static Future<void> deleteStory(int storyId) async {
+    await client.from('stories').delete().eq('id', storyId);
+  }
+
+  static Future<void> deleteChapter(int chapterId) async {
+    await client.from('chapters').delete().eq('id', chapterId);
+  }
 }

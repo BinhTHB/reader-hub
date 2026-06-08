@@ -74,6 +74,83 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
     }
   }
 
+  Future<void> _confirmDeleteStory(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xac nhan xoa'),
+        content: Text('Ban co chac chan muon xoa truyen "' + (_story!['title'] ?? '') + '"? Toan bo chuong va du lieu lien quan se bi xoa vinh vien.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Huy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Xoa'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await SupabaseService.deleteStory(_story!['id']);
+        if (context.mounted) {
+          Navigator.of(context).pop();
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Loi khi xoa truyen: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _confirmDeleteChapter(BuildContext context, Map<String, dynamic> chapter) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Xac nhan xoa'),
+        content: Text('Ban co chac chan muon xoa "Chuong ' + chapter['chapter_number'].toString() + ': ' + (chapter['title'] ?? 'Chuong ' + chapter['chapter_number'].toString()) + '"? Hanh dong nay khong the hoan tac.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Huy'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: TextButton.styleFrom(foregroundColor: Colors.red),
+            child: const Text('Xoa'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      try {
+        await SupabaseService.deleteChapter(chapter['id']);
+        setState(() {
+          _chapters.removeWhere((ch) => ch['id'] == chapter['id']);
+        });
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Da xoa chuong thanh cong'), backgroundColor: Colors.green),
+          );
+        }
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Loi khi xoa chuong: $e'), backgroundColor: Colors.red),
+          );
+        }
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -148,6 +225,10 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
               onPressed: () {
                 // TODO: Add to favorites
               },
+            ),
+            IconButton(
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              onPressed: () => _confirmDeleteStory(context),
             ),
             IconButton(
               icon: const Icon(Icons.share),
@@ -429,6 +510,7 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
                       return _ChapterItem(
                         chapter: chapter,
                         storyTitle: _story!['title'],
+                        onDelete: () => _confirmDeleteChapter(context, chapter),
                       );
                     },
                   ),
@@ -446,10 +528,12 @@ class _StoryDetailScreenState extends State<StoryDetailScreen> {
 class _ChapterItem extends StatelessWidget {
   final Map<String, dynamic> chapter;
   final String storyTitle;
+  final VoidCallback? onDelete;
 
   const _ChapterItem({
     required this.chapter,
     required this.storyTitle,
+    this.onDelete,
   });
 
   @override

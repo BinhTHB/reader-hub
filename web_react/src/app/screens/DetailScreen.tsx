@@ -9,6 +9,7 @@ import {
   ChevronUp,
   RefreshCw,
   BookOpen,
+  Trash2,
 } from "lucide-react";
 import { supabase, R2_PUBLIC_DOMAIN } from "../../lib/supabase";
 
@@ -40,6 +41,8 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
   const [latestChapterInfo, setLatestChapterInfo] = useState<{ chapter_number: number; title: string } | null>(null);
   const [showScrapeConfirm, setShowScrapeConfirm] = useState(false);
   const [isDescending, setIsDescending] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<{ type: 'story' | 'chapter'; id: number; name: string } | null>(null);
 
   const handleCheckLatest = async () => {
     if (!bookData.source_url) return;
@@ -73,6 +76,47 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
       setUpdateMessage(`Lỗi: ${err.message || 'Không thể kiểm tra chương mới'}`);
     } finally {
       setIsUpdating(false);
+    }
+  };
+
+  const confirmDeleteStory = () => {
+    setDeleteTarget({ type: 'story', id: bookData.id, name: bookData.title });
+    setShowDeleteConfirm(true);
+  };
+
+  const confirmDeleteChapter = (chapter: Chapter) => {
+    setDeleteTarget({ type: 'chapter', id: chapter.id, name: 'Chuong ' + chapter.chapter_number + ': ' + (chapter.title || 'Chuong ' + chapter.chapter_number) });
+    setShowDeleteConfirm(true);
+  };
+
+  const executeDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      if (deleteTarget.type === 'story') {
+        const { error } = await supabase
+          .from('stories')
+          .delete()
+          .eq('id', deleteTarget.id);
+
+        if (error) throw error;
+        onBack();
+      } else if (deleteTarget.type === 'chapter') {
+        const { error } = await supabase
+          .from('chapters')
+          .delete()
+          .eq('id', deleteTarget.id);
+
+        if (error) throw error;
+        setChapters(prev => prev.filter(ch => ch.id !== deleteTarget.id));
+        setShowDeleteConfirm(false);
+        setDeleteTarget(null);
+      }
+    } catch (err: any) {
+      console.error('Failed to delete:', err);
+      setUpdateMessage(err.message || 'Khong the xoa');
+      setShowDeleteConfirm(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -308,6 +352,12 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
                 }`}
             />
           </button>
+          <button
+            onClick={confirmDeleteStory}
+            className="p-2 hover:bg-muted rounded-full transition-colors text-red-500"
+          >
+            <Trash2 className="w-5 h-5" />
+          </button>
           <button className="p-2 hover:bg-muted rounded-full transition-colors">
             <Share2 className="w-5 h-5" />
           </button>
@@ -482,7 +532,19 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
                           {new Date(chapter.created_at).toLocaleDateString('vi-VN')}
                         </p>
                       </div>
-                      <BookOpen className="w-4 h-4 text-muted-foreground" />
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            confirmDeleteChapter(chapter);
+                          }}
+                          className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950 rounded-full transition-colors text-muted-foreground hover:text-red-500"
+                          title="Xoa chuong"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                        <BookOpen className="w-4 h-4 text-muted-foreground" />
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -491,6 +553,45 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
           )}
         </section>
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => { setShowDeleteConfirm(false); setDeleteTarget(null); }}
+        >
+          <div
+            className="bg-card w-full max-w-sm rounded-3xl p-6 shadow-xl animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Xac nhan xoa</h3>
+              <p className="text-sm text-muted-foreground">
+                {deleteTarget?.type === 'story'
+                  ? 'Ban co chac chan muon xoa truyen "' + deleteTarget?.name + '"? Toan bo chuong va du lieu lien quan se bi xoa vinh vien.'
+                  : 'Ban co chac chan muon xoa "' + deleteTarget?.name + '"? Hanh dong nay khong the hoan tac.'}
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowDeleteConfirm(false); setDeleteTarget(null); }}
+                className="flex-1 py-3 bg-muted text-foreground rounded-xl font-medium hover:opacity-90 transition-opacity"
+              >
+                Huy
+              </button>
+              <button
+                onClick={executeDelete}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors"
+              >
+                Xoa
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
