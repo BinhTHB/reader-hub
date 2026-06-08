@@ -1,5 +1,5 @@
-"""
-Site Parsers — Per-site scraping and search logic (Scrapling branch)
+﻿"""
+Site Parsers â€” Per-site scraping and search logic (Scrapling branch)
 
 Each parser handles the HTML structure of a specific source website.
 """
@@ -60,7 +60,7 @@ class BaseSiteParser(ABC):
     def base_url(self) -> str:
         return self.config.base_url if self.config else ""
 
-    # ─── Abstract Methods ──────────────────────────────
+    # â”€â”€â”€ Abstract Methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @abstractmethod
     def get_search_url(self, query: str) -> str:
@@ -96,7 +96,7 @@ class BaseSiteParser(ABC):
         """Parse the total number of chapter list pages."""
         ...
 
-    # ─── Utility Methods ───────────────────────────────
+    # â”€â”€â”€ Utility Methods â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     @staticmethod
     def clean_text(text: str) -> str:
@@ -127,9 +127,9 @@ class BaseSiteParser(ABC):
         return urljoin(self.base_url, url)
 
 
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # TruyenFull Parser (truyenfull.vision)
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 class TruyenFullParser(BaseSiteParser):
     name = "truyenfull"
@@ -195,7 +195,7 @@ class TruyenFullParser(BaseSiteParser):
 
         info_el = page.css("span.text-success, span.text-primary, .info span.label")
         status_text = self.clean_text(get_text(info_el) or "") if info_el else ""
-        status = "completed" if "Hoàn" in status_text else "ongoing"
+        status = "completed" if "HoÃ n" in status_text else "ongoing"
 
         return {
             "title": title, "slug": self.slugify(title), "author": author,
@@ -212,13 +212,13 @@ class TruyenFullParser(BaseSiteParser):
             href = link.attrib.get("href", "")
             text = self.clean_text(get_text(link) or "")
 
-            match = re.search(r"[Cc]hương\s+(\d+)", text)
+            match = re.search(r"[Cc]hÆ°Æ¡ng\s+(\d+)", text)
             if match:
                 num = int(match.group(1))
                 if num in seen:
                     continue
                 seen.add(num)
-                t_match = re.search(r"[Cc]hương\s+\d+\s*[:\-]\s*(.+)", text)
+                t_match = re.search(r"[Cc]hÆ°Æ¡ng\s+\d+\s*[:\-]\s*(.+)", text)
                 title = t_match.group(1).strip() if t_match else text
                 chapters.append({
                     "chapter_number": num,
@@ -240,7 +240,7 @@ class TruyenFullParser(BaseSiteParser):
             text = (get_text(link) or "").strip()
             if text.isdigit():
                 max_page = max(max_page, int(text))
-            elif "Cuối" in text or "Last" in text:
+            elif "Cuá»‘i" in text or "Last" in text:
                 href = link.attrib.get("href", "")
                 match = re.search(r"trang-(\d+)", href)
                 if match:
@@ -280,9 +280,9 @@ class TruyenFullParser(BaseSiteParser):
         return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
 
 
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # MeTruyenChu Parser (metruyenchuvn.com)
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 class MeTruyenChuParser(BaseSiteParser):
     name = "metruyenchu"
@@ -328,7 +328,12 @@ class MeTruyenChuParser(BaseSiteParser):
 
     def get_chapter_list_url(self, story_url: str, page: int = 1) -> str:
         base = story_url.rstrip("/")
-        return base
+        if page == 1:
+            return base
+        # MeTruyenChu uses JS pagination API: /get/listchap/{id}?page={n}
+        # scraper.py resolves the full URL using extract_story_id()
+        # Return a placeholder; the actual API URL is constructed in scraper.py
+        return f"{base}?page_api={page}"
 
     def parse_story_info(self, html: str, url: str) -> dict:
         page = Selector(html)
@@ -361,10 +366,10 @@ class MeTruyenChuParser(BaseSiteParser):
             text = self.clean_text(get_text(link) or "")
             href = link.attrib.get("href", "")
 
-            match = re.search(r"[Cc]hương\s+(\d+)", text)
+            match = re.search(r"[Cc]hÆ°Æ¡ng\s+(\d+)", text)
             if match:
                 num = int(match.group(1))
-                t_match = re.search(r"[Cc]hương\s+\d+\s*[:\-]\s*(.+)", text)
+                t_match = re.search(r"[Cc]hÆ°Æ¡ng\s+\d+\s*[:\-]\s*(.+)", text)
                 title = t_match.group(1).strip() if t_match else text
                 chapters.append({
                     "chapter_number": num,
@@ -438,13 +443,28 @@ class MeTruyenChuParser(BaseSiteParser):
                 onclick = link.attrib.get("onclick", "")
                 match = re.search(r"page\((\d+),", onclick)
                 if match:
-                    return match.group(1)
+                    story_id = match.group(1)
+                    self._story_id = story_id
+                    return story_id
         return None
 
+    @staticmethod
+    def extract_html_from_api_response(response_body: str) -> str:
+        """Extract HTML from JSON API response for pagination.
+        API at /get/listchap/{id}?page={n} returns {"data": "<html>"}"""
+        import json
+        try:
+            data = json.loads(response_body)
+            html_content = data.get("data", "")
+            if html_content:
+                return html_content
+        except (json.JSONDecodeError, TypeError):
+            pass
+        return response_body
 
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # TruyenDich.AI Parser (truyendich.ai)
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 class TruyenDichParser(BaseSiteParser):
     name = "truyendich"
@@ -542,7 +562,7 @@ class TruyenDichParser(BaseSiteParser):
         desc_el = page.css(".prose, .description, [class*='description']")
         description = self.clean_text(get_text(desc_el) or "") if desc_el else None
 
-        cover_el = page.css("img[alt*='bìa'], img[alt*='cover'], .cover img, img")
+        cover_el = page.css("img[alt*='bÃ¬a'], img[alt*='cover'], .cover img, img")
         cover_url = cover_el.attrib.get("src") if cover_el else None
 
         genres = [self.clean_text(get_text(g) or "") for g in page.css("a[href*='/the-loai/']")]
@@ -570,7 +590,7 @@ class TruyenDichParser(BaseSiteParser):
             match = re.search(r"/chuong-(\d+)", href)
             if match:
                 num = int(match.group(1))
-                t_match = re.search(r"[Cc]hương\s+(\d+)\s*[:\-]\s*(.+)", text)
+                t_match = re.search(r"[Cc]hÆ°Æ¡ng\s+(\d+)\s*[:\-]\s*(.+)", text)
                 title = t_match.group(2).strip() if t_match else text
                 chapters.append({
                     "chapter_number": num,
@@ -594,20 +614,20 @@ class TruyenDichParser(BaseSiteParser):
                 max_chapter = max(max_chapter, end_ch)
                 found_range = True
                 
-        # 2. Search for "XXX chương" text in any element (BeautifulSoup fallback is safer)
+        # 2. Search for "XXX chÆ°Æ¡ng" text in any element (BeautifulSoup fallback is safer)
         soup = BeautifulSoup(html, "lxml")
         string_targets = []
         try:
-            string_targets.extend(soup.find_all(string=re.compile(r"\d+\s*chương", re.IGNORECASE)))
+            string_targets.extend(soup.find_all(string=re.compile(r"\d+\s*chÆ°Æ¡ng", re.IGNORECASE)))
         except:
             pass
         try:
-            string_targets.extend(soup.find_all(text=re.compile(r"\d+\s*chương", re.IGNORECASE)))
+            string_targets.extend(soup.find_all(text=re.compile(r"\d+\s*chÆ°Æ¡ng", re.IGNORECASE)))
         except:
             pass
             
         for t in string_targets:
-            match = re.search(r"(\d+)\s*chương", str(t), re.IGNORECASE)
+            match = re.search(r"(\d+)\s*chÆ°Æ¡ng", str(t), re.IGNORECASE)
             if match:
                 max_chapter = max(max_chapter, int(match.group(1)))
                 found_range = True
@@ -653,9 +673,9 @@ class TruyenDichParser(BaseSiteParser):
         return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
 
 
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # UUKanShu Parser (uukanshu.cc)
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 class UUKanShuParser(BaseSiteParser):
     name = "uukanshu"
@@ -739,8 +759,8 @@ class UUKanShuParser(BaseSiteParser):
             text = self.clean_text(get_text(link) or "")
 
             # Match chapter numbers in Chinese or English
-            # e.g., 第123章, 第 123 章, 123. Title, Chương 123
-            match = re.search(r"(?:[Cc]hương|第)\s*(\d+)\s*[章.]?", text)
+            # e.g., ç¬¬123ç« , ç¬¬ 123 ç« , 123. Title, ChÆ°Æ¡ng 123
+            match = re.search(r"(?:[Cc]hÆ°Æ¡ng|ç¬¬)\s*(\d+)\s*[ç« .]?", text)
             if match:
                 num = int(match.group(1))
             else:
@@ -793,9 +813,9 @@ class UUKanShuParser(BaseSiteParser):
         return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
 
 
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 # Parser Registry
-# ═══════════════════════════════════════════════════════════
+# â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 PARSERS: dict[str, BaseSiteParser] = {
     "truyenfull": TruyenFullParser(),
@@ -827,3 +847,4 @@ def get_all_parsers() -> list[BaseSiteParser]:
     from sites_config import get_enabled_sites
     enabled_names = {s.name for s in get_enabled_sites()}
     return [p for name, p in PARSERS.items() if name in enabled_names]
+

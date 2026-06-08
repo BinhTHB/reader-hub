@@ -693,13 +693,33 @@ def run_scraper():
                 print(f"  📑 Fetching chapter list page {page_num}/{max_pages}...")
                 random_delay()
                 
-                p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=page_num)
+                # MeTruyenChu uses JavaScript pagination API
+                if parser.name == "metruyenchu":
+                    # Extract story_id from first page if not already cached
+                    if not hasattr(parser, '_story_id') or not parser._story_id:
+                        if hasattr(parser, 'extract_story_id'):
+                            first_page_for_id = first_page_resp.body if hasattr(first_page_resp, 'body') else ''
+                            parser.extract_story_id(first_page_for_id if first_page_for_id else '')
+                    
+                    # Use the API endpoint for MeTruyenChu pagination
+                    sid = getattr(parser, '_story_id', None) or ''
+                    api_url = f"https://metruyenchuvn.com/get/listchap/{sid}?page={page_num}"
+                    p_url = api_url
+                else:
+                    p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=page_num)
                 
                 def get_page_chapters(sess):
                     p_resp = sess.fetch(p_url)
                     if p_resp.status != 200:
                         raise RuntimeError(f"HTTP {p_resp.status}")
-                    p_chapters = parser.parse_chapter_list(p_resp.body)
+                    
+                    # For MeTruyenChu API, extract HTML from JSON response
+                    if parser.name == "metruyenchu":
+                        body = parser.extract_html_from_api_response(p_resp.body)
+                    else:
+                        body = p_resp.body
+                    
+                    p_chapters = parser.parse_chapter_list(body)
                     if not p_chapters:
                         raise RuntimeError(f"No chapters found on page {page_num}")
                     return p_chapters
