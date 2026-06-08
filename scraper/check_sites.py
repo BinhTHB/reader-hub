@@ -8,7 +8,7 @@ import requests
 
 sites = [
     ('TruyenFull', 'https://truyenfull.vision'),
-    ('MeTruyenChu', 'https://metruyenchu.com.vn'),
+    ('MeTruyenChu', 'https://metruyenchuvn.com'),
     ('TruyenDich', 'https://truyendich.ai')
 ]
 

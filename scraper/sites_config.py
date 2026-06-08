@@ -38,8 +38,8 @@ SITES: dict[str, SiteConfig] = {
     "metruyenchu": SiteConfig(
         name="metruyenchu",
         display_name="MeTruyenChu",
-        base_url="https://metruyenchu.com.vn",
-        search_url_template="https://metruyenchu.com.vn/search?q={query}",
+        base_url="https://metruyenchuvn.com",
+        search_url_template="https://metruyenchuvn.com/search?q={query}",
     ),
     "truyendich": SiteConfig(
         name="truyendich",

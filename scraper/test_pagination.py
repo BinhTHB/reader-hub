@@ -2,7 +2,7 @@
 from playwright.sync_api import sync_playwright
 from playwright_stealth import stealth_sync
 
-url = "https://metruyenchu.com.vn/toan-chuc-phap-su-truyen-full"
+url = "https://metruyenchuvn.com/toan-chuc-phap-su-truyen-full"
 
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)

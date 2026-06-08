@@ -1,14 +1,14 @@
-/**
+﻿/**
  * Supabase Edge Function: search-sources
  *
  * Triggers GitHub Actions to search for a story across multiple source websites.
  * Returns the job ID immediately; the app polls for results.
  *
- * OR — for faster results — does a lightweight HTTP search directly
+ * OR â€” for faster results â€” does a lightweight HTTP search directly
  * (without Playwright) using simple fetch + regex parsing.
  *
  * Request body:
- * { "query": "Đấu La Đại Lục" }
+ * { "query": "Äáº¥u La Äáº¡i Lá»¥c" }
  */
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
@@ -20,7 +20,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// ─── Site Configuration (mirrors scraper/sites_config.py) ────
+// â”€â”€â”€ Site Configuration (mirrors scraper/sites_config.py) â”€â”€â”€â”€
 interface SiteConfig {
   name: string;
   displayName: string;
@@ -83,37 +83,52 @@ const SITES: SiteConfig[] = [
     name: "metruyenchu",
     displayName: "MeTruyenChu",
     searchUrl: (q: string) =>
-      `https://metruyenchu.com.vn/search?q=${encodeURIComponent(q)}`,
+      `https://metruyenchuvn.com/search?q=${encodeURIComponent(q)}`,
     parseResults: (html: string, _baseUrl: string): SearchResult[] => {
       const doc = new DOMParser().parseFromString(html, "text/html");
       if (!doc) return [];
 
       const results: SearchResult[] = [];
-      const rows = doc.querySelectorAll(
-        ".list-truyen .row, .search-result .row, .list .row, .search-list .story-item"
-      );
+      const items = doc.querySelectorAll(".truyen-list .item");
 
-      for (const row of rows) {
-        const titleEl = row.querySelector("h3 a, .truyen-title a, a.title");
-        if (!titleEl) continue;
+      for (const item of items) {
+        let linkEl = item.querySelector("a.cover");
+        let imgEl = linkEl ? linkEl.querySelector("img") : null;
 
-        const title = titleEl.textContent?.trim() || "";
-        const href = titleEl.getAttribute("href") || "";
+        if (!linkEl) {
+          linkEl = item.querySelector("a");
+        }
 
-        const authorEl = row.querySelector(".author a, .author, span.author");
-        const author = authorEl?.textContent?.trim() || null;
+        if (!linkEl) continue;
 
-        const imgEl = row.querySelector("img");
+        const href = linkEl.getAttribute("href") || "";
+        let title = linkEl.getAttribute("title")?.trim() || "";
+        if (!title) {
+          title = linkEl.textContent?.trim() || "";
+        }
+        title = title.replace(/\s*Đọc online\s*$/i, "").trim();
+
+        const genreI = linkEl.querySelector("i");
+        if (genreI) {
+          const genreText = genreI.textContent?.trim() || "";
+          if (genreText) {
+            title = title.replace(genreText, "").trim();
+          }
+        }
+
         const coverUrl = imgEl?.getAttribute("src") || null;
+        const fullCoverUrl = coverUrl
+          ? (coverUrl.startsWith("http") ? coverUrl : "https://metruyenchuvn.com" + coverUrl)
+          : null;
 
         const sourceUrl = href.startsWith("http")
           ? href
-          : `https://metruyenchu.com.vn${href}`;
+          : "https://metruyenchuvn.com" + href;
 
         results.push({
           title,
-          author,
-          coverUrl,
+          author: null,
+          coverUrl: fullCoverUrl,
           sourceUrl,
           sourceName: "metruyenchu",
           sourceDisplay: "MeTruyenChu",
@@ -140,19 +155,20 @@ const SITES: SiteConfig[] = [
         // Skip chapter links
         if (href.includes("/chuong-")) continue;
         
-        const title = link.textContent?.trim() || "";
+        const title = link.getAttribute("title")?.trim() || link.textContent?.trim() || "";
         if (!title) continue;
 
         // Try to find author and cover from parent
         let author: string | null = null;
         let coverUrl: string | null = null;
         
-        const parent = link.parentElement?.parentElement;
+        const parent = link.closest(".story-item, .search-item, li, div[class*='result']") || link.parentElement?.parentElement;
         if (parent) {
           const authorEl = parent.querySelector(".author, [class*='author']");
           if (authorEl) author = authorEl.textContent?.trim() || null;
           
-          const imgEl = parent.querySelector("img");
+          let imgEl = parent.querySelector("img[src*='cover'], img[src*='thumb'], img[src*='story']");
+          if (!imgEl) imgEl = parent.querySelector("img");
           if (imgEl) {
             const src = imgEl.getAttribute("src") || "";
             coverUrl = src.startsWith("http") ? src : `https://truyendich.ai${src}`;
@@ -178,7 +194,7 @@ const SITES: SiteConfig[] = [
   },
 ];
 
-// ─── Main Handler ─────────────────────────────────────────
+// â”€â”€â”€ Main Handler â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {

@@ -49,7 +49,7 @@ async def test_metruyenchu_pagination():
     print("="*60)
     
     parser = MeTruyenChuParser()
-    url = "https://metruyenchu.com.vn/toan-chuc-phap-su-truyen-full"
+    url = "https://metruyenchuvn.com/toan-chuc-phap-su-truyen-full"
     
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)

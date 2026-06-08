@@ -246,7 +246,7 @@ class TruyenFullParser(BaseSiteParser):
 
 
 # ═══════════════════════════════════════════════════════════
-# MeTruyenChu Parser (metruyenchu.com.vn)
+# MeTruyenChu Parser (metruyenchuvn.com)
 # ═══════════════════════════════════════════════════════════
 
 class MeTruyenChuParser(BaseSiteParser):
@@ -254,7 +254,7 @@ class MeTruyenChuParser(BaseSiteParser):
 
     def get_search_url(self, query: str) -> str:
         template = self.config.search_url_template if self.config else \
-            "https://metruyenchu.com.vn/search?q={query}"
+            "https://metruyenchuvn.com/search?q={query}"
         return template.replace("{query}", quote(query))
 
     def parse_search_results(self, html: str) -> list[dict]:

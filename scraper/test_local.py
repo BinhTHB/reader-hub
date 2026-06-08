@@ -202,7 +202,7 @@ def main():
         print("Usage:")
         print('  python test_local.py search "Đấu La Đại Lục"')
         print('  python test_local.py scrape truyenfull "https://truyenfull.vision/dau-la-dai-luc/"')
-        print('  python test_local.py scrape metruyenchu "https://metruyenchu.com.vn/dau-la-dai-luc"')
+        print('  python test_local.py scrape metruyenchu "https://metruyenchuvn.com/dau-la-dai-luc"')
         sys.exit(1)
 
     mode = sys.argv[1]

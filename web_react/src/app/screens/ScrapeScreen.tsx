@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import {
   Search,
   BookOpen,
@@ -101,6 +101,8 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
   const [activeJob, setActiveJob] = useState<ScrapeJob | null>(null);
   const [jobHistory, setJobHistory] = useState<ScrapeJob[]>([]);
   const [error, setError] = useState("");
+  const [activeSources, setActiveSources] = useState<Set<string>>(new Set());
+  const [availableSources, setAvailableSources] = useState<string[]>([]);
 
   // Load job history from Supabase
   useEffect(() => {
@@ -222,9 +224,9 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
             source.results.forEach((result: any) => {
               allResults.push({
                 id: `${source.source_name}_${result.sourceUrl}`,
-                title: result.title,
+                title: cleanTitle(result.title),
                 author: result.author || 'Đang cập nhật',
-                cover: result.coverUrl || 'https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=400&h=600&fit=crop',
+                cover: result.coverUrl || '',
                 url: result.sourceUrl,
                 source: result.sourceDisplay,
                 chapters: 0,
@@ -236,7 +238,26 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
 
         setSearchResults(allResults);
         
-        if (allResults.length === 0) {
+        // Deduplicate by (source + url) and normalize titles
+        const seen = new Set<string>();
+        const cleanedResults: SearchResult[] = [];
+        for (const r of allResults) {
+          const key = `${r.source}_${r.url}`;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          cleanedResults.push({
+            ...r,
+            title: cleanTitle(r.title),
+          });
+        }
+
+        // Extract unique source names for toggle filters
+        const uniqueSources = [...new Set(cleanedResults.map(r => r.source))];
+        setAvailableSources(uniqueSources);
+        setActiveSources(new Set(uniqueSources));
+        setSearchResults(cleanedResults);
+        
+        if (cleanedResults.length === 0) {
           setError("Không tìm thấy kết quả phù hợp. Thử từ khóa khác.");
         }
       } else {
@@ -383,6 +404,35 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
     }
   };
 
+  const toggleSource = (source: string) => {
+    setActiveSources(prev => {
+      const next = new Set(prev);
+      if (next.has(source)) next.delete(source);
+      else next.add(source);
+      return next;
+    });
+  };
+
+  const cleanTitle = (raw: string) => {
+    let t = raw
+      .replace(/^\d+[Cc]\.\s*[Cc]hương\s*\d+/g, "")
+      .replace(/^\d+[Cc]\./g, "")
+      .replace(/AI$/g, "")
+      .replace(/\([^)]*\)/g, "")
+      .trim();
+    return t.length >= 3 ? t : raw.replace(/\s+/g, " ").trim();
+  };
+
+  const getUniqueCover = (title: string, index: number) => {
+    const hue = ((title.length * 31 + index * 17) % 360);
+    const firstChar = title.charAt(0).toUpperCase() || '?';
+    return `data:image/svg+xml,${encodeURIComponent(
+      `<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600"><defs><linearGradient id="g"><stop offset="0%" stop-color="hsl(${hue},40%,25%)"/><stop offset="100%" stop-color="hsl(${(hue + 60) % 360},40%,15%)"/></linearGradient></defs><rect fill="url(#g)" width="400" height="600"/><text x="200" y="320" text-anchor="middle" fill="rgba(255,255,255,0.15)" font-size="120" font-family="serif">${firstChar}</text></svg>`
+    )}`;
+  };
+
+  const filteredResults = searchResults.filter(r => activeSources.has(r.source));
+
   return (
     <div className="min-h-screen pb-24">
       {/* Header */}
@@ -443,14 +493,48 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
           )}
         </div>
 
+        {/* Source Filters */}
+        {availableSources.length > 1 && searchResults.length > 0 && (
+          <div className="mb-4">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs text-muted-foreground mr-1">Nguồn:</span>
+              {availableSources.map(source => {
+                const isActive = activeSources.has(source);
+                const count = searchResults.filter(r => r.source === source).length;
+                return (
+                  <button
+                    key={source}
+                    onClick={() => toggleSource(source)}
+                    className={`text-xs px-3 py-1.5 rounded-full border transition-all flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-primary text-white border-primary'
+                        : 'bg-card text-muted-foreground border-border/50 hover:border-primary/50'
+                    }`}
+                  >
+                    {isActive ? <CheckCircle className="w-3 h-3" /> : <span className="w-3 h-3 rounded-full border border-current" />}
+                    {source}
+                    <span className={`text-[10px] px-1 rounded ${isActive ? 'bg-white/20' : 'bg-muted'}`}>{count}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         {/* Search Results */}
         {searchResults.length > 0 && (
           <div className="mb-6">
             <h2 className="text-lg font-medium mb-4">
-              Kết quả tìm kiếm ({searchResults.length})
+              Kết quả tìm kiếm ({filteredResults.length})
             </h2>
             <div className="space-y-3">
-              {searchResults.map((result) => (
+              {filteredResults.length === 0 && availableSources.length > 0 && (
+              <div className="text-center py-8 text-muted-foreground text-sm">
+                Không có kết quả nào được hiển thị. Hãy bật ít nhất một nguồn ở trên.
+              </div>
+            )}
+            <div className="space-y-3">
+              {filteredResults.map((result, idx) => (
                 <div
                   key={result.id}
                   className="bg-card rounded-xl border border-border/50 p-4 hover:border-primary/50 transition-colors"
@@ -458,9 +542,10 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                   <div className="flex gap-3">
                     <div className="w-20 aspect-[2/3] rounded-lg overflow-hidden flex-shrink-0">
                       <img
-                        src={result.cover}
+                        src={result.cover || getUniqueCover(result.title, idx)}
                         alt={result.title}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                     </div>
                     <div className="flex-1 min-w-0">
@@ -501,6 +586,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               ))}
             </div>
           </div>
+            </div>
         )}
 
         {/* Active Job Progress */}
