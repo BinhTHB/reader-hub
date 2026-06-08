@@ -105,10 +105,18 @@ class SupabaseService {
 
   // Delete methods
   static Future<void> deleteStory(int storyId) async {
-    await client.from('stories').delete().eq('id', storyId);
+    final response = await client.functions.invoke(
+      'delete-content',
+      body: {'type': 'story', 'id': storyId},
+    );
+    if (response.error != null) throw Exception(response.error.message);
   }
 
   static Future<void> deleteChapter(int chapterId) async {
-    await client.from('chapters').delete().eq('id', chapterId);
+    final response = await client.functions.invoke(
+      'delete-content',
+      body: {'type': 'chapter', 'id': chapterId},
+    );
+    if (response.error != null) throw Exception(response.error.message);
   }
 }

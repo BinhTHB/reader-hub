@@ -94,20 +94,20 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
 
     try {
       if (deleteTarget.type === 'story') {
-        const { error } = await supabase
-          .from('stories')
-          .delete()
-          .eq('id', deleteTarget.id);
+        const { data, error } = await supabase.functions.invoke('delete-content', {
+          body: { type: 'story', id: deleteTarget.id }
+        });
 
         if (error) throw error;
+        if (data?.error) throw new Error(data.error);
         onBack();
       } else if (deleteTarget.type === 'chapter') {
-        const { error } = await supabase
-          .from('chapters')
-          .delete()
-          .eq('id', deleteTarget.id);
+        const { data, error } = await supabase.functions.invoke('delete-content', {
+          body: { type: 'chapter', id: deleteTarget.id }
+        });
 
         if (error) throw error;
+        if (data?.error) throw new Error(data.error);
         setChapters(prev => prev.filter(ch => ch.id !== deleteTarget.id));
         setShowDeleteConfirm(false);
         setDeleteTarget(null);
