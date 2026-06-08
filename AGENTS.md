@@ -1,4 +1,4 @@
-## graphify
+﻿## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
 
@@ -10,6 +10,11 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## Project Architecture
+
+- **Scraper**: Sử dụng thư mục `scrapling/` — không dùng thư mục `scraper/` nữa.
+- **Frontend**: Sử dụng thư mục `web_react/` — không dùng `mobile_flutter/` nữa.
 
 ## Git Tagging Rules
 - **Rule**: Khi đặt tên git tag cho repository, bắt buộc phải đặt tên tag theo định dạng ngày tháng: `vYYYY.M.D` (Ví dụ: `v2026.5.24`).
