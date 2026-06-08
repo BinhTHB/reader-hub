@@ -1,4 +1,4 @@
-﻿"""
+"""
 Site Parsers â€” Per-site scraping and search logic (Scrapling branch)
 
 Each parser handles the HTML structure of a specific source website.
@@ -212,13 +212,13 @@ class TruyenFullParser(BaseSiteParser):
             href = link.attrib.get("href", "")
             text = self.clean_text(get_text(link) or "")
 
-            match = re.search(r"[Cc]hÆ°Æ¡ng\s+(\d+)", text)
+            match = re.search(r"[Cc]hương\s+(\d+)", text)
             if match:
                 num = int(match.group(1))
                 if num in seen:
                     continue
                 seen.add(num)
-                t_match = re.search(r"[Cc]hÆ°Æ¡ng\s+\d+\s*[:\-]\s*(.+)", text)
+                t_match = re.search(r"[Cc]hương\s+\d+\s*[:\-]\s*(.+)", text)
                 title = t_match.group(1).strip() if t_match else text
                 chapters.append({
                     "chapter_number": num,
@@ -362,14 +362,17 @@ class MeTruyenChuParser(BaseSiteParser):
         page = Selector(html)
         chapters = []
 
-        for link in page.css("#chapter-list a, .list-chapter a, ul.list-chapters a, .chapters a"):
+        for link in page.css(
+            "#chapter-list a, .list-chapter a, ul.list-chapters a, .chapters a, "
+            "a[href*='/chuong-'], ul li a, li a"
+        ):
             text = self.clean_text(get_text(link) or "")
             href = link.attrib.get("href", "")
 
-            match = re.search(r"[Cc]hÆ°Æ¡ng\s+(\d+)", text)
+            match = re.search(r"[Cc]hương\s+(\d+)", text)
             if match:
                 num = int(match.group(1))
-                t_match = re.search(r"[Cc]hÆ°Æ¡ng\s+\d+\s*[:\-]\s*(.+)", text)
+                t_match = re.search(r"[Cc]hương\s+\d+\s*[:\-]\s*(.+)", text)
                 title = t_match.group(1).strip() if t_match else text
                 chapters.append({
                     "chapter_number": num,
@@ -434,18 +437,38 @@ class MeTruyenChuParser(BaseSiteParser):
         return max_page
     
     def extract_story_id(self, html: str) -> str | None:
-        """Extract story ID from MeTruyenChu page for pagination."""
+        """Extract story ID from MeTruyenChu page for pagination.
+
+        Iterates links manually instead of using a CSS attribute selector
+        containing parentheses, which can fail in some CSS parsers.
+        Also tries to find story_id from script tags / data attributes as fallback.
+        """
         page = Selector(html)
         pagination = page.css(".pagination, .paging")
         if pagination:
-            link = pagination.css("a[onclick*='page(']")
-            if link:
+            for link in pagination.css("a"):
                 onclick = link.attrib.get("onclick", "")
-                match = re.search(r"page\((\d+),", onclick)
-                if match:
-                    story_id = match.group(1)
-                    self._story_id = story_id
-                    return story_id
+                if "page(" in onclick:
+                    match = re.search(r"page\((\d+),", onclick)
+                    if match:
+                        story_id = match.group(1)
+                        self._story_id = story_id
+                        return story_id
+
+        # Fallback: search for story_id in script tags or data attributes
+        # Match patterns like: "story_id":60321 or "id":60321 or data-id="60321"
+        match = re.search(r'(?:story_id|storyId|data-id|data-story)[=:]\s*["\'"]?(\d+)["\'"]?', html)
+        if match:
+            story_id = match.group(1)
+            self._story_id = story_id
+            return story_id
+        # Match something like: /get/listchap/(\d+)
+        match = re.search(r'/get/listchap/(\d+)', html)
+        if match:
+            story_id = match.group(1)
+            self._story_id = story_id
+            return story_id
+
         return None
 
     @staticmethod
@@ -590,7 +613,7 @@ class TruyenDichParser(BaseSiteParser):
             match = re.search(r"/chuong-(\d+)", href)
             if match:
                 num = int(match.group(1))
-                t_match = re.search(r"[Cc]hÆ°Æ¡ng\s+(\d+)\s*[:\-]\s*(.+)", text)
+                t_match = re.search(r"[Cc]hương\s+(\d+)\s*[:\-]\s*(.+)", text)
                 title = t_match.group(2).strip() if t_match else text
                 chapters.append({
                     "chapter_number": num,
@@ -614,20 +637,20 @@ class TruyenDichParser(BaseSiteParser):
                 max_chapter = max(max_chapter, end_ch)
                 found_range = True
                 
-        # 2. Search for "XXX chÆ°Æ¡ng" text in any element (BeautifulSoup fallback is safer)
+        # 2. Search for "XXX chương" text in any element (BeautifulSoup fallback is safer)
         soup = BeautifulSoup(html, "lxml")
         string_targets = []
         try:
-            string_targets.extend(soup.find_all(string=re.compile(r"\d+\s*chÆ°Æ¡ng", re.IGNORECASE)))
+            string_targets.extend(soup.find_all(string=re.compile(r"\d+\s*chương", re.IGNORECASE)))
         except:
             pass
         try:
-            string_targets.extend(soup.find_all(text=re.compile(r"\d+\s*chÆ°Æ¡ng", re.IGNORECASE)))
+            string_targets.extend(soup.find_all(text=re.compile(r"\d+\s*chương", re.IGNORECASE)))
         except:
             pass
             
         for t in string_targets:
-            match = re.search(r"(\d+)\s*chÆ°Æ¡ng", str(t), re.IGNORECASE)
+            match = re.search(r"(\d+)\s*chương", str(t), re.IGNORECASE)
             if match:
                 max_chapter = max(max_chapter, int(match.group(1)))
                 found_range = True
@@ -759,8 +782,8 @@ class UUKanShuParser(BaseSiteParser):
             text = self.clean_text(get_text(link) or "")
 
             # Match chapter numbers in Chinese or English
-            # e.g., ç¬¬123ç« , ç¬¬ 123 ç« , 123. Title, ChÆ°Æ¡ng 123
-            match = re.search(r"(?:[Cc]hÆ°Æ¡ng|ç¬¬)\s*(\d+)\s*[ç« .]?", text)
+            # e.g., ç¬¬123ç« , ç¬¬ 123 ç« , 123. Title, Chương 123
+            match = re.search(r"(?:[Cc]hương|ç¬¬)\s*(\d+)\s*[ç« .]?", text)
             if match:
                 num = int(match.group(1))
             else:

@@ -680,6 +680,32 @@ def run_scraper():
                 
             print(f"  Found {len(all_chapters)} chapters (Total pages: {max_pages})")
 
+            # For MeTruyenChu: if first page returned 0 chapters but pagination exists,
+            # the chapter list is loaded via JS API — fetch page 1 from the API too
+            if parser.name == "metruyenchu" and max_pages > 1 and len(all_chapters) == 0:
+                if not hasattr(parser, '_story_id') or not parser._story_id:
+                    if hasattr(parser, 'extract_story_id'):
+                        first_page_for_id = first_page_resp.body if hasattr(first_page_resp, 'body') else ''
+                        first_page_for_id = first_page_for_id or ''
+                        parser.extract_story_id(first_page_for_id)
+                sid = getattr(parser, '_story_id', None) or ''
+                if sid:
+                    api_url_1 = f"https://metruyenchuvn.com/get/listchap/{sid}?page=1"
+                    try:
+                        def get_api_page_1(sess):
+                            p_resp = sess.fetch(api_url_1)
+                            if p_resp.status != 200:
+                                raise RuntimeError(f"HTTP {p_resp.status}")
+                            body = parser.extract_html_from_api_response(p_resp.body)
+                            p_chapters = parser.parse_chapter_list(body)
+                            return p_chapters
+                        api_chapters = fetch_with_rotation_wrapper(session, get_api_page_1)
+                        if api_chapters:
+                            all_chapters = api_chapters
+                            print(f"  Re-fetched chapter list from API: {len(all_chapters)} chapters")
+                    except Exception as e:
+                        print(f"  Could not fetch API page 1: {e}")
+
             # Fetch remaining pages
             should_fetch_all = CHAPTER_LIMIT == 0
             page_num = 2
@@ -699,12 +725,14 @@ def run_scraper():
                     if not hasattr(parser, '_story_id') or not parser._story_id:
                         if hasattr(parser, 'extract_story_id'):
                             first_page_for_id = first_page_resp.body if hasattr(first_page_resp, 'body') else ''
-                            parser.extract_story_id(first_page_for_id if first_page_for_id else '')
+                            first_page_for_id = first_page_for_id or ''
+                            parser.extract_story_id(first_page_for_id)
                     
-                    # Use the API endpoint for MeTruyenChu pagination
                     sid = getattr(parser, '_story_id', None) or ''
-                    api_url = f"https://metruyenchuvn.com/get/listchap/{sid}?page={page_num}"
-                    p_url = api_url
+                    if sid:
+                        p_url = f"https://metruyenchuvn.com/get/listchap/{sid}?page={page_num}"
+                    else:
+                        p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=page_num)
                 else:
                     p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=page_num)
                 
