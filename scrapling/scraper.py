@@ -680,9 +680,9 @@ def run_scraper():
                 
             print(f"  Found {len(all_chapters)} chapters (Total pages: {max_pages})")
 
-            # For MeTruyenChu: if first page returned 0 chapters but pagination exists,
-            # the chapter list is loaded via JS API — fetch page 1 from the API too
-            if parser.name == "metruyenchu" and max_pages > 1 and len(all_chapters) == 0:
+            # For MeTruyenChu: chapter list is loaded via JS API —
+            # always replace with API page 1 data for accuracy
+            if parser.name == "metruyenchu" and max_pages > 1:
                 if not hasattr(parser, '_story_id') or not parser._story_id:
                     if hasattr(parser, 'extract_story_id'):
                         first_page_for_id = first_page_resp.body if hasattr(first_page_resp, 'body') else ''
@@ -781,7 +781,10 @@ def run_scraper():
                 target_chapters = [ch for ch in all_chapters if ch["chapter_number"] >= CHAPTER_START]
             else:
                 target_chapters = [ch for ch in all_chapters if CHAPTER_START <= ch["chapter_number"] < CHAPTER_START + CHAPTER_LIMIT]
-            
+
+            # Sort sequentially to ensure correct scrape order
+            target_chapters.sort(key=lambda x: x["chapter_number"])
+
             print(f"  Targeting {len(target_chapters)} chapters (starting from {CHAPTER_START})")
 
             # Update scrape job's actual end chapter

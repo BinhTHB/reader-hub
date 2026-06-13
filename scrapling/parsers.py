@@ -360,7 +360,7 @@ class MeTruyenChuParser(BaseSiteParser):
 
         for link in page.css(
             "#chapter-list a, .list-chapter a, ul.list-chapters a, .chapters a, "
-            "a[href*='/chuong-'], ul li a, li a"
+            "a[href*='/chuong-']"
         ):
             text = self.clean_text(get_text(link) or "")
             href = link.attrib.get("href", "")
