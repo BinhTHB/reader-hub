@@ -680,8 +680,9 @@ def run_scraper():
                 
             print(f"  Found {len(all_chapters)} chapters (Total pages: {max_pages})")
 
-            # For MeTruyenChu: chapter list is loaded via JS API —
-            # always replace with API page 1 data for accuracy
+            # For MeTruyenChu: supplement HTML page 1 with API data
+            # HTML may have afterword chapters (999-1001) that API doesn't;
+            # API has cleaner pagination for the bulk of chapters
             if parser.name == "metruyenchu" and max_pages > 1:
                 if not hasattr(parser, '_story_id') or not parser._story_id:
                     if hasattr(parser, 'extract_story_id'):
@@ -701,8 +702,13 @@ def run_scraper():
                             return p_chapters
                         api_chapters = fetch_with_rotation_wrapper(session, get_api_page_1)
                         if api_chapters:
-                            all_chapters = api_chapters
-                            print(f"  Re-fetched chapter list from API: {len(all_chapters)} chapters")
+                            existing_nums = {ch["chapter_number"] for ch in all_chapters}
+                            new_from_api = [ch for ch in api_chapters if ch["chapter_number"] not in existing_nums]
+                            if new_from_api:
+                                all_chapters.extend(new_from_api)
+                                print(f"  Supplemented {len(new_from_api)} chapters from API (total: {len(all_chapters)})")
+                            else:
+                                print(f"  API page 1 verified {len(api_chapters)} chapters (no new additions)")
                     except Exception as e:
                         print(f"  Could not fetch API page 1: {e}")
 
