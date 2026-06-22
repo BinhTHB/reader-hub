@@ -108,6 +108,16 @@ class BaseSiteParser(ABC):
         return text
 
     @staticmethod
+    def canonical_source_key(url: str) -> str:
+        """Generate a canonical key from an absolute URL to identify the chapter."""
+        if not url:
+            return ""
+        # Remove scheme, trailing slash, queries, hash
+        cleaned = url.split('#')[0].split('?')[0].rstrip('/')
+        cleaned = re.sub(r'^https?://(www\.)?', '', cleaned)
+        return cleaned.lower()
+
+    @staticmethod
     def slugify(text: str) -> str:
         text = text.lower().strip()
         text = unicodedata.normalize("NFD", text)
@@ -356,28 +366,43 @@ class MeTruyenChuParser(BaseSiteParser):
     def parse_chapter_list(self, html: str) -> list[dict]:
         page = Selector(html)
         chapters = []
-        seen = set()
+        seen_keys = set()
 
-        for link in page.css(
+        for sequence_index, link in enumerate(page.css(
             "#chapter-list a, .list-chapter a, ul.list-chapters a, .chapters a, "
             "a[href*='/chuong-']"
-        ):
+        ), start=1):
             text = self.clean_text(get_text(link) or "")
             href = link.attrib.get("href", "")
+            if not href:
+                continue
 
-            match = re.search(r"[Cc]hương\s+(\d+)", text)
-            if match:
-                num = int(match.group(1))
-                if num in seen:
-                    continue
-                seen.add(num)
+            source_url = self.make_absolute(href)
+            source_key = self.canonical_source_key(source_url)
+            if not source_key or source_key in seen_keys:
+                continue
+            seen_keys.add(source_key)
+
+            # Prefer URL-based number because MeTruyenChu titles can be malformed,
+            # duplicated, or missing the "Chương N" text entirely.
+            match = re.search(r"/chuong-(\d+)(?:\D|$)", source_url, re.IGNORECASE)
+            if not match:
+                match = re.search(r"[Cc]hương\s+(\d+)", text)
+            num = int(match.group(1)) if match else None
+
+            if num is not None:
                 t_match = re.search(r"[Cc]hương\s+\d+\s*[:\-]\s*(.+)", text)
                 title = t_match.group(1).strip() if t_match else text
-                chapters.append({
-                    "chapter_number": num,
-                    "title": title,
-                    "source_url": self.make_absolute(href),
-                })
+            else:
+                title = text or f"Chapter link {sequence_index}"
+
+            chapters.append({
+                "chapter_number": num,
+                "sequence_index": sequence_index,
+                "title": title,
+                "source_url": source_url,
+                "source_key": source_key,
+            })
 
         return chapters
 

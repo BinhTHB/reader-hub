@@ -501,6 +501,17 @@ def random_delay():
     time.sleep(delay)
 
 
+def chapter_source_key(chapter: dict, parser) -> str:
+    """Return a stable chapter identity key, falling back to source_url for older parsers."""
+    key = chapter.get("source_key")
+    if key:
+        return key
+    source_url = chapter.get("source_url", "")
+    if hasattr(parser, "canonical_source_key"):
+        return parser.canonical_source_key(source_url)
+    return source_url.split('#')[0].split('?')[0].rstrip('/').lower()
+
+
 def download_image(img_url: str) -> bytes | None:
     """Download cover image with browser-like headers."""
     try:
@@ -702,8 +713,8 @@ def run_scraper():
                             return p_chapters
                         api_chapters = fetch_with_rotation_wrapper(session, get_api_page_1)
                         if api_chapters:
-                            existing_nums = {ch["chapter_number"] for ch in all_chapters}
-                            new_from_api = [ch for ch in api_chapters if ch["chapter_number"] not in existing_nums]
+                            existing_keys = {chapter_source_key(ch, parser) for ch in all_chapters}
+                            new_from_api = [ch for ch in api_chapters if chapter_source_key(ch, parser) not in existing_keys]
                             if new_from_api:
                                 all_chapters.extend(new_from_api)
                                 print(f"  Supplemented {len(new_from_api)} chapters from API (total: {len(all_chapters)})")
@@ -718,7 +729,7 @@ def run_scraper():
             while page_num <= max_pages:
                 if not should_fetch_all:
                     target_range = set(range(CHAPTER_START, CHAPTER_START + CHAPTER_LIMIT))
-                    found_nums = {ch["chapter_number"] for ch in all_chapters}
+                    found_nums = {ch["chapter_number"] for ch in all_chapters if ch["chapter_number"] is not None}
                     if target_range.issubset(found_nums):
                         break
                 
@@ -764,8 +775,8 @@ def run_scraper():
                     print(f"  ⚠️ Failed to fetch page {page_num}: {e}")
                     break
                 
-                existing_nums = {ch["chapter_number"] for ch in all_chapters}
-                new_chapters = [ch for ch in p_chapters if ch["chapter_number"] not in existing_nums]
+                existing_keys = {chapter_source_key(ch, parser) for ch in all_chapters}
+                new_chapters = [ch for ch in p_chapters if chapter_source_key(ch, parser) not in existing_keys]
                 
                 if not new_chapters:
                     print(f"  ⚠️ No new chapters on page {page_num}, stopping")
@@ -784,12 +795,13 @@ def run_scraper():
 
             # Filter to requested range
             if CHAPTER_LIMIT == 0:
-                target_chapters = [ch for ch in all_chapters if ch["chapter_number"] >= CHAPTER_START]
+                target_chapters = [ch for ch in all_chapters if ch["chapter_number"] is not None and ch["chapter_number"] >= CHAPTER_START]
             else:
-                target_chapters = [ch for ch in all_chapters if CHAPTER_START <= ch["chapter_number"] < CHAPTER_START + CHAPTER_LIMIT]
+                target_chapters = [ch for ch in all_chapters if ch["chapter_number"] is not None and CHAPTER_START <= ch["chapter_number"] < CHAPTER_START + CHAPTER_LIMIT]
 
             # Sort sequentially to ensure correct scrape order
-            target_chapters.sort(key=lambda x: x["chapter_number"])
+            # Sort primarily by chapter_number, then by sequence_index if numbers are duplicate or None
+            target_chapters.sort(key=lambda x: (x["chapter_number"] if x["chapter_number"] is not None else float('inf'), x.get("sequence_index", 0)))
 
             print(f"  Targeting {len(target_chapters)} chapters (starting from {CHAPTER_START})")
 
