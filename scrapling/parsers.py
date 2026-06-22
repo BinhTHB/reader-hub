@@ -378,6 +378,8 @@ class MeTruyenChuParser(BaseSiteParser):
                 continue
 
             source_url = self.make_absolute(href)
+            if "/chuong-" not in source_url:
+                continue
             source_key = self.canonical_source_key(source_url)
             if not source_key or source_key in seen_keys:
                 continue

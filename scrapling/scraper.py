@@ -512,6 +512,57 @@ def chapter_source_key(chapter: dict, parser) -> str:
     return source_url.split('#')[0].split('?')[0].rstrip('/').lower()
 
 
+def normalize_misnumbered_chapters(chapters: list[dict], parser) -> list[dict]:
+    """Renumber MeTruyenChu lists sequentially when the source list has bad chapter numbers.
+
+    MeTruyenChu sometimes returns valid, fetchable chapter URLs with duplicated or
+    incorrect numeric labels (for example two different URLs both labeled 265, or
+    a chapter labeled 41 between 407 and 408). R2 and Supabase use chapter_number
+    as their storage key, so keeping bad source numbers would overwrite or skip
+    valid chapters. Preserve the original label for diagnostics and use list order
+    as the scrape/storage number only when the source list is not a clean 1..N
+    sequence.
+    """
+    if getattr(parser, "name", "") != "metruyenchu" or not chapters:
+        return chapters
+
+    nums = [ch.get("chapter_number") for ch in chapters]
+    numeric_nums = [num for num in nums if num is not None]
+    expected = list(range(1, len(numeric_nums) + 1))
+    needs_normalization = len(numeric_nums) != len(chapters) or numeric_nums != expected
+    if not needs_normalization:
+        return chapters
+
+    original_unique = len(set(numeric_nums))
+    missing = sorted(set(expected) - set(numeric_nums))
+    duplicates = sorted({num for num in numeric_nums if numeric_nums.count(num) > 1})
+    print(
+        "  ⚠️ MeTruyenChu chapter list has inconsistent numbering; "
+        f"normalizing storage numbers by list order ({len(chapters)} chapters, "
+        f"{original_unique} unique source numbers)."
+    )
+    if missing:
+        print(f"  ⚠️ Missing source numbers: {missing[:30]}{'...' if len(missing) > 30 else ''}")
+    if duplicates:
+        print(f"  ⚠️ Duplicate source numbers: {duplicates[:30]}{'...' if len(duplicates) > 30 else ''}")
+
+    normalized = []
+    ordered = list(chapters)
+    # Sort by source chapter number to preserve reading order before normalizing
+    ordered.sort(key=lambda x: (
+        x.get("source_chapter_number") if x.get("source_chapter_number") is not None
+        else x.get("chapter_number") if x.get("chapter_number") is not None
+        else float("inf")
+    ))
+    for scrape_number, chapter in enumerate(ordered, start=1):
+        item = dict(chapter)
+        item["source_chapter_number"] = chapter.get("chapter_number")
+        item["chapter_number"] = scrape_number
+        item["sequence_index"] = scrape_number
+        normalized.append(item)
+    return normalized
+
+
 def download_image(img_url: str) -> bytes | None:
     """Download cover image with browser-like headers."""
     try:
@@ -713,13 +764,17 @@ def run_scraper():
                             return p_chapters
                         api_chapters = fetch_with_rotation_wrapper(session, get_api_page_1)
                         if api_chapters:
-                            existing_keys = {chapter_source_key(ch, parser) for ch in all_chapters}
-                            new_from_api = [ch for ch in api_chapters if chapter_source_key(ch, parser) not in existing_keys]
-                            if new_from_api:
-                                all_chapters.extend(new_from_api)
-                                print(f"  Supplemented {len(new_from_api)} chapters from API (total: {len(all_chapters)})")
+                            if CHAPTER_LIMIT == 0:
+                                all_chapters = api_chapters
+                                print(f"  Using API page 1 as canonical list ({len(all_chapters)} chapters)")
                             else:
-                                print(f"  API page 1 verified {len(api_chapters)} chapters (no new additions)")
+                                existing_keys = {chapter_source_key(ch, parser) for ch in all_chapters}
+                                new_from_api = [ch for ch in api_chapters if chapter_source_key(ch, parser) not in existing_keys]
+                                if new_from_api:
+                                    all_chapters.extend(new_from_api)
+                                    print(f"  Supplemented {len(new_from_api)} chapters from API (total: {len(all_chapters)})")
+                                else:
+                                    print(f"  API page 1 verified {len(api_chapters)} chapters (no new additions)")
                     except Exception as e:
                         print(f"  Could not fetch API page 1: {e}")
 
@@ -785,6 +840,9 @@ def run_scraper():
                 all_chapters.extend(new_chapters)
                 print(f"  Added {len(new_chapters)} new chapters (total: {len(all_chapters)})")
                 page_num += 1
+
+            if CHAPTER_LIMIT == 0:
+                all_chapters = normalize_misnumbered_chapters(all_chapters, parser)
 
             # Update story total chapters count
             if story_id and all_chapters:
