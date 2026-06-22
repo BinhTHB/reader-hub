@@ -2,19 +2,64 @@
 Supabase Client Helper — Manage story/chapter metadata in Supabase (Scrapling branch)
 
 Provides functions to create/update stories, chapters, and scrape jobs
-using the Supabase Python client with the service role key (bypasses RLS).
+using direct REST calls (avoids supabase-py client validation that rejects
+newer sb_* key formats while REST itself accepts them).
 """
 
 import os
+import json
+import urllib.request
+import urllib.error
 from datetime import datetime, timezone
-from supabase import create_client, Client
 
 
-def get_supabase_client() -> Client:
-    """Create a Supabase client with service role key (bypasses RLS)."""
-    url = os.environ["SUPABASE_URL"]
+def _rest(method: str, table: str, params: str = "", body: dict = None) -> dict:
+    """Execute a REST API call against Supabase.
+
+    Always uses SUPABASE_SERVICE_KEY (bypasses RLS).
+    Returns the JSON response body.
+    """
+    url = os.environ["SUPABASE_URL"].rstrip("/")
     key = os.environ["SUPABASE_SERVICE_KEY"]
-    return create_client(url, key)
+    full_url = f"{url}/rest/v1/{table}{params}"
+
+    headers = {
+        "apikey": key,
+        "Authorization": f"Bearer {key}",
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Prefer": "return=representation",
+    }
+
+    if method == "GET":
+        req = urllib.request.Request(full_url, headers=headers, method="GET")
+    elif method == "POST":
+        headers["Prefer"] = "return=representation,resolution=merge-duplicates"
+        req = urllib.request.Request(
+            full_url, data=json.dumps(body).encode("utf-8"),
+            headers=headers, method="POST"
+        )
+    elif method == "PATCH":
+        req = urllib.request.Request(
+            full_url, data=json.dumps(body).encode("utf-8"),
+            headers=headers, method="PATCH"
+        )
+    elif method == "DELETE":
+        req = urllib.request.Request(full_url, headers=headers, method="DELETE")
+    else:
+        raise ValueError(f"Unsupported method: {method}")
+
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            raw = resp.read().decode("utf-8")
+            if raw.strip():
+                return json.loads(raw)
+            return []
+    except urllib.error.HTTPError as e:
+        err_body = e.read().decode("utf-8", errors="replace")
+        raise RuntimeError(
+            f"Supabase REST HTTP {e.code} on {method} {table}: {err_body[:300]}"
+        ) from e
 
 
 # ─── Stories ───────────────────────────────────────────────
@@ -35,8 +80,6 @@ def upsert_story(
     Create or update a story record.
     Uses slug as the unique identifier for upsert.
     """
-    client = get_supabase_client()
-
     data = {
         "title": title,
         "slug": slug,
@@ -46,7 +89,6 @@ def upsert_story(
         "status": status,
     }
 
-    # Only include optional fields if provided
     if author is not None:
         data["author"] = author
     if description is not None:
@@ -56,36 +98,36 @@ def upsert_story(
     if genres is not None:
         data["genres"] = genres
 
-    result = (
-        client.table("stories")
-        .upsert(data, on_conflict="slug")
-        .execute()
-    )
+    # Upsert via POST with on_conflict
+    params = f"?on_conflict=slug"
+    result = _rest("POST", "stories", params=params, body=data)
 
-    return result.data[0] if result.data else None
+    if result and isinstance(result, list):
+        return result[0]
+    return result
 
 
 def get_story_by_slug(slug: str) -> dict | None:
     """Fetch a story by its slug."""
-    client = get_supabase_client()
-    result = client.table("stories").select("*").eq("slug", slug).single().execute()
-    return result.data
+    params = f"?slug=eq.{slug}&select=*"
+    result = _rest("GET", "stories", params=params)
+    if result and isinstance(result, list) and len(result) > 0:
+        return result[0]
+    return None
 
 
 def update_story_scrape_progress(story_id: int, last_chapter: int):
     """Update the last_scraped_chapter field for a story."""
-    client = get_supabase_client()
-    client.table("stories").update({
-        "last_scraped_chapter": last_chapter,
-    }).eq("id", story_id).execute()
+    _rest("PATCH", "stories",
+          params=f"?id=eq.{story_id}",
+          body={"last_scraped_chapter": last_chapter})
 
 
 def update_story_total_chapters(story_id: int, total_chapters: int):
     """Update the total_chapters field for a story."""
-    client = get_supabase_client()
-    client.table("stories").update({
-        "total_chapters": total_chapters,
-    }).eq("id", story_id).execute()
+    _rest("PATCH", "stories",
+          params=f"?id=eq.{story_id}",
+          body={"total_chapters": total_chapters})
 
 
 # ─── Chapters ──────────────────────────────────────────────
@@ -103,8 +145,6 @@ def upsert_chapter(
     Create or update a chapter record.
     Uses (story_id, chapter_number) as the unique identifier.
     """
-    client = get_supabase_client()
-
     data = {
         "story_id": story_id,
         "chapter_number": chapter_number,
@@ -121,28 +161,25 @@ def upsert_chapter(
     if is_scraped:
         data["scraped_at"] = datetime.now(timezone.utc).isoformat()
 
-    result = (
-        client.table("chapters")
-        .upsert(data, on_conflict="story_id,chapter_number")
-        .execute()
-    )
+    params = "?on_conflict=story_id,chapter_number"
+    result = _rest("POST", "chapters", params=params, body=data)
 
-    return result.data[0] if result.data else None
+    if result and isinstance(result, list):
+        return result[0]
+    return result
 
 
 def get_unscraped_chapters(story_id: int, limit: int = 50) -> list[dict]:
     """Get chapters that haven't been scraped yet."""
-    client = get_supabase_client()
-    result = (
-        client.table("chapters")
-        .select("*")
-        .eq("story_id", story_id)
-        .eq("is_scraped", False)
-        .order("chapter_number")
-        .limit(limit)
-        .execute()
+    params = (
+        f"?story_id=eq.{story_id}"
+        f"&is_scraped=eq.false"
+        f"&order=chapter_number.asc"
+        f"&limit={limit}"
+        f"&select=*"
     )
-    return result.data
+    result = _rest("GET", "chapters", params=params)
+    return result if isinstance(result, list) else []
 
 
 # ─── Scrape Jobs ───────────────────────────────────────────
@@ -158,8 +195,6 @@ def update_scrape_job(
     **kwargs,
 ):
     """Update a scrape job's status and progress."""
-    client = get_supabase_client()
-
     data = {}
     if status is not None:
         data["status"] = status
@@ -177,10 +212,11 @@ def update_scrape_job(
         data["chapter_end"] = chapter_end
     if story_id is not None:
         data["story_id"] = story_id
-    
-    # Also support other kwargs for flexibility
+
     for k, v in kwargs.items():
         data[k] = v
 
     if data:
-        client.table("scrape_jobs").update(data).eq("id", job_id).execute()
+        _rest("PATCH", "scrape_jobs",
+              params=f"?id=eq.{job_id}",
+              body=data)
