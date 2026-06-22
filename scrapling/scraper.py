@@ -396,6 +396,7 @@ def parse_args():
     parser.add_argument("--limit", type=int, default=None, help="Limit number of chapters to scrape (0 for all)")
     parser.add_argument("--start", type=int, default=None, help="Chapter number to start from")
     parser.add_argument("--job-id", type=str, help="Scrape job ID for tracking")
+    parser.add_argument("--force", action="store_true", help="Re-scrape and overwrite chapters even when they already exist in R2")
     return parser.parse_args()
 
 
@@ -415,6 +416,7 @@ CHAPTER_LIMIT = args.limit if args.limit is not None else (int(_limit_env) if _l
 
 PROXY_URL = os.environ.get("PROXY_URL", "")
 JOB_ID = args.job_id or os.environ.get("JOB_ID", "")
+FORCE_RESCRAPE = args.force or os.environ.get("FORCE_RESCRAPE", "").lower() in {"1", "true", "yes"}
 USE_FREE_PROXY = os.environ.get("USE_FREE_PROXY", "false").lower() == "true"
 
 # Rate limiting
@@ -640,6 +642,8 @@ def run_scraper():
     print(f"📖 [Scrapling] Using parser: {parser.name}")
     print(f"🔗 [Scrapling] Source: {STORY_SOURCE_URL}")
     print(f"📄 [Scrapling] Chapters: {CHAPTER_START} (Limit: {CHAPTER_LIMIT if CHAPTER_LIMIT > 0 else 'All'})")
+    if FORCE_RESCRAPE:
+        print("♻️ [Scrapling] Force re-scrape enabled: existing R2 chapters will be overwritten")
 
     # Update job status
     if JOB_ID:
@@ -933,8 +937,8 @@ def run_scraper():
                 ch_num = ch_info["chapter_number"]
                 print(f"\n📖 [{i+1}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
 
-                # Skip if already scraped
-                if ch_num in existing_ch_nums:
+                # Skip if already scraped unless force re-scrape is requested.
+                if not FORCE_RESCRAPE and ch_num in existing_ch_nums:
                     print("  ⏭️ Already exists in R2, skipping")
                     chapters_scraped += 1
                     continue
