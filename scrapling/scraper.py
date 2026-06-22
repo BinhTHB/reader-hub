@@ -11,6 +11,7 @@ Flow:
 
 import os
 import sys
+import re
 import random
 import time
 import argparse
@@ -513,29 +514,80 @@ def chapter_source_key(chapter: dict, parser) -> str:
 
 
 def normalize_misnumbered_chapters(chapters: list[dict], parser) -> list[dict]:
-    """Renumber MeTruyenChu lists sequentially when the source list has bad chapter numbers.
+    """Repair inconsistent MeTruyenChu chapter lists before storage.
 
-    MeTruyenChu sometimes returns valid, fetchable chapter URLs with duplicated or
-    incorrect numeric labels (for example two different URLs both labeled 265, or
-    a chapter labeled 41 between 407 and 408). R2 and Supabase use chapter_number
-    as their storage key, so keeping bad source numbers would overwrite or skip
-    valid chapters. Preserve the original label for diagnostics and use list order
-    as the scrape/storage number only when the source list is not a clean 1..N
-    sequence.
+    MeTruyenChu exposes chapter URLs with hash suffixes. Some stories have light
+    source-number mistakes (a few duplicate or missing numbers); those must keep
+    every unique URL, so they are renumbered sequentially. Other stories expose
+    many alternate/broken hashes for the same chapter number; those must be
+    collapsed to one best entry per chapter number to avoid duplicate titles and
+    inflated totals.
     """
     if getattr(parser, "name", "") != "metruyenchu" or not chapters:
         return chapters
 
     nums = [ch.get("chapter_number") for ch in chapters]
     numeric_nums = [num for num in nums if num is not None]
-    expected = list(range(1, len(numeric_nums) + 1))
-    needs_normalization = len(numeric_nums) != len(chapters) or numeric_nums != expected
-    if not needs_normalization:
+    if not numeric_nums:
         return chapters
 
-    original_unique = len(set(numeric_nums))
-    missing = sorted(set(expected) - set(numeric_nums))
+    unique_nums = set(numeric_nums)
+    original_unique = len(unique_nums)
     duplicates = sorted({num for num in numeric_nums if numeric_nums.count(num) > 1})
+    expected_by_count = list(range(1, len(numeric_nums) + 1))
+    clean_by_count = len(numeric_nums) == len(chapters) and numeric_nums == expected_by_count
+    if clean_by_count:
+        return chapters
+
+    duplicate_ratio = len(numeric_nums) / max(original_unique, 1)
+    severe_duplicate_list = duplicate_ratio >= 1.2 and len(duplicates) >= 20
+
+    if severe_duplicate_list:
+        print(
+            "  ⚠️ MeTruyenChu chapter list has many alternate chapter hashes; "
+            f"deduplicating by chapter number ({len(chapters)} URLs, "
+            f"{original_unique} unique source numbers)."
+        )
+        print(f"  ⚠️ Duplicate source numbers: {duplicates[:30]}{'...' if len(duplicates) > 30 else ''}")
+
+        def title_quality(chapter: dict) -> tuple:
+            title = (chapter.get("title") or "").strip()
+            num = chapter.get("chapter_number")
+            generic_title = bool(re.fullmatch(r"(?i)chương\s+\d+\s*:?,?", title))
+            nested_number = bool(re.search(r"(?i)chương\s+\d+\s+\d+\s*:", title))
+            starts_bad = title.startswith((",", ":", "-"))
+            return (
+                0 if title else 1,
+                1 if generic_title else 0,
+                1 if nested_number else 0,
+                1 if starts_bad else 0,
+                len(title) if generic_title else 0,
+                chapter.get("api_page", 0),
+                chapter.get("sequence_index", 0),
+                num or 0,
+            )
+
+        best_by_num: dict[int, dict] = {}
+        for chapter in chapters:
+            num = chapter.get("chapter_number")
+            if num is None:
+                continue
+            current = best_by_num.get(num)
+            if current is None or title_quality(chapter) < title_quality(current):
+                best_by_num[num] = chapter
+
+        normalized = []
+        for scrape_number, source_num in enumerate(sorted(best_by_num), start=1):
+            chapter = best_by_num[source_num]
+            item = dict(chapter)
+            item["source_chapter_number"] = source_num
+            item["chapter_number"] = scrape_number
+            item["sequence_index"] = scrape_number
+            normalized.append(item)
+        return normalized
+
+    expected = list(range(1, len(numeric_nums) + 1))
+    missing = sorted(set(expected) - unique_nums)
     print(
         "  ⚠️ MeTruyenChu chapter list has inconsistent numbering; "
         f"normalizing storage numbers by list order ({len(chapters)} chapters, "
@@ -547,12 +599,11 @@ def normalize_misnumbered_chapters(chapters: list[dict], parser) -> list[dict]:
         print(f"  ⚠️ Duplicate source numbers: {duplicates[:30]}{'...' if len(duplicates) > 30 else ''}")
 
     normalized = []
-    ordered = list(chapters)
-    # Sort by source chapter number to preserve reading order before normalizing
-    ordered.sort(key=lambda x: (
+    ordered = sorted(chapters, key=lambda x: (
         x.get("source_chapter_number") if x.get("source_chapter_number") is not None
         else x.get("chapter_number") if x.get("chapter_number") is not None
-        else float("inf")
+        else float("inf"),
+        x.get("sequence_index", 0),
     ))
     for scrape_number, chapter in enumerate(ordered, start=1):
         item = dict(chapter)
