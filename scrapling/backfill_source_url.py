@@ -14,17 +14,19 @@ import json
 import os
 import sys
 
-# Project root
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, ".."))
+
+sys.path.insert(0, SCRIPT_DIR)
 
 from dotenv import load_dotenv
 
-load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
+load_dotenv(os.path.join(PROJECT_ROOT, ".env"))
 
 import boto3
 from botocore.config import Config
 
-from scrapling.supabase_client import _rest
+from supabase_client import _rest
 
 STORY_ID = 17
 SLUG = "phap-su-chi-thuong"
