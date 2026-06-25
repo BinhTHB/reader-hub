@@ -14,12 +14,13 @@ import {
   SkipForward,
   SkipBack,
   Clock,
+  Trash2,
 } from "lucide-react";
 import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor } from '@capacitor/core';
 import { R2_PUBLIC_DOMAIN, supabase } from "../../lib/supabase";
 import { mediaService } from "../../lib/mediaService";
-import { cleanChapterCache, getChapterFromCache, saveChapterToCache, type ChapterContent } from "../../lib/chapterCache";
+import { cleanChapterCache, getChapterFromCache, saveChapterToCache, deleteChapterFromCache, type ChapterContent } from "../../lib/chapterCache";
 
 let AudioService: any = null;
 
@@ -811,6 +812,47 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     }
   };
 
+  const handleDeleteCurrentChapter = async () => {
+    if (!chapter?.id) return;
+
+    const confirmed = window.confirm(`Bạn có chắc muốn xóa Chương ${chapter.chapter_number}?`);
+    if (!confirmed) return;
+
+    try {
+      setShowSettings(false);
+      setPlaying(false);
+      if (Capacitor.isNativePlatform()) {
+        await TextToSpeech.stop();
+      } else if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel();
+      }
+
+      const { data, error } = await supabase.functions.invoke('delete-content', {
+        body: { type: 'chapter', id: chapter.id }
+      });
+
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+
+      await deleteChapterFromCache(chapter.id);
+
+      const remainingChapters = chapters.filter((ch) => ch.id !== chapter.id);
+      setChapters(remainingChapters);
+
+      if (remainingChapters.length === 0) {
+        onBack();
+        return;
+      }
+
+      const nextChapter = remainingChapters[currentChapterIndex] || remainingChapters[currentChapterIndex - 1] || remainingChapters[0];
+      await changeChapter(nextChapter, false);
+      setCurrentChapterIndex(remainingChapters.findIndex((ch) => ch.id === nextChapter.id));
+    } catch (err: any) {
+      console.error('Failed to delete current chapter:', err);
+      setError(err.message || 'Không thể xóa chương hiện tại');
+    }
+  };
+
   const handlePlayPause = async () => {
     if (!content || content.paragraphs.length === 0) return;
 
@@ -1436,6 +1478,16 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
                 ))}
               </div>
             </div>
+
+            {/* Delete current chapter */}
+            <div className="border-t border-border my-2" />
+            <button
+              onClick={() => handleDeleteCurrentChapter()}
+              className="w-full py-3 bg-destructive/10 text-destructive rounded-full font-medium hover:bg-destructive/20 transition-colors flex items-center justify-center gap-2"
+            >
+              <Trash2 className="w-4 h-4" />
+              Xóa chương hiện tại
+            </button>
 
             <button
               onClick={() => setShowSettings(false)}
