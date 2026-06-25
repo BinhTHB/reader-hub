@@ -182,6 +182,23 @@ def get_unscraped_chapters(story_id: int, limit: int = 50) -> list[dict]:
     return result if isinstance(result, list) else []
 
 
+def get_story_chapters_index(story_id: int) -> dict[int, dict]:
+    """Fetch all chapters for a story and return a dict keyed by chapter_number.
+
+    Returns:
+        {chapter_number: {source_url, is_scraped, text_r2_url, word_count, title}}
+    """
+    params = (
+        f"?story_id=eq.{story_id}"
+        f"&select=chapter_number,source_url,is_scraped,text_r2_url,word_count,title"
+        f"&order=chapter_number.asc"
+    )
+    rows = _rest("GET", "chapters", params=params)
+    if not isinstance(rows, list):
+        return {}
+    return {row["chapter_number"]: row for row in rows if row.get("chapter_number") is not None}
+
+
 # ─── Scrape Jobs ───────────────────────────────────────────
 
 def update_scrape_job(

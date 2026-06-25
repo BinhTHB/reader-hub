@@ -384,6 +384,7 @@ from supabase_client import (
     update_story_scrape_progress,
     update_story_total_chapters,
     update_scrape_job,
+    get_story_chapters_index,
 )
 from proxy_rotator import build_proxy_pool, ProxyPool, ProxyInfo
 
@@ -988,19 +989,47 @@ def run_scraper():
             random_delay()
 
             # ─── Step 3: Scrape each chapter ───────────────
-            print("\n🔍 Checking R2 for existing chapters to optimize scraping...")
-            existing_ch_nums = get_existing_chapters(story_info["slug"])
-            print(f"  Found {len(existing_ch_nums)} chapters already in R2.")
+            # Use Supabase as primary index for skip check (faster than R2 metadata)
+            print("\n📡 Fetching chapter index from Supabase...")
+            existing_index = get_story_chapters_index(story_id)
+            print(f"  Found {len(existing_index)} chapters in Supabase index.")
+
+            # Also fetch R2 chapter list for fallback verification
+            existing_r2_ch_nums = get_existing_chapters(story_info["slug"])
+            print(f"  Found {len(existing_r2_ch_nums)} chapters in R2 storage.")
 
             for i, ch_info in enumerate(target_chapters):
                 ch_num = ch_info["chapter_number"]
                 print(f"\n📖 [{i+1}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
 
-                # Skip only when the existing R2 JSON still matches the expected chapter.
-                if not FORCE_RESCRAPE and ch_num in existing_ch_nums:
+                # Primary skip check: Supabase index (fast, 1 query for all chapters)
+                if not FORCE_RESCRAPE and ch_num in existing_index:
+                    existing = existing_index[ch_num]
+                    expected_url = ch_info.get("source_url")
+                    existing_url = existing.get("source_url")
+
+                    # Skip if source_url matches and chapter is marked as scraped
+                    if existing_url and expected_url and existing_url == expected_url:
+                        if existing.get("is_scraped") and existing.get("text_r2_url"):
+                            print("  ⏭️ Already scraped (Supabase index match), skipping")
+                            chapters_scraped += 1
+                            continue
+                        print("  ♻️ Supabase shows not scraped yet, proceeding")
+
+                    # If URLs differ or missing, check R2 metadata for confirmation
+                    elif ch_num in existing_r2_ch_nums:
+                        existing_meta = get_chapter_metadata(story_info["slug"], ch_num)
+                        if existing_chapter_matches(ch_info, existing_meta):
+                            print("  ⏭️ R2 metadata matches, skipping")
+                            chapters_scraped += 1
+                            continue
+                        print("  ♻️ R2 chapter stale or mismatched, re-scraping")
+
+                # Fallback: check R2 directly if not in Supabase index
+                elif not FORCE_RESCRAPE and ch_num in existing_r2_ch_nums:
                     existing_meta = get_chapter_metadata(story_info["slug"], ch_num)
                     if existing_chapter_matches(ch_info, existing_meta):
-                        print("  ⏭️ Already exists in R2 and metadata matches, skipping")
+                        print("  ⏭️ Already exists in R2 (not in Supabase index), skipping")
                         chapters_scraped += 1
                         continue
                     print("  ♻️ Existing R2 chapter looks stale or mismatched, re-scraping")

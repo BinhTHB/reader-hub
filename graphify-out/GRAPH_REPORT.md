@@ -1,16 +1,16 @@
-# Graph Report - reader-hub  (2026-05-31)
+# Graph Report - reader-hub  (2026-06-25)
 
 ## Corpus Check
-- 207 files · ~124,662 words
+- 212 files · ~130,399 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2272 nodes · 3961 edges · 208 communities (142 shown, 66 thin omitted)
-- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 125 edges (avg confidence: 0.68)
+- 2370 nodes · 4099 edges · 214 communities (141 shown, 73 thin omitted)
+- Extraction: 97% EXTRACTED · 3% INFERRED · 0% AMBIGUOUS · INFERRED: 130 edges (avg confidence: 0.68)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `d537f55c`
+- Built from commit: `7ac41044`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -59,7 +59,6 @@
 - [[_COMMUNITY_Community 41|Community 41]]
 - [[_COMMUNITY_Community 42|Community 42]]
 - [[_COMMUNITY_Community 43|Community 43]]
-- [[_COMMUNITY_Community 44|Community 44]]
 - [[_COMMUNITY_Community 45|Community 45]]
 - [[_COMMUNITY_Community 46|Community 46]]
 - [[_COMMUNITY_Community 47|Community 47]]
@@ -188,6 +187,13 @@
 - [[_COMMUNITY_Community 205|Community 205]]
 - [[_COMMUNITY_Community 206|Community 206]]
 - [[_COMMUNITY_Community 207|Community 207]]
+- [[_COMMUNITY_Community 208|Community 208]]
+- [[_COMMUNITY_Community 209|Community 209]]
+- [[_COMMUNITY_Community 210|Community 210]]
+- [[_COMMUNITY_Community 211|Community 211]]
+- [[_COMMUNITY_Community 212|Community 212]]
+- [[_COMMUNITY_Community 213|Community 213]]
+- [[_COMMUNITY_Community 215|Community 215]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `cn()` - 223 edges
@@ -195,37 +201,37 @@
 3. `Q()` - 73 edges
 4. `Reader Hub — Project Context & Documentation` - 56 edges
 5. `ey()` - 49 edges
-6. `str` - 45 edges
+6. `str` - 47 edges
 7. `ae()` - 41 edges
 8. `str` - 37 edges
 9. `wy` - 32 edges
 10. `join()` - 31 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `SiteConfig` --uses--> `SiteConfig`  [INFERRED]
-  scrapling/parsers.py → scraper/sites_config.py
 - `StealthySession` --uses--> `ProxyInfo`  [INFERRED]
-  scrapling/scraper.py → scraper/proxy_rotator.py
-- `str` --uses--> `ProxyInfo`  [INFERRED]
-  scrapling/scraper.py → scraper/proxy_rotator.py
-- `int` --uses--> `ProxyInfo`  [INFERRED]
   scrapling/scraper.py → scraper/proxy_rotator.py
 - `StealthySession` --uses--> `ProxyPool`  [INFERRED]
   scrapling/scraper.py → scraper/proxy_rotator.py
+- `str` --uses--> `ProxyInfo`  [INFERRED]
+  scrapling/scraper.py → scraper/proxy_rotator.py
+- `str` --uses--> `ProxyPool`  [INFERRED]
+  scrapling/scraper.py → scraper/proxy_rotator.py
+- `int` --uses--> `ProxyInfo`  [INFERRED]
+  scrapling/scraper.py → scraper/proxy_rotator.py
 
-## Communities (208 total, 66 thin omitted)
+## Communities (214 total, 73 thin omitted)
 
 ### Community 0 - "Community 0"
 Cohesion: 0.01
 Nodes (71): Aa, ai, Bh, Ce, cg, dg, Dl, Ee() (+63 more)
 
 ### Community 1 - "Community 1"
-Cohesion: 0.06
-Nodes (48): base_url(), BaseSiteParser, clean_text(), count_words(), detect_parser(), get_all_parsers(), get_chapter_list_url(), get_parser() (+40 more)
+Cohesion: 0.08
+Nodes (38): ABC, base_url(), BaseSiteParser, clean_text(), count_words(), detect_parser(), get_all_parsers(), get_chapter_list_url() (+30 more)
 
 ### Community 2 - "Community 2"
-Cohesion: 0.09
-Nodes (32): ABC, base_url(), BaseSiteParser, clean_text(), count_words(), detect_parser(), get_all_parsers(), get_chapter_list_url() (+24 more)
+Cohesion: 0.05
+Nodes (62): domain(), get_enabled_sites(), get_site(), get_site_by_url(), str, Sites Configuration — Centralized registry of supported websites  Domains are co, Configuration for a single source website., Get a site config by name. (+54 more)
 
 ### Community 3 - "Community 3"
 Cohesion: 0.06
@@ -255,16 +261,12 @@ Nodes (4): bm, eu, s, g
 Cohesion: 0.07
 Nodes (40): ajax(), batchSend(), binaryEncode(), bv(), clone(), cloneRequestState(), containedBy(), contains() (+32 more)
 
-### Community 10 - "Community 10"
-Cohesion: 0.08
-Nodes (3): ey(), _handleTokenChanged(), Kh()
-
 ### Community 11 - "Community 11"
 Cohesion: 0.12
 Nodes (15): AudioForegroundService, ServiceListener, AudioServicePlugin, Bitmap, IBinder, Intent, Notification, PendingIntent (+7 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.10
+Cohesion: 0.08
 Nodes (5): ah(), disconnect(), Gs, xdomainRequest(), xhrRequest()
 
 ### Community 13 - "Community 13"
@@ -273,7 +275,7 @@ Nodes (16): Badge(), badgeVariants, Checkbox(), HoverCardContent(), PopoverConte
 
 ### Community 14 - "Community 14"
 Cohesion: 0.07
-Nodes (29): a(), a0, am(), Bt(), cm(), Da(), dm(), dv (+21 more)
+Nodes (32): a(), a0, am(), Bt(), catch(), cm(), dm(), dv (+24 more)
 
 ### Community 17 - "Community 17"
 Cohesion: 0.21
@@ -292,20 +294,24 @@ Cohesion: 0.10
 Nodes (18): AlertDialogAction(), AlertDialogCancel(), AlertDialogContent(), AlertDialogDescription(), AlertDialogFooter(), AlertDialogHeader(), AlertDialogOverlay(), AlertDialogTitle() (+10 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.14
-Nodes (15): cancelTimeout(), canPush(), hasReceived(), leave(), on(), onClose(), onError(), onMessage() (+7 more)
+Cohesion: 0.11
+Nodes (17): channel(), getChannels(), hasReceived(), inPendingSyncState(), isMember(), joinRef(), on(), onClose() (+9 more)
 
 ### Community 22 - "Community 22"
+Cohesion: 0.08
+Nodes (34): bytes, chapter_source_key(), download_image(), existing_chapter_matches(), _fetch_no_sandbox(), normalize_misnumbered_chapters(), normalize_title_for_compare(), bool (+26 more)
+
+### Community 23 - "Community 23"
 Cohesion: 0.12
-Nodes (17): download_image(), _fetch_no_sandbox(), fetch_with_rotation_wrapper(), handle_signal(), int, str, random_delay(), Main Scraper — Orchestrates the scraping pipeline using Scrapling (Scrapling bra (+9 more)
+Nodes (18): bg, Da(), ef(), eh, es(), fg, Fl(), ih() (+10 more)
 
 ### Community 24 - "Community 24"
 Cohesion: 0.18
 Nodes (6): at(), fn(), Kn(), Ol(), Pl(), Xn()
 
 ### Community 25 - "Community 25"
-Cohesion: 0.12
-Nodes (15): Dh, filter(), $h(), inPendingSyncState(), isMember(), iv, joinRef(), lv (+7 more)
+Cohesion: 0.13
+Nodes (14): appendParams(), b0(), delete(), endpointURL(), f0(), _m(), m0(), match() (+6 more)
 
 ### Community 26 - "Community 26"
 Cohesion: 0.08
@@ -316,20 +322,16 @@ Cohesion: 0.16
 Nodes (17): build_proxy_pool(), _fetch_proxy_list(), get_playwright_proxy_config(), ProxyInfo, ProxyPool, bool, ClientSession, int (+9 more)
 
 ### Community 28 - "Community 28"
-Cohesion: 0.17
-Nodes (20): Browser, Page, create_browser_context(), download_image(), fetch_page(), fetch_with_rotation(), handle_signal(), int (+12 more)
+Cohesion: 0.06
+Nodes (56): Browser, BrowserContext, Exception, Page, ProxyInfo, ProxyPool, build_proxy_pool(), _fetch_proxy_list() (+48 more)
 
 ### Community 29 - "Community 29"
 Cohesion: 0.16
 Nodes (21): get_story_by_slug(), get_supabase_client(), get_unscraped_chapters(), bool, Client, int, str, Supabase Client Helper — Manage story/chapter metadata in Supabase  Provides fun (+13 more)
 
 ### Community 30 - "Community 30"
-Cohesion: 0.16
-Nodes (21): get_story_by_slug(), get_supabase_client(), get_unscraped_chapters(), bool, Client, int, str, Supabase Client Helper — Manage story/chapter metadata in Supabase (Scrapling br (+13 more)
-
-### Community 31 - "Community 31"
-Cohesion: 0.18
-Nodes (7): binaryDecode(), decode(), decodeBroadcast(), decodePush(), decodeReply(), onConnMessage(), yg
+Cohesion: 0.10
+Nodes (35): bool, int, handle_signal(), int, get_story_by_slug(), get_supabase_client(), get_unscraped_chapters(), bool (+27 more)
 
 ### Community 33 - "Community 33"
 Cohesion: 0.12
@@ -348,24 +350,24 @@ Cohesion: 0.11
 Nodes (7): fl_register_plugins(), main(), my_application_activate(), my_application_new(), _MyApplication, dart_entrypoint_arguments, parent_instance
 
 ### Community 37 - "Community 37"
-Cohesion: 0.20
-Nodes (12): bg, fg, Fl(), ih(), ka(), ny(), ry(), ty() (+4 more)
+Cohesion: 0.33
+Nodes (5): fv(), gv(), pv(), sf(), wv()
 
 ### Community 38 - "Community 38"
 Cohesion: 0.16
-Nodes (15): clearHeartbeats(), flushSendBuffer(), hasLogger(), heartbeatTimeout(), leaveOpenTopic(), onConnClose(), onConnError(), onConnOpen() (+7 more)
+Nodes (14): clearHeartbeats(), flushSendBuffer(), hasLogger(), heartbeatTimeout(), onConnClose(), onConnError(), onConnOpen(), parseJSON() (+6 more)
 
 ### Community 39 - "Community 39"
 Cohesion: 0.19
 Nodes (17): check_chapter_exists(), get_existing_chapters(), get_public_url(), get_r2_client(), bool, bytes, int, str (+9 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.19
-Nodes (17): check_chapter_exists(), get_existing_chapters(), get_public_url(), get_r2_client(), bool, bytes, int, str (+9 more)
+Cohesion: 0.14
+Nodes (23): check_chapter_exists(), get_chapter_metadata(), get_existing_chapters(), get_public_url(), get_r2_client(), bool, bytes, int (+15 more)
 
 ### Community 41 - "Community 41"
-Cohesion: 0.12
-Nodes (9): ch, gn(), Mh, ph, qe, Ta, th, toJSON() (+1 more)
+Cohesion: 0.14
+Nodes (8): ch, gn(), Mh, qe, Ta, th, toJSON(), yh()
 
 ### Community 42 - "Community 42"
 Cohesion: 0.12
@@ -374,14 +376,6 @@ Nodes (11): Menubar(), MenubarCheckboxItem(), MenubarContent(), MenubarItem(), M
 ### Community 43 - "Community 43"
 Cohesion: 0.12
 Nodes (15): build, _buildTtsControls, Container, dispose, Exception, Icon, initState, ReaderScreen (+7 more)
-
-### Community 44 - "Community 44"
-Cohesion: 0.20
-Nodes (15): build_proxy_pool(), _fetch_proxy_list(), get_playwright_proxy_config(), bool, ClientSession, int, str, Free Proxy Rotator — Scrape and rotate free proxies  Since no paid proxy provide (+7 more)
-
-### Community 45 - "Community 45"
-Cohesion: 0.21
-Nodes (11): BrowserContext, Exception, ProxyInfo, ProxyInfo, ProxyPool, bytes, Custom exception raised when the scraper is aborted early due to consecutive fai, ScraperAbortException (+3 more)
 
 ### Community 46 - "Community 46"
 Cohesion: 0.12
@@ -392,8 +386,8 @@ Cohesion: 0.12
 Nodes (9): DropdownMenuCheckboxItem(), DropdownMenuContent(), DropdownMenuItem(), DropdownMenuLabel(), DropdownMenuRadioItem(), DropdownMenuSeparator(), DropdownMenuShortcut(), DropdownMenuSubContent() (+1 more)
 
 ### Community 48 - "Community 48"
-Cohesion: 0.16
-Nodes (11): ag, catch(), execute(), fetchRequest(), finally(), getPromise(), hh(), my (+3 more)
+Cohesion: 0.17
+Nodes (9): fetch_with_rotation_wrapper(), Wrapper around a persistent Playwright browser context to act as a session manag, Wrapper around a persistent Playwright browser context to act as a session manag, Close current browser/context and launch a new one with a different proxy., Close current browser/context and launch a new one with a different proxy., Executes action_fn(session). If it raises an exception, rotates proxy and retrie, Executes action_fn(session). If it raises an exception, rotates proxy and retrie, Executes action_fn(session). If it raises an exception, rotates proxy and retrie (+1 more)
 
 ### Community 49 - "Community 49"
 Cohesion: 0.17
@@ -414,6 +408,10 @@ Nodes (13): name, vite, peerDependencies, react, react-dom, pnpm, overrides, pri
 ### Community 53 - "Community 53"
 Cohesion: 0.12
 Nodes (19): 1. Supabase, 2. Cloudflare R2, 3. GitHub repository secrets, 4. Web app (React), 5. Mobile app (Flutter), 6. Scraper (local testing), code:block1 (reader-hub/), code:bash (cd web_react) (+11 more)
+
+### Community 54 - "Community 54"
+Cohesion: 0.15
+Nodes (17): c0(), constructor(), Cy(), d0(), h0(), _initRealtimeClient(), _initSupabaseAuthClient(), l0() (+9 more)
 
 ### Community 55 - "Community 55"
 Cohesion: 0.15
@@ -450,10 +448,6 @@ Nodes (6): af(), kv(), lf(), of(), qv(), vv()
 ### Community 63 - "Community 63"
 Cohesion: 0.20
 Nodes (4): FlutterAppDelegate, FlutterImplicitEngineDelegate, AppDelegate, AppDelegate
-
-### Community 64 - "Community 64"
-Cohesion: 0.24
-Nodes (9): ProxyPool, multi_source_search(), BaseSiteParser, bool, str, Multi-Source Search — Search for stories across all enabled sites  This script c, Search a single site for stories matching the query., Search for a story across all enabled source websites.      Returns:     { (+1 more)
 
 ### Community 65 - "Community 65"
 Cohesion: 0.22
@@ -508,8 +502,8 @@ Cohesion: 0.25
 Nodes (6): corsHeaders, GITHUB_OWNER, GITHUB_PAT, GITHUB_REPO, ScrapeRequest, supabase
 
 ### Community 79 - "Community 79"
-Cohesion: 0.33
-Nodes (5): fv(), gv(), pv(), sf(), wv()
+Cohesion: 0.11
+Nodes (7): cancelTimeout(), canPush(), leave(), leaveOpenTopic(), rejoin(), vy(), yy
 
 ### Community 81 - "Community 81"
 Cohesion: 0.29
@@ -534,10 +528,6 @@ Nodes (3): RegisterGeneratedPlugins(), NSWindow, MainFlutterWindow
 ### Community 86 - "Community 86"
 Cohesion: 0.33
 Nodes (5): ChromePDFViewer, ChromiumPDFViewer, EdgePDFViewer, PDFViewerPlugin, WebKitPDFPlugin
-
-### Community 87 - "Community 87"
-Cohesion: 0.17
-Nodes (13): appendParams(), b0(), delete(), endpointURL(), f0(), _m(), m0(), match() (+5 more)
 
 ### Community 88 - "Community 88"
 Cohesion: 0.33
@@ -583,17 +573,29 @@ Nodes (5): peerDependenciesMeta, react, react-dom, optional, optional
 Cohesion: 0.50
 Nodes (3): configVersion, packages, roots
 
+### Community 128 - "Community 128"
+Cohesion: 0.12
+Nodes (16): Build APK Debug, Build Production, Chạy Development Server, code:bash (cd E:/projects/reader-hub/web_react), code:bash (cd E:/projects/reader-hub/web_react), code:bash (pnpm build), code:bash (cd E:/projects/reader-hub/web_react), code:text (E:/projects/reader-hub/web_react/android/app/build/outputs/a) (+8 more)
+
+### Community 133 - "Community 133"
+Cohesion: 0.25
+Nodes (4): connect(), connectWithFallback(), transportConnect(), transportName()
+
+### Community 136 - "Community 136"
+Cohesion: 0.38
+Nodes (6): binaryDecode(), decode(), decodeBroadcast(), decodePush(), decodeReply(), onConnMessage()
+
 ### Community 175 - "Community 175"
-Cohesion: 0.16
-Nodes (16): c0(), constructor(), Cy(), d0(), h0(), _initRealtimeClient(), _initSupabaseAuthClient(), l0() (+8 more)
+Cohesion: 0.33
+Nodes (3): ag, og, rg
 
 ### Community 178 - "Community 178"
 Cohesion: 0.10
 Nodes (19): 1. Supabase, 2. Cloudflare R2, 3. GitHub Secrets, 4. Web App (React), 5. Mobile App (Flutter), 6. Scraper (chạy thử local), code:block1 (reader-hub/), code:bash (cd web_react) (+11 more)
 
 ### Community 179 - "Community 179"
-Cohesion: 0.14
-Nodes (15): cancelRefEvent(), close(), closeAndRetry(), connect(), connectWithFallback(), destroy(), ontimeout(), remove() (+7 more)
+Cohesion: 0.09
+Nodes (21): cancelRefEvent(), close(), closeAndRetry(), destroy(), Dh, filter(), $h(), iv (+13 more)
 
 ### Community 180 - "Community 180"
 Cohesion: 0.25
@@ -602,10 +604,6 @@ Nodes (7): 1. Cập nhật Edge Function ✅, 2026-05-18 12:50 - Deploy Search E
 ### Community 181 - "Community 181"
 Cohesion: 0.25
 Nodes (8): 1. Fix URL Fragment Issue, 2026-05-16 - GitHub Actions Scraper Thành Công & Mobile App Setup, 2. Disable Free Proxy trong GitHub Actions, 3. Test GitHub Actions Workflow, 4. Mobile App Setup, code:bash (gh workflow run "Story Scraper" -f mode="scrape" -f source_u), code:block8 (📖 Using parser: truyenfull), code:bash (cd mobile)
-
-### Community 182 - "Community 182"
-Cohesion: 0.29
-Nodes (3): channel(), getChannels(), vy()
 
 ### Community 183 - "Community 183"
 Cohesion: 0.29
@@ -643,25 +641,29 @@ Nodes (3): 1. Fix Proxy Rotation Logic, 2026-05-18 20:53 - Fix Scraper Lỗi 403
 Cohesion: 0.67
 Nodes (3): code:block13 (reader-hub/), code:bash (# Old), Tổng Kết Deployment (Cập nhật: 2026-05-17 16:00 UTC+7)
 
+### Community 208 - "Community 208"
+Cohesion: 0.67
+Nodes (3): get_r2_client(), main(), One-time script: backfill source_url from Supabase into existing R2 chapter JSON
+
 ## Knowledge Gaps
-- **511 isolated node(s):** `graphify`, `Git Tagging Rules`, `🎯 Core Principles (Tiêu chí dự án)`, `code:mermaid (graph TB)`, `2. Decisions (Quyết định thiết kế)` (+506 more)
+- **526 isolated node(s):** `bytes`, `bool`, `bool`, `corsHeaders`, `ScrapeRequest` (+521 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **66 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **73 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `ni` connect `Community 15` to `Community 0`, `Community 34`, `Community 67`, `Community 14`, `Community 79`, `Community 17`, `Community 54`, `Community 24`, `Community 62`?**
-  _High betweenness centrality (0.014) - this node is a cross-community bridge._
-- **Why does `wy` connect `Community 16` to `Community 0`, `Community 38`, `Community 10`, `Community 21`, `Community 182`, `Community 23`?**
-  _High betweenness centrality (0.010) - this node is a cross-community bridge._
-- **Why does `ey()` connect `Community 10` to `Community 0`, `Community 37`, `Community 38`, `Community 9`, `Community 12`, `Community 16`, `Community 21`, `Community 182`, `Community 23`, `Community 31`?**
-  _High betweenness centrality (0.008) - this node is a cross-community bridge._
-- **What connects `graphify`, `Git Tagging Rules`, `🎯 Core Principles (Tiêu chí dự án)` to the rest of the system?**
-  _623 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Why does `ey()` connect `Community 10` to `Community 0`, `Community 133`, `Community 38`, `Community 136`, `Community 9`, `Community 12`, `Community 79`, `Community 16`, `Community 21`, `Community 23`?**
+  _High betweenness centrality (0.013) - this node is a cross-community bridge._
+- **Why does `cn()` connect `Community 3` to `Community 33`, `Community 98`, `Community 65`, `Community 5`, `Community 42`, `Community 13`, `Community 46`, `Community 47`, `Community 50`, `Community 51`, `Community 20`, `Community 60`, `Community 61`?**
+  _High betweenness centrality (0.012) - this node is a cross-community bridge._
+- **Why does `run_scraper()` connect `Community 22` to `Community 2`, `Community 40`, `Community 48`, `Community 28`, `Community 30`?**
+  _High betweenness centrality (0.011) - this node is a cross-community bridge._
+- **What connects `One-time script: backfill source_url from Supabase into existing R2 chapter JSON`, `bytes`, `bool` to the rest of the system?**
+  _693 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.01458966565349544 - nodes in this community are weakly interconnected._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.062342342342342344 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.07539682539682539 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.09325396825396826 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.05218365061590145 - nodes in this community are weakly interconnected._
