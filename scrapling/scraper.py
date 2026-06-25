@@ -377,7 +377,7 @@ class StealthySession:
 
 
 from parsers import detect_parser
-from r2_uploader import upload_chapter, upload_cover, get_existing_chapters
+from r2_uploader import upload_chapter, upload_cover, get_existing_chapters, get_chapter_metadata
 from supabase_client import (
     upsert_story,
     upsert_chapter,
@@ -614,6 +614,40 @@ def normalize_misnumbered_chapters(chapters: list[dict], parser) -> list[dict]:
         item["sequence_index"] = scrape_number
         normalized.append(item)
     return normalized
+
+
+def normalize_title_for_compare(title: str | None) -> str:
+    """Normalize titles enough to detect stale or wrong R2 chapter JSON."""
+    if not title:
+        return ""
+    title = re.sub(r"(?i)^chương\s+\d+\s*[:\-]?\s*", "", title.strip())
+    title = re.sub(r"\s+", " ", title)
+    return title.strip(" ,:-").casefold()
+
+
+def existing_chapter_matches(ch_info: dict, existing_meta: dict | None) -> bool:
+    """Return true when an existing R2 chapter looks like the expected chapter."""
+    if not existing_meta:
+        return False
+    expected_title = normalize_title_for_compare(ch_info.get("title"))
+    existing_title = normalize_title_for_compare(existing_meta.get("title"))
+    if not expected_title or not existing_title:
+        return False
+    # Reject generic or empty titles that could match anything
+    if len(expected_title) < 2 or len(existing_title) < 2:
+        return False
+    if expected_title != existing_title:
+        return False
+
+    expected_word_count = ch_info.get("word_count")
+    existing_word_count = existing_meta.get("word_count")
+    if expected_word_count is not None:
+        return existing_word_count == expected_word_count
+
+    # Chapter lists usually do not include word_count. In that case, title match
+    # plus a non-empty existing word_count is the best cheap signal that the
+    # chapter was already scraped.
+    return bool(existing_word_count)
 
 
 def download_image(img_url: str) -> bytes | None:
@@ -937,11 +971,14 @@ def run_scraper():
                 ch_num = ch_info["chapter_number"]
                 print(f"\n📖 [{i+1}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
 
-                # Skip if already scraped unless force re-scrape is requested.
+                # Skip only when the existing R2 JSON still matches the expected chapter.
                 if not FORCE_RESCRAPE and ch_num in existing_ch_nums:
-                    print("  ⏭️ Already exists in R2, skipping")
-                    chapters_scraped += 1
-                    continue
+                    existing_meta = get_chapter_metadata(story_info["slug"], ch_num)
+                    if existing_chapter_matches(ch_info, existing_meta):
+                        print("  ⏭️ Already exists in R2 and metadata matches, skipping")
+                        chapters_scraped += 1
+                        continue
+                    print("  ♻️ Existing R2 chapter looks stale or mismatched, re-scraping")
 
                 try:
                     def get_chapter_content(sess):
@@ -1047,3 +1084,6 @@ def run_scraper():
 
 if __name__ == "__main__":
     run_scraper()
+
+
+

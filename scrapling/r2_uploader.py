@@ -150,3 +150,28 @@ def get_existing_chapters(story_slug: str) -> set[int]:
         print(f"  ⚠️ Error listing existing chapters from R2: {e}")
         
     return existing
+
+
+def get_chapter_metadata(story_slug: str, chapter_number: int) -> dict | None:
+    """Read existing chapter JSON metadata from R2 for stale-content checks."""
+    client = get_r2_client()
+    bucket = os.environ.get("R2_BUCKET_NAME", "reader-hub-data")
+    key = f"stories/{story_slug}/chapters/{chapter_number}.json"
+
+    try:
+        obj = client.get_object(Bucket=bucket, Key=key)
+        raw = obj["Body"].read().decode("utf-8")
+        data = json.loads(raw)
+        if isinstance(data, dict):
+            return {
+                "title": data.get("title"),
+                "word_count": data.get("word_count"),
+                "paragraph_count": len(data.get("paragraphs") or []),
+                "source_url": data.get("source_url"),
+            }
+    except client.exceptions.ClientError:
+        return None
+    except Exception as e:
+        print(f"  ⚠️ Error reading existing chapter metadata from R2: {e}")
+    return None
+
