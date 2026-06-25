@@ -12,6 +12,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { supabase, R2_PUBLIC_DOMAIN } from "../../lib/supabase";
+import { deleteChapterFromCache } from "../../lib/chapterCache";
 
 interface DetailScreenProps {
   book?: any;
@@ -108,6 +109,10 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
 
         if (error) throw error;
         if (data?.error) throw new Error(data.error);
+        
+        // Clear cached chapter content locally
+        await deleteChapterFromCache(deleteTarget.id);
+
         setChapters(prev => prev.filter(ch => ch.id !== deleteTarget.id));
         setShowDeleteConfirm(false);
         setDeleteTarget(null);

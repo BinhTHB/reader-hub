@@ -19,6 +19,7 @@ import { TextToSpeech } from '@capacitor-community/text-to-speech';
 import { Capacitor } from '@capacitor/core';
 import { R2_PUBLIC_DOMAIN, supabase } from "../../lib/supabase";
 import { mediaService } from "../../lib/mediaService";
+import { cleanChapterCache, getChapterFromCache, saveChapterToCache, type ChapterContent } from "../../lib/chapterCache";
 
 let AudioService: any = null;
 
@@ -49,81 +50,6 @@ interface Chapter {
   title: string;
   text_r2_url: string;
 }
-
-const CACHE_NAME = 'reader-hub-chapters-cache';
-
-const getChapterFromCache = async (chapterId: number): Promise<ChapterContent | null> => {
-  try {
-    if ('caches' in window) {
-      const cache = await caches.open(CACHE_NAME);
-      const response = await cache.match(`chapter-${chapterId}`);
-      if (response) {
-        return await response.json();
-      }
-    }
-  } catch (e) {
-    console.error('Failed to get from Cache API:', e);
-  }
-  // Fallback to localStorage
-  try {
-    const data = localStorage.getItem(`chapter_cache_${chapterId}`);
-    if (data) return JSON.parse(data);
-  } catch (e) {
-    console.error('Failed to get from localStorage cache:', e);
-  }
-  return null;
-};
-
-const saveChapterToCache = async (chapterId: number, data: ChapterContent): Promise<void> => {
-  try {
-    if ('caches' in window) {
-      const cache = await caches.open(CACHE_NAME);
-      await cache.put(`chapter-${chapterId}`, new Response(JSON.stringify(data)));
-      return;
-    }
-  } catch (e) {
-    console.error('Failed to save to Cache API:', e);
-  }
-  // Fallback to localStorage
-  try {
-    localStorage.setItem(`chapter_cache_${chapterId}`, JSON.stringify(data));
-  } catch (e) {
-    console.error('Failed to save to localStorage cache:', e);
-  }
-};
-
-const cleanChapterCache = async (keepIds: number[]) => {
-  try {
-    // local storage cleanup
-    const keys = Object.keys(localStorage);
-    for (const key of keys) {
-      if (key.startsWith('chapter_cache_')) {
-        const id = parseInt(key.replace('chapter_cache_', ''), 10);
-        if (!keepIds.includes(id)) {
-          localStorage.removeItem(key);
-        }
-      }
-    }
-    
-    // cache API cleanup
-    if ('caches' in window) {
-      const cache = await caches.open(CACHE_NAME);
-      const cachedRequests = await cache.keys();
-      for (const req of cachedRequests) {
-        const url = req.url;
-        const match = url.match(/chapter-(\d+)$/);
-        if (match) {
-          const id = parseInt(match[1], 10);
-          if (!keepIds.includes(id)) {
-            await cache.delete(req);
-          }
-        }
-      }
-    }
-  } catch (e) {
-    console.error('Error cleaning cache:', e);
-  }
-};
 
 export function ReadingScreen({ chapter: initialChapter, onBack, user }: ReadingScreenProps) {
   const [showSettings, setShowSettings] = useState(false);
