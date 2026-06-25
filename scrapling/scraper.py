@@ -629,14 +629,42 @@ def existing_chapter_matches(ch_info: dict, existing_meta: dict | None) -> bool:
     """Return true when an existing R2 chapter looks like the expected chapter."""
     if not existing_meta:
         return False
+
+    # 1. Compare by source_url if both are available
+    expected_url = ch_info.get("source_url")
+    existing_url = existing_meta.get("source_url")
+    if expected_url and existing_url:
+        def clean_url(u: str) -> str:
+            u = re.sub(r"^https?://(www\.)?", "", u.strip().lower())
+            return u.rstrip("/")
+        if clean_url(expected_url) == clean_url(existing_url):
+            return True
+        else:
+            return False
+
+    # 2. Compare source chapter number if available
+    expected_src_num = ch_info.get("source_chapter_number")
+    existing_src_num = existing_meta.get("source_chapter_number")
+    if expected_src_num is not None and existing_src_num is not None:
+        if expected_src_num != existing_src_num:
+            return False
+
+    # 3. Title match checks
+    expected_raw = (ch_info.get("title") or "").strip().casefold()
+    existing_raw = (existing_meta.get("title") or "").strip().casefold()
+    
+    raw_titles_match = expected_raw and expected_raw == existing_raw
+
     expected_title = normalize_title_for_compare(ch_info.get("title"))
     existing_title = normalize_title_for_compare(existing_meta.get("title"))
-    if not expected_title or not existing_title:
-        return False
-    # Reject generic or empty titles that could match anything
-    if len(expected_title) < 2 or len(existing_title) < 2:
-        return False
-    if expected_title != existing_title:
+
+    title_is_match = False
+    if raw_titles_match:
+        title_is_match = True
+    elif expected_title and existing_title and len(expected_title) >= 2 and len(existing_title) >= 2:
+        title_is_match = (expected_title == existing_title)
+
+    if not title_is_match:
         return False
 
     expected_word_count = ch_info.get("word_count")
@@ -644,9 +672,6 @@ def existing_chapter_matches(ch_info: dict, existing_meta: dict | None) -> bool:
     if expected_word_count is not None:
         return existing_word_count == expected_word_count
 
-    # Chapter lists usually do not include word_count. In that case, title match
-    # plus a non-empty existing word_count is the best cheap signal that the
-    # chapter was already scraped.
     return bool(existing_word_count)
 
 
@@ -1011,6 +1036,8 @@ def run_scraper():
                     title=content["title"] or ch_info["title"],
                     paragraphs=content["paragraphs"],
                     word_count=content["word_count"],
+                    source_url=ch_info.get("source_url"),
+                    source_chapter_number=ch_info.get("source_chapter_number"),
                 )
 
                 # Update Supabase

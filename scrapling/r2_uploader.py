@@ -39,6 +39,8 @@ def upload_chapter(
     title: str,
     paragraphs: list[str],
     word_count: int,
+    source_url: str | None = None,
+    source_chapter_number: int | None = None,
 ) -> str:
     """
     Upload chapter content as a JSON file to R2.
@@ -68,6 +70,10 @@ def upload_chapter(
         "word_count": word_count,
         "scraped_at": datetime.now(timezone.utc).isoformat(),
     }
+    if source_url:
+        data["source_url"] = source_url
+    if source_chapter_number is not None:
+        data["source_chapter_number"] = source_chapter_number
 
     body = json.dumps(data, ensure_ascii=False, indent=None)
 
@@ -168,6 +174,7 @@ def get_chapter_metadata(story_slug: str, chapter_number: int) -> dict | None:
                 "word_count": data.get("word_count"),
                 "paragraph_count": len(data.get("paragraphs") or []),
                 "source_url": data.get("source_url"),
+                "source_chapter_number": data.get("source_chapter_number"),
             }
     except client.exceptions.ClientError:
         return None
