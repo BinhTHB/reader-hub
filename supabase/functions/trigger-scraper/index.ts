@@ -132,39 +132,67 @@ async function checkLatestChapter(sourceUrl: string): Promise<{ chapter_number: 
     const resp = await fetch(url, { headers });
     if (!resp.ok) throw new Error(`Fetch TruyenDich failed with status ${resp.status}`);
     const html = await resp.text();
-
+    
+    // Normalize escaped quotes in Next.js payload
+    const normalized = html.replace(/\\"/g, '"');
+    
     let maxChapter = 0;
-    const rangeMatches = html.match(/(\d+)\s*-\s*(\d+)/g);
-    if (rangeMatches) {
-      for (const r of rangeMatches) {
-        const match = r.match(/(\d+)\s*-\s*(\d+)/);
-        if (match) {
-          const endNum = parseInt(match[2]);
-          if (endNum > maxChapter) maxChapter = endNum;
+    
+    // 1. Try to extract from Next.js initialData.total (most reliable)
+    const totalMatch = normalized.match(/"total"\s*:\s*(\d+)/);
+    if (totalMatch) {
+      const total = parseInt(totalMatch[1]);
+      if (total > 0 && total < 100000) maxChapter = total;
+    }
+    
+    // 2. Try to extract from latestChapters[0].chapter_number
+    if (maxChapter === 0) {
+      const latestMatch = normalized.match(/"latestChapters"\s*:\s*\[\s*\{[^}]*"chapter_number"\s*:\s*(\d+)/);
+      if (latestMatch) {
+        const latest = parseInt(latestMatch[1]);
+        if (latest > 0 && latest < 100000) maxChapter = latest;
+      }
+    }
+    
+    // 3. Try "Số chương" field in DOM
+    if (maxChapter === 0) {
+      const chapterCountMatch = normalized.match(/Số chương[\s\S]{0,100}?(\d+)</i);
+      if (chapterCountMatch) {
+        const count = parseInt(chapterCountMatch[1]);
+        if (count > 0 && count < 100000) maxChapter = count;
+      }
+    }
+    
+    // 4. Fallback: find /chuong-N links (only in href context, not in script filenames)
+    if (maxChapter === 0) {
+      const chapterLinkMatches = html.match(/href="[^"]*\/chuong-(\d+)[^"]*"/g);
+      if (chapterLinkMatches) {
+        for (const m of chapterLinkMatches) {
+          const numMatch = m.match(/chuong-(\d+)/);
+          if (numMatch) {
+            const num = parseInt(numMatch[1]);
+            if (num > maxChapter) maxChapter = num;
+          }
+        }
+      }
+    }
+    
+    // 5. Last resort: "N chương" text (but only if we haven't found anything)
+    if (maxChapter === 0) {
+      const chapterCountMatches = html.match(/(\d+)\s*chương/gi);
+      if (chapterCountMatches) {
+        for (const m of chapterCountMatches) {
+          const numMatch = m.match(/\d+/);
+          if (numMatch) {
+            const num = parseInt(numMatch[0]);
+            if (num > maxChapter && num < 100000) maxChapter = num;
+          }
         }
       }
     }
 
-    const chapterCountMatches = html.match(/(\d+)\s*chương/gi);
-    if (chapterCountMatches) {
-      for (const m of chapterCountMatches) {
-        const numMatch = m.match(/\d+/);
-        if (numMatch) {
-          const num = parseInt(numMatch[0]);
-          if (num > maxChapter) maxChapter = num;
-        }
-      }
-    }
-
-    const chapterMatches = html.match(/\/chuong-(\d+)/g);
-    if (chapterMatches) {
-      for (const m of chapterMatches) {
-        const numMatch = m.match(/\d+/);
-        if (numMatch) {
-          const num = parseInt(numMatch[0]);
-          if (num > maxChapter) maxChapter = num;
-        }
-      }
+    if (maxChapter === 0) {
+      throw new Error("Unable to detect latest TruyenDich chapter");
     }
 
     return { chapter_number: maxChapter, title: `Chương ${maxChapter}` };
