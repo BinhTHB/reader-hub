@@ -102,6 +102,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
     }
     return false;
   });
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [sleepTimer, setSleepTimer] = useState<number | null>(() => {
     const saved = localStorage.getItem('reader_sleepTimer');
     return saved ? Number(saved) : null;
@@ -815,10 +816,8 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
   const handleDeleteCurrentChapter = async () => {
     if (!chapter?.id) return;
 
-    const confirmed = window.confirm(`Bạn có chắc muốn xóa Chương ${chapter.chapter_number}?`);
-    if (!confirmed) return;
-
     try {
+      setShowDeleteConfirm(false);
       setShowSettings(false);
       setPlaying(false);
       if (Capacitor.isNativePlatform()) {
@@ -1482,7 +1481,7 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
             {/* Delete current chapter */}
             <div className="border-t border-border my-2" />
             <button
-              onClick={() => handleDeleteCurrentChapter()}
+              onClick={() => setShowDeleteConfirm(true)}
               className="w-full py-3 bg-destructive/10 text-destructive rounded-full font-medium hover:bg-destructive/20 transition-colors flex items-center justify-center gap-2"
             >
               <Trash2 className="w-4 h-4" />
@@ -1495,6 +1494,43 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
             >
               Xong
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+          onClick={() => setShowDeleteConfirm(false)}
+        >
+          <div
+            className="bg-card w-full max-w-sm rounded-3xl p-6 shadow-xl animate-slide-up"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trash2 className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-lg font-medium mb-2">Xác nhận xóa</h3>
+              <p className="text-sm text-muted-foreground">
+                Bạn có chắc muốn xóa Chương {chapter?.chapter_number}? Hành động này không thể hoàn tác.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="flex-1 py-3 bg-muted text-foreground rounded-xl font-medium hover:opacity-90 transition-opacity"
+              >
+                Hủy
+              </button>
+              <button
+                onClick={() => handleDeleteCurrentChapter()}
+                className="flex-1 py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 transition-colors"
+              >
+                Xóa
+              </button>
+            </div>
           </div>
         </div>
       )}
