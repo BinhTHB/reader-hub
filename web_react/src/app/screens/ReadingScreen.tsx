@@ -1279,11 +1279,21 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
           onClick={() => setShowSettings(false)}
         >
           <div
-            className="bg-card w-full rounded-t-3xl p-6 space-y-6 animate-slide-up"
+            className="bg-card w-full rounded-t-3xl p-6 space-y-6 animate-slide-up max-h-[85vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="w-12 h-1 bg-muted rounded-full mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-center">Cài đặt đọc</h3>
+            <div className="flex items-center justify-between mb-2">
+              <div className="w-10" />
+              <h3 className="text-lg font-medium text-center">Cài đặt đọc</h3>
+              <button
+                onClick={() => setShowDeleteConfirm(true)}
+                className="w-10 h-10 rounded-full bg-destructive/10 text-destructive flex items-center justify-center hover:bg-destructive/20 transition-colors"
+                title="Xóa chương hiện tại"
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
 
             {/* Font Size */}
             <div>
@@ -1477,16 +1487,6 @@ export function ReadingScreen({ chapter: initialChapter, onBack, user }: Reading
                 ))}
               </div>
             </div>
-
-            {/* Delete current chapter */}
-            <div className="border-t border-border my-2" />
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="w-full py-3 bg-destructive/10 text-destructive rounded-full font-medium hover:bg-destructive/20 transition-colors flex items-center justify-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              Xóa chương hiện tại
-            </button>
 
             <button
               onClick={() => setShowSettings(false)}
