@@ -13,7 +13,7 @@ import {
   Headphones,
   Pause,
 } from "lucide-react";
-import { useStoryBySlug, useChapterDetail, recordReadingProgress } from "@/lib/stories-db";
+import { useStoryBySlug, useChapter, recordReadingProgress } from "@/lib/stories-db";
 import { useAuth } from "@/hooks/use-auth";
 import { useAudioPlayer } from "@/lib/audio-player";
 
@@ -72,7 +72,7 @@ function ReaderPage() {
   const [progress, setProgress] = useState(0);
 
   const ch = Number.parseInt(chapter, 10) || 1;
-  const { data: chapterRow } = useChapterDetail({ slug, chapterNumber: ch });
+  const { data: chapterRow } = useChapter(s?.id, ch);
   const paragraphs = useMemo(
     () => (chapterRow?.content ? chapterRow.content.split(/\n{2,}/) : []),
     [chapterRow],

@@ -182,7 +182,7 @@ export const getChapter = createServerFn({ method: "GET" })
 
     const { data: row, error } = await supabase
       .from("chapters")
-      .select("id, story_id, chapter_number, title, content, word_count, text_r2_url")
+      .select("id, story_id, chapter_number, title, word_count, text_r2_url")
       .eq("story_id", storyId!)
       .eq("chapter_number", data.chapterNumber)
       .maybeSingle();
@@ -190,7 +190,7 @@ export const getChapter = createServerFn({ method: "GET" })
     if (!row) return null;
 
     // Chapter body may live on R2; fetch and flatten paragraphs.
-    const r = row as {
+    const r = { ...row, content: null } as {
       id: number;
       story_id: number;
       chapter_number: number;

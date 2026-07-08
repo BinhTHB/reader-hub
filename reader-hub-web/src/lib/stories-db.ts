@@ -115,13 +115,13 @@ export function useChapter(storyId: number | undefined, chapterNumber: number) {
     queryFn: async () => {
       const { data, error } = await externalSupabase
         .from("chapters")
-        .select("id, chapter_number, title, content, word_count, text_r2_url")
+        .select("id, chapter_number, title, word_count, text_r2_url")
         .eq("story_id", storyId!)
         .eq("chapter_number", chapterNumber)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
-      const row = data as ChapterRow & { text_r2_url: string | null };
+      const row = { ...data, content: null } as ChapterRow & { text_r2_url: string | null };
       // Chapter text is stored as JSON on R2; fetch and flatten paragraphs.
       if (!row.content && row.text_r2_url) {
         try {
