@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { mapStory, type DbStoryRow, type Story } from "./stories-data";
+import { mapStory, toPublicAssetUrl, type DbStoryRow, type Story } from "./stories-data";
 import { externalSupabase } from "./external-supabase";
 
 const SELECT_COLS =
@@ -201,7 +201,7 @@ export const getChapter = createServerFn({ method: "GET" })
     };
     if (!r.content && r.text_r2_url) {
       try {
-        const res = await fetch(r.text_r2_url);
+        const res = await fetch(toPublicAssetUrl(r.text_r2_url));
         if (res.ok) {
           const j = (await res.json()) as {
             paragraphs?: string[];
