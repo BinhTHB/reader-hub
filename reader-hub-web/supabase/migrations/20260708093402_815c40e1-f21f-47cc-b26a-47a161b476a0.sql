@@ -1,0 +1,1 @@
+TRUNCATE TABLE public.chapters, public.stories, public.reading_history, public.bookmarks, public.scrape_jobs RESTART IDENTITY CASCADE;
