@@ -70,6 +70,14 @@ function ReaderPage() {
   const [showSettings, setShowSettings] = useState(false);
   const [showChapters, setShowChapters] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [enableAutoScroll, setEnableAutoScroll] = useState(() => {
+    if (typeof window === "undefined") return true;
+    const saved = localStorage.getItem("reader_enableAutoScroll");
+    return saved !== "false";
+  });
+  const [sleepTimer, setSleepTimer] = useState<number | null>(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const sleepTimerEndTimeRef = useRef<number | null>(null);
 
   const ch = Number.parseInt(chapter, 10) || 1;
   const { data: chapterRow } = useChapter(s?.id, ch);
@@ -178,6 +186,72 @@ function ReaderPage() {
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
   }, [ch]);
+
+  useEffect(() => {
+    localStorage.setItem("reader_enableAutoScroll", String(enableAutoScroll));
+  }, [enableAutoScroll]);
+
+  useEffect(() => {
+    if (audioActive && audio.isPlaying && enableAutoScroll) {
+      const el = contentRef.current?.querySelector(
+        `[data-paragraph-index="${audio.currentIndex}"]`,
+      );
+      if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+  }, [audio.currentIndex, audio.isPlaying, audioActive, enableAutoScroll]);
+
+  useEffect(() => {
+    if (sleepTimer === null || !audio.isPlaying) return;
+
+    const initialSeconds = timeLeft > 0 ? timeLeft : sleepTimer * 60;
+    setTimeLeft(initialSeconds);
+    sleepTimerEndTimeRef.current = Date.now() + initialSeconds * 1000;
+
+    const timerId = setInterval(() => {
+      if (!sleepTimerEndTimeRef.current) return;
+      const remaining = Math.round((sleepTimerEndTimeRef.current - Date.now()) / 1000);
+      if (remaining <= 0) {
+        audio.pause();
+        setSleepTimer(null);
+        setTimeLeft(0);
+        sleepTimerEndTimeRef.current = null;
+      } else {
+        setTimeLeft(remaining);
+      }
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [sleepTimer, audio.isPlaying, timeLeft, audio]);
+
+  const handleParagraphClick = (i: number) => {
+    if (!s) return;
+    if (!audio.loaded || audio.storySlug !== s.slug || audio.chapter !== ch) {
+      audio.load({
+        storySlug: s.slug,
+        storyTitle: s.title,
+        author: s.author,
+        chapter: ch,
+        totalChapters: s.chapters,
+        chapterTitle: chapterHeading,
+        paragraphs,
+        cover: s.cover,
+        onPrev: () =>
+          ch > 1 &&
+          navigate({
+            to: "/truyen/$slug/chuong/$chapter",
+            params: { slug: s.slug, chapter: String(ch - 1) },
+          }),
+        onNext: () =>
+          ch < s.chapters &&
+          navigate({
+            to: "/truyen/$slug/chuong/$chapter",
+            params: { slug: s.slug, chapter: String(ch + 1) },
+          }),
+      });
+    }
+    audio.seekIndex(i);
+    if (!audio.isPlaying) audio.play();
+  };
 
   useEffect(() => {
     if (!s) return;
@@ -372,6 +446,121 @@ function ReaderPage() {
                 </div>
               </div>
             </div>
+            {audioActive && (
+              <div
+                className="border-t mx-auto grid max-w-[1200px] gap-6 px-4 py-5 md:grid-cols-3 md:px-8"
+                style={{ borderColor: t.line }}
+              >
+                <div>
+                  <p
+                    className="text-[10px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: t.muted }}
+                  >
+                    Tốc độ đọc · {audio.rate.toFixed(2)}x
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2.5"
+                      step="0.1"
+                      value={audio.rate}
+                      onChange={(e) => audio.setRate(parseFloat(e.target.value))}
+                      className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-muted"
+                      style={{ accentColor: t.fg }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <p
+                    className="text-[10px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: t.muted }}
+                  >
+                    Cao độ · {audio.pitch.toFixed(2)}
+                  </p>
+                  <div className="mt-3 flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="0.5"
+                      max="2"
+                      step="0.1"
+                      value={audio.pitch}
+                      onChange={(e) => audio.setPitch(parseFloat(e.target.value))}
+                      className="h-1 w-full cursor-pointer appearance-none rounded-lg bg-muted"
+                      style={{ accentColor: t.fg }}
+                    />
+                  </div>
+                </div>
+                <div>
+                  <p
+                    className="text-[10px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: t.muted }}
+                  >
+                    Tự động cuộn & Hẹn giờ tắt{" "}
+                    {sleepTimer && timeLeft > 0
+                      ? `(${Math.floor(timeLeft / 60)}m ${timeLeft % 60}s)`
+                      : ""}
+                  </p>
+                  <div className="mt-3 flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      {[true, false].map((v) => (
+                        <button
+                          key={String(v)}
+                          onClick={() => setEnableAutoScroll(v)}
+                          className="flex-1 rounded-md border py-1.5 text-[11px] font-medium transition"
+                          style={{
+                            borderColor: enableAutoScroll === v ? t.fg : t.line,
+                            backgroundColor: enableAutoScroll === v ? t.fg : "transparent",
+                            color: enableAutoScroll === v ? t.bg : t.fg,
+                          }}
+                        >
+                          {v ? "Cuộn: Bật" : "Cuộn: Tắt"}
+                        </button>
+                      ))}
+                    </div>
+                    <select
+                      value={sleepTimer ?? ""}
+                      onChange={(e) => {
+                        const val = e.target.value ? parseInt(e.target.value, 10) : null;
+                        setSleepTimer(val);
+                        setTimeLeft(val ? val * 60 : 0);
+                      }}
+                      className="w-full rounded-md border bg-transparent px-2 py-1.5 text-[11px] font-medium outline-none"
+                      style={{ borderColor: t.line, color: t.fg }}
+                    >
+                      <option value="" className="text-black">
+                        Hẹn giờ tắt: Không
+                      </option>
+                      {[5, 10, 15, 30, 45, 60].map((m) => (
+                        <option key={m} value={m} className="text-black">
+                          Hẹn giờ tắt: {m} phút
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="md:col-span-3">
+                  <p
+                    className="text-[10px] font-semibold uppercase tracking-[0.18em]"
+                    style={{ color: t.muted }}
+                  >
+                    Giọng đọc
+                  </p>
+                  <select
+                    value={audio.voiceURI ?? ""}
+                    onChange={(e) => audio.setVoice(e.target.value)}
+                    className="mt-3 w-full rounded-md border bg-transparent px-3 py-2 text-xs font-medium outline-none"
+                    style={{ borderColor: t.line, color: t.fg }}
+                  >
+                    {audio.voices.map((v) => (
+                      <option key={v.voiceURI} value={v.voiceURI} className="text-black">
+                        {v.name} ({v.lang})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </header>

@@ -34,6 +34,7 @@ type Ctx = {
   storySlug: string;
   cover?: string;
   rate: number;
+  pitch: number;
   voices: SpeechSynthesisVoice[];
   voiceURI: string | null;
   pipSupported: boolean;
@@ -46,6 +47,7 @@ type Ctx = {
   next: () => void;
   prev: () => void;
   setRate: (r: number) => void;
+  setPitch: (p: number) => void;
   setVoice: (uri: string) => void;
   close: () => void;
   openPiP: () => Promise<void>;
@@ -75,6 +77,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     storySlug: "",
   });
   const [rate, setRateState] = useState(1);
+  const [pitch, setPitchState] = useState(1);
   const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
   const [voiceURI, setVoiceURI] = useState<string | null>(null);
   const [pipActive, setPipActive] = useState(false);
@@ -87,12 +90,16 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
   const shouldAdvanceRef = useRef(true);
   const paragraphsRef = useRef<string[]>([]);
   const rateRef = useRef(1);
+  const pitchRef = useRef(1);
   const voiceURIRef = useRef<string | null>(null);
   const voicesRef = useRef<SpeechSynthesisVoice[]>([]);
 
   useEffect(() => {
     rateRef.current = rate;
   }, [rate]);
+  useEffect(() => {
+    pitchRef.current = pitch;
+  }, [pitch]);
   useEffect(() => {
     voiceURIRef.current = voiceURI;
   }, [voiceURI]);
@@ -133,6 +140,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     currentIdxRef.current = idx;
     const u = new SpeechSynthesisUtterance(text);
     u.rate = rateRef.current;
+    u.pitch = pitchRef.current;
     u.lang = "vi-VN";
     const v = voicesRef.current.find((x) => x.voiceURI === voiceURIRef.current);
     if (v) u.voice = v;
@@ -243,6 +251,14 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     [state.isPlaying, speakIndex],
   );
 
+  const setPitch = useCallback(
+    (p: number) => {
+      setPitchState(p);
+      if (state.isPlaying) speakIndex(currentIdxRef.current);
+    },
+    [state.isPlaying, speakIndex],
+  );
+
   const setVoice = useCallback(
     (uri: string) => {
       setVoiceURI(uri);
@@ -332,6 +348,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       storySlug: state.storySlug,
       cover: state.cover,
       rate,
+      pitch,
       voices,
       voiceURI,
       pipSupported,
@@ -344,6 +361,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       next,
       prev,
       setRate,
+      setPitch,
       setVoice,
       close,
       openPiP,
@@ -354,6 +372,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
     [
       state,
       rate,
+      pitch,
       voices,
       voiceURI,
       pipSupported,
@@ -367,6 +386,7 @@ export function AudioPlayerProvider({ children }: { children: ReactNode }) {
       next,
       prev,
       setRate,
+      setPitch,
       setVoice,
       close,
       openPiP,
