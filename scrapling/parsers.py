@@ -758,10 +758,41 @@ class TruyenDichParser(BaseSiteParser):
             
         return 1
 
+    # ── Block / trust-challenge detection ────────────────────────────────
+    # Mirrors the validated logic in scrape_production.py (TEST repo):
+    # a chapter is rejected if it is a verify-human block page (Loai B) or a
+    # trust_challenge state (Loai C, e.g. content:"" + trust_challenge:"verify_now").
+    BLOCK_MARKERS = [
+        "đang kiểm tra linh căn", "quá trình này diễn ra tự động",
+        "verify-human", "xác minh bạn là con người", "kiểm tra trình duyệt",
+    ]
+
+    @staticmethod
+    def is_hiero_char(ch: str) -> bool:
+        c = ord(ch)
+        return 0x13000 <= c <= 0x1342F
+
+    @classmethod
+    def is_blocked(cls, raw: str) -> bool:
+        low = (raw or "").lower()
+        if any(m in low for m in cls.BLOCK_MARKERS):
+            return True
+        if sum(1 for ch in (raw or "") if cls.is_hiero_char(ch)) > 500:
+            return True
+        return False
+
+    @classmethod
+    def is_trust_challenge(cls, raw: str) -> bool:
+        return ('"trust_challenge"' in raw) or ('trust_challenge:' in raw)
+
     def parse_chapter_content(self, html: str) -> dict:
         """
         Extract clean Vietnamese paragraphs by filtering out Egyptian Hieroglyph
         decoys (U+13000..U+1342F) across JSON API and HTML pages.
+
+        Returns a dict with an extra ``blocked``/``reason`` key when the page is
+        a verify-human block page (Loai B) or a trust_challenge state (Loai C),
+        so the caller can rotate proxy / retry instead of writing an empty chapter.
         """
         raw_text_or_html = html
         title = ""
@@ -777,6 +808,20 @@ class TruyenDichParser(BaseSiteParser):
                     raw_text_or_html = raw_content
         except (json.JSONDecodeError, TypeError):
             pass
+
+        # 2. Reject verify-human block pages (Loai B) and trust_challenge
+        #    states (Loai C, e.g. content:"" + trust_challenge:"verify_now").
+        #    Returning a flagged dict lets the caller rotate proxy / retry
+        #    instead of silently writing an empty chapter.
+        if self.is_blocked(html) or self.is_trust_challenge(html):
+            reason = "trust_challenge" if self.is_trust_challenge(html) else "block_page"
+            return {
+                "title": title,
+                "paragraphs": [],
+                "word_count": 0,
+                "blocked": True,
+                "reason": reason,
+            }
 
         soup = BeautifulSoup(raw_text_or_html, "lxml")
 

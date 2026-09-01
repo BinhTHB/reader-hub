@@ -1063,6 +1063,9 @@ def run_scraper():
                                 api_resp = sess.fetch(api_url)
                                 if api_resp.status == 200:
                                     api_content = parser.parse_chapter_content(api_resp.body)
+                                    if api_content.get("blocked"):
+                                        # Loai B/C detected -> force proxy rotation/retry
+                                        raise Exception(f"blocked chapter (api cv): {api_content.get('reason')}")
                                     if api_content["paragraphs"]:
                                         return api_content
                             except Exception:
@@ -1073,6 +1076,8 @@ def run_scraper():
                                 ch_resp = sess.fetch(ch_info["source_url"])
                                 if ch_resp.status == 200:
                                     html_content = parser.parse_chapter_content(ch_resp.body)
+                                    if html_content.get("blocked"):
+                                        raise Exception(f"blocked chapter (html): {html_content.get('reason')}")
                                     if html_content["paragraphs"]:
                                         return html_content
                             except Exception:
@@ -1089,6 +1094,8 @@ def run_scraper():
                                     api_resp_ai = sess.fetch(api_url_ai)
                                     if api_resp_ai.status == 200:
                                         ai_content = parser.parse_chapter_content(api_resp_ai.body)
+                                        if ai_content.get("blocked"):
+                                            raise Exception(f"blocked chapter (api ai): {ai_content.get('reason')}")
                                         if ai_content["paragraphs"]:
                                             return ai_content
                                 except Exception:
