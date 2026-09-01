@@ -805,10 +805,25 @@ def run_scraper():
             if parser.name == "truyendich":
                 from bs4 import BeautifulSoup
                 import re
+                import json
                 
                 max_chapter = 50
-                soup = BeautifulSoup(response.body, "lxml")
+                slug = parser.extract_slug(story_info.get("source_url", STORY_SOURCE_URL))
                 
+                # 1. Try reading total from API /api/novels/{slug}/chapters
+                try:
+                    list_api_url = parser.get_chapter_list_api_url(story_info.get("source_url", STORY_SOURCE_URL), size=50)
+                    list_resp = session.fetch(list_api_url)
+                    if list_resp.status == 200:
+                        list_data = json.loads(list_resp.body.strip())
+                        total = list_data.get("total", 0)
+                        if total and total > 0:
+                            max_chapter = max(max_chapter, int(total))
+                except Exception:
+                    pass
+
+                # 2. Extract from Next.js payload or HTML buttons
+                soup = BeautifulSoup(response.body, "lxml")
                 buttons = soup.find_all("button")
                 for btn in buttons:
                     text = parser.clean_text(btn.get_text())
@@ -1036,6 +1051,24 @@ def run_scraper():
 
                 try:
                     def get_chapter_content(sess):
+                        # For TruyenDich, try direct JSON API first (fast & clean plaintext)
+                        if parser.name == "truyendich":
+                            try:
+                                is_cv = "/cv/" in story_info.get("source_url", STORY_SOURCE_URL)
+                                api_url = parser.get_chapter_api_url(
+                                    story_info.get("source_url", STORY_SOURCE_URL),
+                                    ch_num,
+                                    edition_type="cv" if is_cv else None
+                                )
+                                api_resp = sess.fetch(api_url)
+                                if api_resp.status == 200:
+                                    api_content = parser.parse_chapter_content(api_resp.body)
+                                    if api_content["paragraphs"]:
+                                        return api_content
+                            except Exception:
+                                pass
+
+                        # Fetch HTML page
                         ch_resp = sess.fetch(ch_info["source_url"])
                         if ch_resp.status != 200:
                             raise RuntimeError(f"HTTP {ch_resp.status}")

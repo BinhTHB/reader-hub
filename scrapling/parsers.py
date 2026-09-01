@@ -646,7 +646,55 @@ class TruyenDichParser(BaseSiteParser):
             "source_name": self.name,
         }
 
+    def extract_slug(self, url: str) -> str:
+        clean_url = url.split("?")[0].split("#")[0].rstrip("/")
+        match = re.search(r"/(?:doc-truyen/(?:cv/)?|api/novels/)([^/]+)", clean_url)
+        if match:
+            return match.group(1)
+        return clean_url.split("/")[-1]
+
+    def get_chapter_api_url(self, story_url: str, chapter_number: int, edition_type: str = None) -> str:
+        from urllib.parse import urlparse
+        parsed = urlparse(story_url)
+        base = f"{parsed.scheme}://{parsed.netloc}" if (parsed.scheme and parsed.netloc) else (self.base_url or "https://truyendich.space")
+        slug = self.extract_slug(story_url)
+        api_url = f"{base}/api/novels/{slug}/chapters/{chapter_number}"
+        if edition_type:
+            api_url += f"?edition_type={edition_type}"
+        return api_url
+
+    def get_chapter_list_api_url(self, story_url: str, size: int = 200, edition_type: str = None) -> str:
+        from urllib.parse import urlparse
+        parsed = urlparse(story_url)
+        base = f"{parsed.scheme}://{parsed.netloc}" if (parsed.scheme and parsed.netloc) else (self.base_url or "https://truyendich.space")
+        slug = self.extract_slug(story_url)
+        api_url = f"{base}/api/novels/{slug}/chapters?size={size}"
+        if edition_type:
+            api_url += f"&edition_type={edition_type}"
+        return api_url
+
     def parse_chapter_list(self, html: str) -> list[dict]:
+        # 1. Try JSON list response
+        try:
+            import json
+            data = json.loads(html.strip())
+            if isinstance(data, dict) and "items" in data:
+                chapters = []
+                for item in data.get("items", []):
+                    ch_num = item.get("chapter_number")
+                    title = self.clean_text(item.get("title") or f"Chương {ch_num}")
+                    if ch_num is not None:
+                        chapters.append({
+                            "chapter_number": ch_num,
+                            "title": title,
+                            "source_url": self.make_absolute(f"/doc-truyen/chuong-{ch_num}"),
+                        })
+                if chapters:
+                    return chapters
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # 2. Fallback to HTML
         page = Selector(html)
         chapters = []
 
@@ -711,6 +759,43 @@ class TruyenDichParser(BaseSiteParser):
         return 1
 
     def parse_chapter_content(self, html: str) -> dict:
+        # 1. Direct JSON API response parsing
+        try:
+            import json
+            data = json.loads(html.strip())
+            if isinstance(data, dict) and ("content" in data or "chapter_number" in data):
+                title = self.clean_text(data.get("title") or "")
+                raw_content = data.get("content", "") or ""
+                if raw_content:
+                    if "<" in raw_content and ">" in raw_content:
+                        soup = BeautifulSoup(raw_content, "lxml")
+                        for tag in soup.find_all(["script", "style", "ins", "iframe", "noscript"]):
+                            tag.decompose()
+                        for br in soup.find_all("br"):
+                            br.replace_with("\n")
+                        for p in soup.find_all("p"):
+                            p.append("\n")
+                        text_content = soup.get_text(separator="\n")
+                    else:
+                        text_content = raw_content
+
+                    paragraphs = []
+                    for line in text_content.split("\n"):
+                        cleaned = self.clean_text(line)
+                        if cleaned and len(cleaned) > 1:
+                            paragraphs.append(cleaned)
+
+                    word_count = sum(len(p.split()) for p in paragraphs)
+                    if paragraphs:
+                        return {
+                            "title": title,
+                            "paragraphs": paragraphs,
+                            "word_count": word_count
+                        }
+        except (json.JSONDecodeError, TypeError):
+            pass
+
+        # 2. HTML Fallback parsing
         page = Selector(html)
 
         title_el = page.css("h1, h2, .chapter-title")
