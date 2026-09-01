@@ -834,7 +834,7 @@ def run_scraper():
                 
                 print(f"  ⚡ Programmatic list generation: latest chapter is {max_chapter}")
                 all_chapters = []
-                base_url = STORY_SOURCE_URL.rstrip('/')
+                base_url = story_info.get("source_url", STORY_SOURCE_URL).rstrip('/')
                 for ch_num in range(1, max_chapter + 1):
                     all_chapters.append({
                         "chapter_number": ch_num,

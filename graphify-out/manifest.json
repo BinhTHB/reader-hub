@@ -395,8 +395,8 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\scrapling\\scraper.py": {
-    "mtime": 1782404798.7891166,
-    "ast_hash": "4dbedb0e39f51a6bcf935ad2afd0f4a4",
+    "mtime": 1782409624.4324696,
+    "ast_hash": "af98339c74c28fff13e10e65908f9765",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\scrapling\\search_sources.py": {
@@ -410,8 +410,8 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\scrapling\\supabase_client.py": {
-    "mtime": 1782128252.1366246,
-    "ast_hash": "d205de07bf8581de4920fabbca09ff37",
+    "mtime": 1782409556.4192488,
+    "ast_hash": "cee04c6d9a6df143327ed058848231b4",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\scrapling\\test_local.py": {
@@ -500,7 +500,7 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\capacitor.settings.gradle": {
-    "mtime": 1782394359.1464255,
+    "mtime": 1782451964.0197704,
     "ast_hash": "fd1d1d8ca73d11ce51aac56b690bceb3",
     "semantic_hash": ""
   },
@@ -525,7 +525,7 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\app\\capacitor.build.gradle": {
-    "mtime": 1782394359.1464255,
+    "mtime": 1782451964.0197704,
     "ast_hash": "28f33845ea9c156714f0fb555c993184",
     "semantic_hash": ""
   },
@@ -535,22 +535,22 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\capacitor.config.json": {
-    "mtime": 1782394359.0778978,
+    "mtime": 1782451963.9267707,
     "ast_hash": "0fd90292a6491972a7c502de6d4708cc",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\capacitor.plugins.json": {
-    "mtime": 1782394359.1284258,
+    "mtime": 1782451963.98177,
     "ast_hash": "359985031ba29d8b0055519064780077",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\cordova.js": {
-    "mtime": 1782394359.1444273,
+    "mtime": 1782451964.0177717,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\cordova_plugins.js": {
-    "mtime": 1782394359.1444273,
+    "mtime": 1782451964.0177717,
     "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
     "semantic_hash": ""
   },
@@ -580,12 +580,12 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\capacitor-cordova-android-plugins\\build.gradle": {
-    "mtime": 1782394359.147424,
+    "mtime": 1782451964.0207705,
     "ast_hash": "2af61653d70c95d20802c8b5c433ba90",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\capacitor-cordova-android-plugins\\cordova.variables.gradle": {
-    "mtime": 1782394359.1484268,
+    "mtime": 1782451964.021771,
     "ast_hash": "d2372a0ae9aa60abb8d03e7f06bf9194",
     "semantic_hash": ""
   },
@@ -895,8 +895,8 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\src\\app\\screens\\ReadingScreen.tsx": {
-    "mtime": 1782394318.4000313,
-    "ast_hash": "6d87fc39da55862626b098d5de30da87",
+    "mtime": 1782451708.1233554,
+    "ast_hash": "53c5862846b26b6bed71afcb91d9249e",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\src\\app\\screens\\ScrapeScreen.tsx": {
@@ -945,8 +945,8 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\AGENTS.md": {
-    "mtime": 1780921883.7170472,
-    "ast_hash": "ab7fbc6b26a6f6695787cb53bc5cee79",
+    "mtime": 1783510141.2794654,
+    "ast_hash": "79756d3ae19186873e43243fa48f21eb",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\CONTEXT.md": {
@@ -1090,8 +1090,8 @@
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\index.html": {
-    "mtime": 1782394351.1942341,
-    "ast_hash": "dda2da1b5b0794ea52349367534e9949",
+    "mtime": 1782451962.576556,
+    "ast_hash": "014e71a0ea74e5d9efde1f5d139d1906",
     "semantic_hash": ""
   },
   "E:\\projects\\reader-hub\\web_react\\guidelines\\Guidelines.md": {
@@ -1419,21 +1419,6 @@
     "ast_hash": "2e5b50f7a324956946e1054ef5db3709",
     "semantic_hash": ""
   },
-  "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\index-IvVqp-Vx.js": {
-    "mtime": 1782394351.1932578,
-    "ast_hash": "3da9e68d62adabd79fd6698b4195cff0",
-    "semantic_hash": ""
-  },
-  "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\web-CGomY-XQ.js": {
-    "mtime": 1782394351.1932578,
-    "ast_hash": "e628e0a9300ab381885b4c1aadc271d1",
-    "semantic_hash": ""
-  },
-  "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\web-DmM7b47_.js": {
-    "mtime": 1782394351.1942341,
-    "ast_hash": "895b0170bb450a9710d6c65fb768d0fb",
-    "semantic_hash": ""
-  },
   "E:\\projects\\reader-hub\\web_react\\src\\lib\\chapterCache.ts": {
     "mtime": 1782394265.5042815,
     "ast_hash": "9968c0cdc098721fff2dc85d7476853a",
@@ -1442,6 +1427,961 @@
   "E:\\projects\\reader-hub\\scrapling\\backfill_source_url.py": {
     "mtime": 1782406008.570226,
     "ast_hash": "3d9abfe6010fe3e74c99663779dabe37",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\components.json": {
+    "mtime": 1783507035.1912582,
+    "ast_hash": "d9a5358de725b840c808a17fa6638620",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\eslint.config.js": {
+    "mtime": 1783507035.1912582,
+    "ast_hash": "20097f0c1a669549b3a8d3a194c3c25d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\package.json": {
+    "mtime": 1783507035.1912582,
+    "ast_hash": "799690892a0a7c76953154ddc18cb4bf",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\tsconfig.json": {
+    "mtime": 1783507035.2162838,
+    "ast_hash": "662721996bc74d1469c21a681e37be5e",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\vite.config.ts": {
+    "mtime": 1783507035.2162838,
+    "ast_hash": "b4e8af3f0f230eee39d6bd32d195195f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.lovable\\project.json": {
+    "mtime": 1783507035.1892467,
+    "ast_hash": "815dc27d5103bcb4256fb17baa56c2af",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\nitro.json": {
+    "mtime": 1783514652.7894747,
+    "ast_hash": "01b7e1442b0d65719dbc239d567e4b94",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\package.json": {
+    "mtime": 1783514652.7854743,
+    "ast_hash": "365f1ddc30e8bfb9e088a24b703c47d1",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\arrow-right-QZWgzkjd.js": {
+    "mtime": 1783514650.3920503,
+    "ast_hash": "a7fd6ce34e33f6aeed7b9c7686f8dc42",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\arrow-up-right-Dp48ClIT.js": {
+    "mtime": 1783514650.393051,
+    "ast_hash": "7882370d3d274332af51be5c1ef51548",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\chan-doan-EAH20ufz.js": {
+    "mtime": 1783514650.3953216,
+    "ast_hash": "260b43d77e247b13c6b9eaf8528dc5da",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\createLucideIcon-hvWhMttO.js": {
+    "mtime": 1783514650.3963296,
+    "ast_hash": "151de49fbb625103ebf9fb5be51c4a31",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\heart-Di7yPv8n.js": {
+    "mtime": 1783514650.3963296,
+    "ast_hash": "59941e69acfd9ce54f6f53bf58850f03",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\jsx-runtime-DGeXAQPT.js": {
+    "mtime": 1783514650.3963296,
+    "ast_hash": "aa0678e84261a353f4fc9a7e2115b8ae",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\link-ItyTNnq8.js": {
+    "mtime": 1783514650.39733,
+    "ast_hash": "15ea77c530e72495d4f3a8079018bb5d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\redirect-C-eRQtnH.js": {
+    "mtime": 1783514650.39733,
+    "ast_hash": "ff005654f3c00945bf69e2136c16ab5d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\star-Bx_1_9Iz.js": {
+    "mtime": 1783514650.3983293,
+    "ast_hash": "bb8ca6a5305cb97806b91edb1ba6d049",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\truyen._slug_.chuong._chapter-ByfhkaiZ.js": {
+    "mtime": 1783514650.4017825,
+    "ast_hash": "8741ed14be0c31a812aca199ece9bf32",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\truyen._slug_.chuong._chapter-CMrySn72.js": {
+    "mtime": 1783514650.4030712,
+    "ast_hash": "1f2fa706420410052f2c4fc395c1d18e",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\truyen._slug_.chuong._chapter-Dmy4h7MV.js": {
+    "mtime": 1783514650.4030712,
+    "ast_hash": "0f5f0c20ec54193763d351091eecd25f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\use-auth-Cd3c0q-x.js": {
+    "mtime": 1783514650.4040697,
+    "ast_hash": "c3262e2767aba17c72051015d287b7f1",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\useRouter-Buw3_9xO.js": {
+    "mtime": 1783514650.405071,
+    "ast_hash": "0bc16ec1b1efb6f7237c6bb67f3d6624",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\index.mjs": {
+    "mtime": 1783514652.7264569,
+    "ast_hash": "8226dd208547e9dd91733b838ef1c27f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\wrangler.json": {
+    "mtime": 1783514652.7814744,
+    "ast_hash": "11d3e6961e55ff3cbc5b88b4bb8d9596",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_runtime.mjs": {
+    "mtime": 1783514652.737753,
+    "ast_hash": "c31bfb7547d0e9a2b9e19ae25814535d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_chunks\\ssr-renderer.mjs": {
+    "mtime": 1783514652.7274518,
+    "ast_hash": "77f8deec36ed6e5278f9cc6cccc2358f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\h3+rou3+srvx.mjs": {
+    "mtime": 1783514652.730625,
+    "ast_hash": "ab25621ad7fd5daaeb69c449ebb3a7bb",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\h3-v2+rou3.mjs": {
+    "mtime": 1783514652.730625,
+    "ast_hash": "7ed3346458f7d677f2f7fcef16855034",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\hookable.mjs": {
+    "mtime": 1783514652.730625,
+    "ast_hash": "e9b4b75ebb0859c18181525c5d245c35",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\lucide-react.mjs": {
+    "mtime": 1783514652.730625,
+    "ast_hash": "0366a6203c3c4b44e0ba6a41a035a515",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\react+tanstack__react-query.mjs": {
+    "mtime": 1783514652.730625,
+    "ast_hash": "f20671e954b0ed17827524808be1a541",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\supabase__auth-js+tslib.mjs": {
+    "mtime": 1783514652.730625,
+    "ast_hash": "da8b2624d4bd712f957a0fc33f78ec6c",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\supabase__functions-js.mjs": {
+    "mtime": 1783514652.730625,
+    "ast_hash": "4280c3bd66eccae377cd6c9f82a05eb2",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\supabase__phoenix.mjs": {
+    "mtime": 1783514652.734411,
+    "ast_hash": "14b2eeb6dbd4aa16d13652ddde176bb5",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\supabase__postgrest-js.mjs": {
+    "mtime": 1783514652.734411,
+    "ast_hash": "93299d9b3900b32a6c71841fc6f0ea9a",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\supabase__realtime-js+unenv.mjs": {
+    "mtime": 1783514652.7354198,
+    "ast_hash": "38b4aa4e1bcaa528c5cd17cc63aa3106",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\supabase__supabase-js.mjs": {
+    "mtime": 1783514652.7354198,
+    "ast_hash": "5459b13eeffe4f62edcd53f431e01c89",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\tanstack__history.mjs": {
+    "mtime": 1783514652.7354198,
+    "ast_hash": "dc9e269510fc641cf0762a9aa3375d0d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\tanstack__query-core.mjs": {
+    "mtime": 1783514652.7354198,
+    "ast_hash": "68b19d90c9d3242c0acac97a793fb1b6",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\zod.mjs": {
+    "mtime": 1783514652.736745,
+    "ast_hash": "020a1bcff26bfaedf8e1f6c566bb1d3b",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\@supabase\\storage-js+[...].mjs": {
+    "mtime": 1783514652.7284527,
+    "ast_hash": "c0950bca3328ac8f448b8b40063f040b",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\@tanstack\\react-router+[...].mjs": {
+    "mtime": 1783514652.7284527,
+    "ast_hash": "6ba6fef74f284367845b9a0888aafaf2",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_libs\\@tanstack\\router-core+[...].mjs": {
+    "mtime": 1783514652.7284527,
+    "ast_hash": "b014d64551b961efa9c1b98986352df1",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\auth-Pqj9VNmp.mjs": {
+    "mtime": 1783514652.7388732,
+    "ast_hash": "52e8a2c3fb48d4a7d1ee213dc8499e03",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\chan-doan-C1_pYMAf.mjs": {
+    "mtime": 1783514652.7398844,
+    "ast_hash": "20f3ae515f94f2d10fffbef48d8a42e8",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\chan-doan-D6kuv22D.mjs": {
+    "mtime": 1783514652.7408824,
+    "ast_hash": "00f46b97bedec1273f415469c19970a1",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\client-Be5lcrAo.mjs": {
+    "mtime": 1783514652.7418847,
+    "ast_hash": "c78dc560b63b65ef5da06098312d0950",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\createServerRpc-WJgk8O8C.mjs": {
+    "mtime": 1783514652.7418847,
+    "ast_hash": "284e504d795ff7375e2db7708d90f541",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\createStart-Dt05N14y.mjs": {
+    "mtime": 1783514652.7430718,
+    "ast_hash": "d83efc3af62b39e478ad9941faa88f9a",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\diagnostics.functions-xkaxF4Il.mjs": {
+    "mtime": 1783514652.7430718,
+    "ast_hash": "31e6da9f20fb957a9b1d019e103d95d2",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\empty-plugin-adapters-D9UWiqvJ.mjs": {
+    "mtime": 1783514652.7430718,
+    "ast_hash": "079b4f8cadd6230f6c65e3611d478334",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\esm-Dova13aH.mjs": {
+    "mtime": 1783514652.7440803,
+    "ast_hash": "875d069c698e23e162443774f96ecd01",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\external-supabase-DPykNydv.mjs": {
+    "mtime": 1783514652.7440803,
+    "ast_hash": "101b940bb822e1c9f242bbaa057a6fba",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\site-layout-0gb8gTIS.mjs": {
+    "mtime": 1783514652.7460823,
+    "ast_hash": "681ad7b42fc36ff59aa45e3036f7ec4b",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\ssr.mjs": {
+    "mtime": 1783514652.7460823,
+    "ast_hash": "b1ec955d45b7d5c60b7119206e4f69f7",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\start-BGslNGRg.mjs": {
+    "mtime": 1783514652.7460823,
+    "ast_hash": "25d4dd56bc744b4a9ee5d67a1c8af1fe",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\stories-data-080FEKQQ.mjs": {
+    "mtime": 1783514652.7470808,
+    "ast_hash": "42629feae3256e0d0f785753195f0668",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\the-loai._slug-2Hq0GuhW.mjs": {
+    "mtime": 1783514652.748081,
+    "ast_hash": "0e894a501e70faef68cb57a13006caae",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen._slug-u4fuav_b.mjs": {
+    "mtime": 1783514652.751081,
+    "ast_hash": "1161b89cb74750a0ccf0495629b7fd16",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen._slug_.chuong._chapter-B8IGkNj5.mjs": {
+    "mtime": 1783514652.752082,
+    "ast_hash": "1912231b1afda874ab25f8a9b205213d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen._slug_.chuong._chapter-BDfWb-YN.mjs": {
+    "mtime": 1783514652.752082,
+    "ast_hash": "81f12c85f30a8549aa7f98a93c94b3a7",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen2._slug_.chuong._chapter-BtJ9fqx2.mjs": {
+    "mtime": 1783514652.753352,
+    "ast_hash": "ebc717dcb1f6de4ce7ff96b2c0305e0f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\use-auth-CHmFoRb8.mjs": {
+    "mtime": 1783514652.7543523,
+    "ast_hash": "77b6642da720bc43dc276da8708b284a",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.wrangler\\deploy\\config.json": {
+    "mtime": 1783514652.7824728,
+    "ast_hash": "9147d800e8276e89d04c817604df9cda",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\router.tsx": {
+    "mtime": 1783507035.2114327,
+    "ast_hash": "1399708ae830799467737d473ea53a30",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routeTree.gen.ts": {
+    "mtime": 1783508139.992904,
+    "ast_hash": "7d1972480111e01a91e25c612e9ccce1",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\server.ts": {
+    "mtime": 1783507035.2137785,
+    "ast_hash": "2df9e6eef196729ff47146962fd38714",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\start.ts": {
+    "mtime": 1783507035.2137785,
+    "ast_hash": "aa01f67c91855fafedcd229168fba76a",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\mini-player.tsx": {
+    "mtime": 1783510332.863017,
+    "ast_hash": "2394a4859a68222a890eb6cfed52c713",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\site-layout.tsx": {
+    "mtime": 1783510332.863017,
+    "ast_hash": "67c2c31934f6eb440d6ed3dd161ffeeb",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\accordion.tsx": {
+    "mtime": 1783507035.1944807,
+    "ast_hash": "8ecf0fa176c31be17b45a60ee2e758b6",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\alert-dialog.tsx": {
+    "mtime": 1783507035.1944807,
+    "ast_hash": "d93a897b2af34657fc5ba1d1db303095",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\alert.tsx": {
+    "mtime": 1783507035.1944807,
+    "ast_hash": "5a6d7c9719435e87ba5605fb5e7b0dc9",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\aspect-ratio.tsx": {
+    "mtime": 1783507035.1944807,
+    "ast_hash": "14c12661aad8c80328c86a18b506c088",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\avatar.tsx": {
+    "mtime": 1783507035.1944807,
+    "ast_hash": "1c3bd25e3806bbc82f9513b789b14a30",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\badge.tsx": {
+    "mtime": 1783507035.1944807,
+    "ast_hash": "f712eba47d4263bea5f224eacc090cb0",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\breadcrumb.tsx": {
+    "mtime": 1783507035.1959884,
+    "ast_hash": "53f1ec4c38907530050142e3afa85cc7",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\button.tsx": {
+    "mtime": 1783507035.1959884,
+    "ast_hash": "b45e483db7e5f192b347a86e486e5335",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\calendar.tsx": {
+    "mtime": 1783507035.1959884,
+    "ast_hash": "96e6b176a517edb8b0facbb922a8c78c",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\card.tsx": {
+    "mtime": 1783507035.1959884,
+    "ast_hash": "053803f00d677727a20ac1af41ee599c",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\carousel.tsx": {
+    "mtime": 1783507035.1959884,
+    "ast_hash": "36dd085e09dbc3fe793c1708a6821204",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\chart.tsx": {
+    "mtime": 1783507035.197101,
+    "ast_hash": "e5bff896623339713c67d40cd8b8a74a",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\checkbox.tsx": {
+    "mtime": 1783507035.197101,
+    "ast_hash": "f365b7eb8243d81cb5eab455675212ac",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\collapsible.tsx": {
+    "mtime": 1783507035.1981068,
+    "ast_hash": "eda123bd06c97202f8cf1483e62d1580",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\command.tsx": {
+    "mtime": 1783507035.1981068,
+    "ast_hash": "9eba05d7f5d3fcfd642d9affb10b75c7",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\context-menu.tsx": {
+    "mtime": 1783507035.1981068,
+    "ast_hash": "69270233091977e4dc575681b1ba3e87",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\dialog.tsx": {
+    "mtime": 1783507035.1981068,
+    "ast_hash": "79b74d5876df6c4d696734273de5390a",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\drawer.tsx": {
+    "mtime": 1783507035.1991012,
+    "ast_hash": "ec99714627829d4a2ce0b03f3e2b3335",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\dropdown-menu.tsx": {
+    "mtime": 1783507035.1991012,
+    "ast_hash": "1ae2005dbe29a013829fea9a6f1c67a6",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\form.tsx": {
+    "mtime": 1783507035.1991012,
+    "ast_hash": "5a003832fca7d213e5b805ec214d819c",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\hover-card.tsx": {
+    "mtime": 1783507035.1996093,
+    "ast_hash": "82b2422c27dad853935c901f46966914",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\input-otp.tsx": {
+    "mtime": 1783507035.1996093,
+    "ast_hash": "d2323e8455e70b784db91ae646529481",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\input.tsx": {
+    "mtime": 1783507035.1996093,
+    "ast_hash": "bc58ae801e789ef86349bf93809c3534",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\label.tsx": {
+    "mtime": 1783507035.1996093,
+    "ast_hash": "919969cdd3255dc8aaed6ea15dc75166",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\menubar.tsx": {
+    "mtime": 1783507035.1996093,
+    "ast_hash": "ac230528a1a992f476ed8f5706a10763",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\navigation-menu.tsx": {
+    "mtime": 1783507035.200629,
+    "ast_hash": "c2b62d8c6898c6c5a15f50ce2c29b995",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\pagination.tsx": {
+    "mtime": 1783507035.200629,
+    "ast_hash": "0e8f9422cf3b259d1cfa8ff36bf8363c",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\popover.tsx": {
+    "mtime": 1783507035.200629,
+    "ast_hash": "4db76837576da0621b5810d9bea6767f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\progress.tsx": {
+    "mtime": 1783507035.2016158,
+    "ast_hash": "77b2feba9a66fc89497a042b982bf7a1",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\radio-group.tsx": {
+    "mtime": 1783507035.2016158,
+    "ast_hash": "b568877d2661e29b775d52222ed7e121",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\resizable.tsx": {
+    "mtime": 1783507035.2016158,
+    "ast_hash": "1f93a1a9c4b1e770e17a34dcf67e939b",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\scroll-area.tsx": {
+    "mtime": 1783507035.2016158,
+    "ast_hash": "004b51b8d40b7518596df3be92da6a17",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\select.tsx": {
+    "mtime": 1783507035.2027404,
+    "ast_hash": "030580ae0c255538eca1667d9987703d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\separator.tsx": {
+    "mtime": 1783507035.2027404,
+    "ast_hash": "81c2922b4be835b7455accbff8ec0ecd",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\sheet.tsx": {
+    "mtime": 1783507035.2027404,
+    "ast_hash": "a9760583b48b4192927e8f26bb2ef318",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\sidebar.tsx": {
+    "mtime": 1783507035.2036154,
+    "ast_hash": "c7d7b7b0d8159cf245eb67638a4b0a29",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\skeleton.tsx": {
+    "mtime": 1783507035.2036154,
+    "ast_hash": "07675852ac2c3e4380129369a31cb44d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\slider.tsx": {
+    "mtime": 1783507035.2036154,
+    "ast_hash": "f51437b9ee04349e8af16e6366c28fee",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\sonner.tsx": {
+    "mtime": 1783507035.2036154,
+    "ast_hash": "bdd1b9b20e6cd7b6977d371849d4c1e9",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\switch.tsx": {
+    "mtime": 1783507035.2036154,
+    "ast_hash": "e36f4816956e06b38f81a563297acb8f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\table.tsx": {
+    "mtime": 1783507035.2036154,
+    "ast_hash": "51562ced5e90e7352ed2694c903bd0d3",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\tabs.tsx": {
+    "mtime": 1783507035.2046163,
+    "ast_hash": "4175d0116efa9e701513e864bbdfae85",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\textarea.tsx": {
+    "mtime": 1783507035.2046163,
+    "ast_hash": "1b230007443ef12f365fbd94d443ea5c",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\toggle-group.tsx": {
+    "mtime": 1783507035.2072594,
+    "ast_hash": "e1a2ed5eafef66716f034692f9ad46f4",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\toggle.tsx": {
+    "mtime": 1783507035.2072594,
+    "ast_hash": "b411abadaeca033bc272e0f2c2e84238",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\components\\ui\\tooltip.tsx": {
+    "mtime": 1783507035.208179,
+    "ast_hash": "6dd894a539d5f97a0615c049be79a355",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\hooks\\use-auth.ts": {
+    "mtime": 1783507035.208179,
+    "ast_hash": "14bd0540e8523a5bc01207099175925e",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\hooks\\use-mobile.tsx": {
+    "mtime": 1783507035.208179,
+    "ast_hash": "1bb3ebac7752b497a78d34e341975bbd",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\integrations\\supabase\\auth-attacher.ts": {
+    "mtime": 1783510332.863017,
+    "ast_hash": "ad1e16ae8b3d42a32a5a667e336b46ab",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\integrations\\supabase\\auth-middleware.ts": {
+    "mtime": 1783510332.863017,
+    "ast_hash": "b99f79402bcc8b04e40232ddc61d2168",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\integrations\\supabase\\client.server.ts": {
+    "mtime": 1783510332.863017,
+    "ast_hash": "c9de5b763001e7a439bc49c3a1dd0680",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\integrations\\supabase\\client.ts": {
+    "mtime": 1783510332.863017,
+    "ast_hash": "4be29ae872e3fa083770bfe83256c281",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\integrations\\supabase\\types.ts": {
+    "mtime": 1783510332.863017,
+    "ast_hash": "80e3cca5dd7e76becedef7879d2bbb0a",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\audio-player.tsx": {
+    "mtime": 1783514433.6976862,
+    "ast_hash": "e76851accd91c81709924682bcec4424",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\diagnostics.functions.ts": {
+    "mtime": 1783510332.863017,
+    "ast_hash": "1b732b8c6b67bf66f19acb09172cc13f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\error-capture.ts": {
+    "mtime": 1783507035.2101793,
+    "ast_hash": "1d158c2d639c781546da5f816c39f48d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\error-page.ts": {
+    "mtime": 1783507035.2101793,
+    "ast_hash": "cc10be665a4bf6be668d0c29c207b92d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\external-supabase.ts": {
+    "mtime": 1783513432.3219976,
+    "ast_hash": "45467824b724e9eddc6ebfd21bde0324",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\lovable-error-reporting.ts": {
+    "mtime": 1783507035.2101793,
+    "ast_hash": "b49ff1965eef0c8a30e88ae6d2b54fb9",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\stories-data.ts": {
+    "mtime": 1783509858.2272737,
+    "ast_hash": "d919cb4174b8d1a09e1264a6d64937dc",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\stories-db.ts": {
+    "mtime": 1783513361.1301413,
+    "ast_hash": "8cf4b8381e0e3f480414d4c7036601f1",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\stories.functions.ts": {
+    "mtime": 1783513361.1079652,
+    "ast_hash": "b65df1f75c3bf7d9fd6005cbc27a6a4e",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\lib\\utils.ts": {
+    "mtime": 1783507035.2114327,
+    "ast_hash": "e3f848f1b39f863e6164cf58b5a8e752",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\auth.tsx": {
+    "mtime": 1783510332.8640256,
+    "ast_hash": "71304ab0db311c50467994535f508df0",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\bang-xep-hang.tsx": {
+    "mtime": 1783510332.8640256,
+    "ast_hash": "2fd6d33ac5b461eaf67cc8fd7908e7c5",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\ca-nhan.tsx": {
+    "mtime": 1783510332.8640256,
+    "ast_hash": "9fe57ae8358210eb082673605bb04026",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\chan-doan.tsx": {
+    "mtime": 1783510400.7879763,
+    "ast_hash": "d4b82521fa9f1fedd2946d6aa0440884",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\index.tsx": {
+    "mtime": 1783510332.8640256,
+    "ast_hash": "9ee19633125e905932038bb527ab5f0d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\the-loai.$slug.tsx": {
+    "mtime": 1783510332.8640256,
+    "ast_hash": "891748879a4b6a4e98987c4487782dd6",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\the-loai.tsx": {
+    "mtime": 1783510332.8640256,
+    "ast_hash": "f0155bfa8ea659921146c1ed0168ac2b",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\truyen.$slug.tsx": {
+    "mtime": 1783510332.8640256,
+    "ast_hash": "8d1451d44b90faa50122433836ed1c5d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\truyen.$slug_.chuong.$chapter.tsx": {
+    "mtime": 1783514598.288444,
+    "ast_hash": "e580c3c42d1b724c8a45e5d991d85ced",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\__root.tsx": {
+    "mtime": 1783510332.8640256,
+    "ast_hash": "93e2dc5ad73828a2c4b9a8b14d982f36",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\supabase\\migrations\\20260708092341_e7252efd-7ef6-4ece-ad63-65e93d1680d2.sql": {
+    "mtime": 1783507035.214781,
+    "ast_hash": "ae4894c4104b97312ce1ad504e68c91f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\supabase\\migrations\\20260708092457_fb0e59d3-cd95-440f-852b-85d8c614801f.sql": {
+    "mtime": 1783507035.214781,
+    "ast_hash": "83a8da27a8e9907d308e7d7d8a6ceb5f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\supabase\\migrations\\20260708093402_815c40e1-f21f-47cc-b26a-47a161b476a0.sql": {
+    "mtime": 1783507035.214781,
+    "ast_hash": "c487b514e1b65f11b3457c1596fa9a5b",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\supabase\\migrations\\20260708101449_6326de40-6af4-4814-897f-b27efb5812a4.sql": {
+    "mtime": 1783507035.214781,
+    "ast_hash": "13e942f8b95e9e80b24faeda8ecd3e44",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\supabase\\migrations\\20260708101511_b323922c-2ee5-49f0-8649-828d2c3bf067.sql": {
+    "mtime": 1783507035.214781,
+    "ast_hash": "23beea472594eb2d678ba76620e84a1d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\index-ChSHGxNn.js": {
+    "mtime": 1782451962.576556,
+    "ast_hash": "c7a92bcb2910805c5f07ea9779f61db3",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\web-BcZdQ7bG.js": {
+    "mtime": 1782451962.576556,
+    "ast_hash": "310afb99fe60d17d6d7cf0d9366560cd",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\web_react\\android\\app\\src\\main\\assets\\public\\assets\\web-BxPqxIQd.js": {
+    "mtime": 1782451962.576556,
+    "ast_hash": "bb7121fae143f5489d6f0c34b8526596",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\AGENTS.md": {
+    "mtime": 1783510268.9691572,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\src\\routes\\README.md": {
+    "mtime": 1783507035.2114327,
+    "ast_hash": "7c596cbb4d31d216707c1fb18d7d4d3b",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\__23tanstack-start-server-fn-resolver-CdgLYarp.mjs": {
+    "mtime": 1783514652.7264569,
+    "ast_hash": "f60a62054b94f2f0a5af921e9aab49e5",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\bang-xep-hang-Dxa2rmLt.mjs": {
+    "mtime": 1783514652.7388732,
+    "ast_hash": "fd4d9bc3a6bef068d032aabed51860d2",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\ca-nhan-C-NtX_Go.mjs": {
+    "mtime": 1783514652.7398844,
+    "ast_hash": "55ee06b4fe11aed67b5d723af2ed6283",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\chan-doan-B0wwakJc.mjs": {
+    "mtime": 1783514652.7398844,
+    "ast_hash": "5ae091ec86d7e0faf9db7d27f4eb6ca9",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\chan-doan-Y9N27-Q_.mjs": {
+    "mtime": 1783514652.7408824,
+    "ast_hash": "02402046d1d7adbd9559a343df2720b3",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\routes-D3ngU6Qj.mjs": {
+    "mtime": 1783514652.7450788,
+    "ast_hash": "78d91b65786177b0827585977e65e4a8",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\stories-db-CbGwmKs6.mjs": {
+    "mtime": 1783514652.7470808,
+    "ast_hash": "24d0a60b4b163c453b051f38a2a45030",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\stories.functions-CNNwTWdI.mjs": {
+    "mtime": 1783514652.7470808,
+    "ast_hash": "43779e748486df0835127d62b82509c6",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\the-loai-CA6aHEbS.mjs": {
+    "mtime": 1783514652.7470808,
+    "ast_hash": "60dcb2027ccaa66867c594fea1a6b262",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\the-loai._slug-BBlBPsWl.mjs": {
+    "mtime": 1783514652.748081,
+    "ast_hash": "1685f98cf6bf118c46ffa91a38fc151f",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\the-loai._slug-BOABx-3-.mjs": {
+    "mtime": 1783514652.7490804,
+    "ast_hash": "de0aa84499f7c480025c357d24fb498d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\the-loai._slug-DzdDjhQl.mjs": {
+    "mtime": 1783514652.7490804,
+    "ast_hash": "dc3ce43830a4fdbbd3efa8e32da561c8",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen._slug-CFZSFm2H.mjs": {
+    "mtime": 1783514652.750082,
+    "ast_hash": "8c9129708d4d9f713c2d2296bf9df016",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen._slug-DDdhmqIx.mjs": {
+    "mtime": 1783514652.750082,
+    "ast_hash": "aba59a2bc0a0f0c1413551cddd6a136d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen._slug-DWFW-J1j.mjs": {
+    "mtime": 1783514652.751081,
+    "ast_hash": "598193050452b8d680b4a01fcc8b1d9b",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\auth-CKoZQbeg.js": {
+    "mtime": 1783514650.393051,
+    "ast_hash": "b5c4a557a433514ab44d888dd1b0c362",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\bang-xep-hang-Dwqm-iJL.js": {
+    "mtime": 1783514650.393051,
+    "ast_hash": "a8d085f0cae998dda3d5a645956606d4",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\ca-nhan-O1NWpb-X.js": {
+    "mtime": 1783514650.3940506,
+    "ast_hash": "970afac3bbe326cb913121afc637f01e",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\chan-doan-BWQeJ6rE.js": {
+    "mtime": 1783514650.3940506,
+    "ast_hash": "2018afbe4f3be0b3101595d6586136f4",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\chan-doan-DgaAaIzW.js": {
+    "mtime": 1783514650.3953216,
+    "ast_hash": "40f4ca99c9c1cc1f63826ec825cda60d",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\index-DGbyOjue.js": {
+    "mtime": 1783514650.3920503,
+    "ast_hash": "29da0eacc86a888af04abc5bb32612f9",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\routes-D-rjd7iz.js": {
+    "mtime": 1783514650.3983293,
+    "ast_hash": "1f268d644e0aa8f6bcd7837135387d71",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\site-layout-BSI1jFC7.js": {
+    "mtime": 1783514650.3983293,
+    "ast_hash": "47f1de56ea171ccc3316472c2c2f5777",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\stories-db-Bw_L8uG8.js": {
+    "mtime": 1783514650.399328,
+    "ast_hash": "41c651b65f86551d6b38ce7d110edf64",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\the-loai-BwnZa9Sk.js": {
+    "mtime": 1783514650.399328,
+    "ast_hash": "30db7d8ac0ace43e409e06efe8a7e297",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\the-loai._slug-3XCaBsgT.js": {
+    "mtime": 1783514650.399328,
+    "ast_hash": "f281fd9b10726dd8b78894672151111a",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\the-loai._slug-BjLEn3GD.js": {
+    "mtime": 1783514650.4004188,
+    "ast_hash": "90ec0fdb3647d5646d0dca2e633d4eb5",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\the-loai._slug-DqRhOlcs.js": {
+    "mtime": 1783514650.4004188,
+    "ast_hash": "d789807a6434ca4b98db9e5f35294233",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\truyen._slug-D7pY3ZGr.js": {
+    "mtime": 1783514650.4004188,
+    "ast_hash": "6596bf2efbf2e84998892b6453b09ab7",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\truyen._slug-D9jhNKrH.js": {
+    "mtime": 1783514650.4017825,
+    "ast_hash": "f1ec1b51cb0c761c42b3bd662015a035",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\truyen._slug-DqRhOlcs.js": {
+    "mtime": 1783514650.4017825,
+    "ast_hash": "d789807a6434ca4b98db9e5f35294233",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\truyen._slug_.chuong._chapter-D2gT8CYM.js": {
+    "mtime": 1783514650.4030712,
+    "ast_hash": "2efb5ec21050fef9fbbec4a9eb811edf",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\public\\assets\\useBaseQuery-Cg_qHLtp.js": {
+    "mtime": 1783514650.4040697,
+    "ast_hash": "214f9762ccbebc96e19fc281d10e4223",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_tanstack-start-manifest_v-BP-R4B3u.mjs": {
+    "mtime": 1783514652.7543523,
+    "ast_hash": "c0c69b337cd805219940927b268545d9",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\router-DZk2hXdJ.mjs": {
+    "mtime": 1783514652.7440803,
+    "ast_hash": "974835db7eb8abee35da0e08e6a922af",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\server-C5SYrj4a.mjs": {
+    "mtime": 1783514652.7450788,
+    "ast_hash": "7cf8d2c929a4dc3af9d7e637cf3d8616",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen._slug_.chuong._chapter-DWAilJ78.mjs": {
+    "mtime": 1783514652.752082,
+    "ast_hash": "7dd98b0035523991e8a6c997d52a43be",
+    "semantic_hash": ""
+  },
+  "E:\\projects\\reader-hub\\reader-hub-web\\.output\\server\\_ssr\\truyen._slug_.chuong._chapter-SuLxLbEw.mjs": {
+    "mtime": 1783514652.753352,
+    "ast_hash": "b7c3cc1b74ea7f7fcabceb305008a4d4",
     "semantic_hash": ""
   }
 }

@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Supabase Edge Function: search-sources
  *
  * Triggers GitHub Actions to search for a story across multiple source websites.
@@ -141,7 +141,7 @@ const SITES: SiteConfig[] = [
     name: "truyendich",
     displayName: "TruyenDich.AI",
     searchUrl: (q: string) =>
-      `https://truyendich.ai/tim-kiem?q=${encodeURIComponent(q)}`,
+      `https://truyendich.space/tim-kiem?q=${encodeURIComponent(q)}`,
     parseResults: (html: string, _baseUrl: string): SearchResult[] => {
       const doc = new DOMParser().parseFromString(html, "text/html");
       if (!doc) return [];
@@ -171,13 +171,13 @@ const SITES: SiteConfig[] = [
           if (!imgEl) imgEl = parent.querySelector("img");
           if (imgEl) {
             const src = imgEl.getAttribute("src") || "";
-            coverUrl = src.startsWith("http") ? src : `https://truyendich.ai${src}`;
+            coverUrl = src.startsWith("http") ? src : `https://truyendich.space${src}`;
           }
         }
 
         const sourceUrl = href.startsWith("http")
           ? href
-          : `https://truyendich.ai${href}`;
+          : `https://truyendich.space${href}`;
 
         results.push({
           title,

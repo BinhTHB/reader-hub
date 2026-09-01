@@ -524,7 +524,7 @@ class TruyenDichParser(BaseSiteParser):
 
     def get_search_url(self, query: str) -> str:
         template = self.config.search_url_template if self.config else \
-            "https://truyendich.ai/tim-kiem?q={query}"
+            "https://truyendich.space/tim-kiem?q={query}"
         return template.replace("{query}", quote(query))
 
     def parse_search_results(self, html: str) -> list[dict]:
@@ -579,6 +579,20 @@ class TruyenDichParser(BaseSiteParser):
     def parse_story_info(self, html: str, url: str) -> dict:
         page = Selector(html)
 
+        # Detect Convert version (/doc-truyen/cv/) if available
+        effective_source_url = url
+        if "/doc-truyen/cv/" not in url:
+            cv_link = page.css("a[href*='/doc-truyen/cv/']")
+            if cv_link:
+                cv_href = cv_link[0].attrib.get("href")
+                if cv_href:
+                    effective_source_url = self.make_absolute(cv_href)
+            else:
+                soup = BeautifulSoup(html, "lxml")
+                cv_a = soup.find("a", href=re.compile(r"/doc-truyen/cv/"))
+                if cv_a and cv_a.get("href"):
+                    effective_source_url = self.make_absolute(cv_a.get("href"))
+
         # Try JSON-LD first
         json_ld = page.css('script[type="application/ld+json"]')
         if json_ld:
@@ -600,7 +614,7 @@ class TruyenDichParser(BaseSiteParser):
                         "cover_img_url": self.make_absolute(cover_url) if cover_url else None,
                         "genres": genres,
                         "status": "ongoing",
-                        "source_url": url,
+                        "source_url": effective_source_url,
                         "source_name": self.name,
                     }
             except:
@@ -628,7 +642,7 @@ class TruyenDichParser(BaseSiteParser):
             "cover_img_url": self.make_absolute(cover_url) if cover_url else None,
             "genres": genres,
             "status": "ongoing",
-            "source_url": url,
+            "source_url": effective_source_url,
             "source_name": self.name,
         }
 

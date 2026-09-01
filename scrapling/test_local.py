@@ -98,7 +98,8 @@ def test_scrape(site_name: str, story_url: str):
 
         # Step 2: Chapter List
         print("📋 Step 2: Fetching chapter list...")
-        chapter_list_url = parser.get_chapter_list_url(story_url)
+        effective_story_url = story_info.get("source_url", story_url)
+        chapter_list_url = parser.get_chapter_list_url(effective_story_url)
         print(f"   URL: {chapter_list_url}")
 
         time.sleep(1)

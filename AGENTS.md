@@ -14,7 +14,7 @@ Rules:
 ## Project Architecture
 
 - **Scraper**: Sử dụng thư mục `scrapling/` — không dùng thư mục `scraper/` nữa.
-- **Frontend**: Sử dụng thư mục `web_react/` — không dùng `mobile_flutter/` nữa.
+- **Frontend**: Sử dụng thư mục `web_react/` cho mobile, `reader-hub-web/` cho trang web — không dùng `mobile_flutter/` nữa.
 
 ## Git Tagging Rules
 - **Rule**: Khi đặt tên git tag cho repository, bắt buộc phải đặt tên tag theo định dạng ngày tháng: `vYYYY.M.D` (Ví dụ: `v2026.5.24`).

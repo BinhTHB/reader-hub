@@ -44,8 +44,8 @@ SITES: dict[str, SiteConfig] = {
     "truyendich": SiteConfig(
         name="truyendich",
         display_name="TruyenDich.AI",
-        base_url="https://truyendich.ai",
-        search_url_template="https://truyendich.ai/tim-kiem?q={query}",
+        base_url="https://truyendich.space",
+        search_url_template="https://truyendich.space/tim-kiem?q={query}",
     ),
     "uukanshu": SiteConfig(
         name="uukanshu",
