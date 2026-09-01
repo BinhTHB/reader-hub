@@ -759,11 +759,11 @@ class TruyenDichParser(BaseSiteParser):
         return 1
 
     def parse_chapter_content(self, html: str) -> dict:
-        # 1. Direct JSON API response parsing
+        # Direct JSON API response parsing
         try:
             import json
             data = json.loads(html.strip())
-            if isinstance(data, dict) and ("content" in data or "chapter_number" in data):
+            if isinstance(data, dict):
                 title = self.clean_text(data.get("title") or "")
                 raw_content = data.get("content", "") or ""
                 if raw_content:
@@ -795,29 +795,7 @@ class TruyenDichParser(BaseSiteParser):
         except (json.JSONDecodeError, TypeError):
             pass
 
-        # 2. HTML Fallback parsing
-        page = Selector(html)
-
-        title_el = page.css("h1, h2, .chapter-title")
-        title = self.clean_text(get_text(title_el) or "")
-
-        soup = BeautifulSoup(html, "lxml")
-        content_el = soup.select_one("section.prose-novel, .prose-novel, section[class*='prose'], .chapter-content, #chapter-content")
-        if not content_el:
-            return {"title": title, "paragraphs": [], "word_count": 0}
-
-        for tag in content_el.find_all(["script", "style", "ins", "iframe", "noscript"]):
-            tag.decompose()
-
-        paragraphs = []
-        for br in content_el.find_all("br"):
-            br.replace_with("\n")
-        for line in content_el.get_text(separator="\n").split("\n"):
-            text = self.clean_text(line)
-            if text and len(text) > 1:
-                paragraphs.append(text)
-
-        return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
+        return {"title": "", "paragraphs": [], "word_count": 0}
 
 
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
