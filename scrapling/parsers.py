@@ -759,7 +759,14 @@ class TruyenDichParser(BaseSiteParser):
         return 1
 
     def parse_chapter_content(self, html: str) -> dict:
-        # Direct JSON API response parsing
+        """
+        Extract clean Vietnamese paragraphs by filtering out Egyptian Hieroglyph
+        decoys (U+13000..U+1342F) across JSON API and HTML pages.
+        """
+        raw_text_or_html = html
+        title = ""
+
+        # 1. Check if input is a JSON string from API response
         try:
             import json
             data = json.loads(html.strip())
@@ -767,35 +774,59 @@ class TruyenDichParser(BaseSiteParser):
                 title = self.clean_text(data.get("title") or "")
                 raw_content = data.get("content", "") or ""
                 if raw_content:
-                    if "<" in raw_content and ">" in raw_content:
-                        soup = BeautifulSoup(raw_content, "lxml")
-                        for tag in soup.find_all(["script", "style", "ins", "iframe", "noscript"]):
-                            tag.decompose()
-                        for br in soup.find_all("br"):
-                            br.replace_with("\n")
-                        for p in soup.find_all("p"):
-                            p.append("\n")
-                        text_content = soup.get_text(separator="\n")
-                    else:
-                        text_content = raw_content
-
-                    paragraphs = []
-                    for line in text_content.split("\n"):
-                        cleaned = self.clean_text(line)
-                        if cleaned and len(cleaned) > 1:
-                            paragraphs.append(cleaned)
-
-                    word_count = sum(len(p.split()) for p in paragraphs)
-                    if paragraphs:
-                        return {
-                            "title": title,
-                            "paragraphs": paragraphs,
-                            "word_count": word_count
-                        }
+                    raw_text_or_html = raw_content
         except (json.JSONDecodeError, TypeError):
             pass
 
-        return {"title": "", "paragraphs": [], "word_count": 0}
+        soup = BeautifulSoup(raw_text_or_html, "lxml")
+
+        # If title not extracted from JSON, find in HTML elements
+        if not title:
+            title_el = soup.select_one("h1, h2, .chapter-title")
+            if title_el:
+                title = self.clean_text(title_el.get_text())
+
+        # Decompose non-content elements
+        for tag in soup.find_all(["script", "style", "ins", "iframe", "noscript"]):
+            tag.decompose()
+
+        def is_hiero_char(ch: str) -> bool:
+            c = ord(ch)
+            return 0x13000 <= c <= 0x1342F
+
+        paragraphs = []
+
+        # Strategy A: Extract from <p> tags (real display tab)
+        p_tags = soup.find_all("p")
+        for p in p_tags:
+            text = self.clean_text(p.get_text(separator=" "))
+            if len(text) < 10:
+                continue
+            hiero_count = sum(1 for ch in text if is_hiero_char(ch))
+            viet_words = len(re.findall(r'[A-Za-zÀ-ỹà-ỹĐđ]{3,}', text))
+            if hiero_count == 0 and viet_words >= 3:
+                # Ignore Turnstile challenge placeholder text
+                if "kiểm tra linh căn" in text.lower() or "quá trình này diễn ra tự động" in text.lower():
+                    continue
+                paragraphs.append(text)
+
+        # Strategy B: Fallback to <br/>-separated lines
+        if not paragraphs:
+            for br in soup.find_all("br"):
+                br.replace_with("\n")
+            for line in soup.get_text(separator="\n").split("\n"):
+                text = self.clean_text(line)
+                if len(text) < 10:
+                    continue
+                hiero_count = sum(1 for ch in text if is_hiero_char(ch))
+                viet_words = len(re.findall(r'[A-Za-zÀ-ỹà-ỹĐđ]{3,}', text))
+                if hiero_count == 0 and viet_words >= 3:
+                    if "kiểm tra linh căn" in text.lower() or "quá trình này diễn ra tự động" in text.lower():
+                        continue
+                    paragraphs.append(text)
+
+        word_count = sum(len(p.split()) for p in paragraphs)
+        return {"title": title, "paragraphs": paragraphs, "word_count": word_count}
 
 
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•

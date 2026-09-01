@@ -1051,22 +1051,36 @@ def run_scraper():
 
                 try:
                     def get_chapter_content(sess):
-                        # Pure direct JSON API for TruyenDich
                         if parser.name == "truyendich":
                             is_cv = "/cv/" in story_info.get("source_url", STORY_SOURCE_URL)
-                            api_url = parser.get_chapter_api_url(
-                                story_info.get("source_url", STORY_SOURCE_URL),
-                                ch_num,
-                                edition_type="cv" if is_cv else None
-                            )
-                            api_resp = sess.fetch(api_url)
-                            if api_resp.status != 200:
-                                raise RuntimeError(f"TruyenDich API HTTP {api_resp.status}")
-                            
-                            content = parser.parse_chapter_content(api_resp.body)
-                            if not content["paragraphs"]:
-                                # If cv was empty, try AI edition API without cv
-                                if is_cv:
+                            # 1. Try direct API first
+                            try:
+                                api_url = parser.get_chapter_api_url(
+                                    story_info.get("source_url", STORY_SOURCE_URL),
+                                    ch_num,
+                                    edition_type="cv" if is_cv else None
+                                )
+                                api_resp = sess.fetch(api_url)
+                                if api_resp.status == 200:
+                                    api_content = parser.parse_chapter_content(api_resp.body)
+                                    if api_content["paragraphs"]:
+                                        return api_content
+                            except Exception:
+                                pass
+
+                            # 2. Try HTML page (contains real Vietnamese in display tab, filtered of hieroglyphs)
+                            try:
+                                ch_resp = sess.fetch(ch_info["source_url"])
+                                if ch_resp.status == 200:
+                                    html_content = parser.parse_chapter_content(ch_resp.body)
+                                    if html_content["paragraphs"]:
+                                        return html_content
+                            except Exception:
+                                pass
+
+                            # 3. If cv was requested, fallback to AI edition direct API
+                            if is_cv:
+                                try:
                                     api_url_ai = parser.get_chapter_api_url(
                                         story_info.get("source_url", STORY_SOURCE_URL),
                                         ch_num,
@@ -1074,11 +1088,13 @@ def run_scraper():
                                     )
                                     api_resp_ai = sess.fetch(api_url_ai)
                                     if api_resp_ai.status == 200:
-                                        content = parser.parse_chapter_content(api_resp_ai.body)
-                            
-                            if not content["paragraphs"]:
-                                raise RuntimeError("No content returned from TruyenDich API")
-                            return content
+                                        ai_content = parser.parse_chapter_content(api_resp_ai.body)
+                                        if ai_content["paragraphs"]:
+                                            return ai_content
+                                except Exception:
+                                    pass
+
+                            raise RuntimeError("No content returned from TruyenDich API or HTML page")
 
                         # Other parsers (HTML page)
                         ch_resp = sess.fetch(ch_info["source_url"])
