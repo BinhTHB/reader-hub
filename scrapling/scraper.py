@@ -772,6 +772,8 @@ def run_scraper():
                 return resp, info
 
             response, story_info = fetch_with_rotation_wrapper(session, get_story_info)
+            if not story_info.get("slug"):
+                story_info["slug"] = parser.extract_slug(story_info.get("source_url") or STORY_SOURCE_URL)
             print(f"  Title: {story_info['title']}")
             print(f"  Author: {story_info.get('author', 'N/A')}")
             print(f"  Slug: {story_info['slug']}")
@@ -1129,11 +1131,21 @@ def run_scraper():
                         )
                     continue
 
+                if not content or not content.get("paragraphs") or content.get("word_count", 0) < 50 or content.get("blocked"):
+                    print(f"  ❌ Chapter {ch_num} has invalid/blocked content ({content.get('reason', 'too short')}). Skipping.")
+                    consecutive_failures += 1
+                    if consecutive_failures >= 5:
+                        raise ScraperAbortException(
+                            f"Aborting: {consecutive_failures} consecutive chapter failures detected."
+                        )
+                    continue
+
                 print(f"  📝 {len(content['paragraphs'])} paragraphs, {content['word_count']} words")
 
                 # Upload to R2
+                target_slug = story_info.get("slug") or parser.extract_slug(STORY_SOURCE_URL)
                 r2_url = upload_chapter(
-                    story_slug=story_info["slug"],
+                    story_slug=target_slug,
                     chapter_number=ch_num,
                     title=content["title"] or ch_info["title"],
                     paragraphs=content["paragraphs"],

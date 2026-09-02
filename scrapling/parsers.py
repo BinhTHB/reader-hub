@@ -634,9 +634,15 @@ class TruyenDichParser(BaseSiteParser):
 
         genres = [self.clean_text(get_text(g) or "") for g in page.css("a[href*='/the-loai/']")]
 
+        slug = self.extract_slug(url)
+        if title and title != "Unknown":
+            computed_slug = self.slugify(title)
+            if computed_slug:
+                slug = computed_slug
+
         return {
             "title": title,
-            "slug": self.slugify(title),
+            "slug": slug,
             "author": author,
             "description": description,
             "cover_img_url": self.make_absolute(cover_url) if cover_url else None,
@@ -759,12 +765,14 @@ class TruyenDichParser(BaseSiteParser):
         return 1
 
     # ── Block / trust-challenge detection ────────────────────────────────
-    # Mirrors the validated logic in scrape_production.py (TEST repo):
-    # a chapter is rejected if it is a verify-human block page (Loai B) or a
-    # trust_challenge state (Loai C, e.g. content:"" + trust_challenge:"verify_now").
     BLOCK_MARKERS = [
         "đang kiểm tra linh căn", "quá trình này diễn ra tự động",
         "verify-human", "xác minh bạn là con người", "kiểm tra trình duyệt",
+        "request_method", "http_user-agent", "http_sec-", "http_host",
+        "request_uri", "server_software", "document_root", "remote_addr",
+        "gateway_interface", "http_pragma", "cloudflare ray id", "attention required",
+        "just a moment...", "403 forbidden", "enable javascript and cookies to continue",
+        "ddos protection by cloudflare",
     ]
 
     @staticmethod
@@ -774,10 +782,14 @@ class TruyenDichParser(BaseSiteParser):
 
     @classmethod
     def is_blocked(cls, raw: str) -> bool:
-        low = (raw or "").lower()
+        if not raw:
+            return True
+        low = raw.lower()
         if any(m in low for m in cls.BLOCK_MARKERS):
             return True
-        if sum(1 for ch in (raw or "") if cls.is_hiero_char(ch)) > 500:
+        if sum(1 for ch in raw if cls.is_hiero_char(ch)) > 500:
+            return True
+        if re.search(r"(?m)^(HTTP_|REQUEST_|SERVER_|REMOTE_)[A-Z0-9_-]+\s*=", raw):
             return True
         return False
 
@@ -791,8 +803,8 @@ class TruyenDichParser(BaseSiteParser):
         decoys (U+13000..U+1342F) across JSON API and HTML pages.
 
         Returns a dict with an extra ``blocked``/``reason`` key when the page is
-        a verify-human block page (Loai B) or a trust_challenge state (Loai C),
-        so the caller can rotate proxy / retry instead of writing an empty chapter.
+        a verify-human block page (Loai B), trust_challenge state (Loai C),
+        or a server variable dump page, so caller can rotate proxy / retry.
         """
         raw_text_or_html = html
         title = ""
@@ -809,12 +821,9 @@ class TruyenDichParser(BaseSiteParser):
         except (json.JSONDecodeError, TypeError):
             pass
 
-        # 2. Reject verify-human block pages (Loai B) and trust_challenge
-        #    states (Loai C, e.g. content:"" + trust_challenge:"verify_now").
-        #    Returning a flagged dict lets the caller rotate proxy / retry
-        #    instead of silently writing an empty chapter.
+        # 2. Reject verify-human block pages, trust_challenge, and server header dumps
         if self.is_blocked(html) or self.is_trust_challenge(html):
-            reason = "trust_challenge" if self.is_trust_challenge(html) else "block_page"
+            reason = "trust_challenge" if self.is_trust_challenge(html) else "block_or_dump"
             return {
                 "title": title,
                 "paragraphs": [],
@@ -839,6 +848,9 @@ class TruyenDichParser(BaseSiteParser):
             c = ord(ch)
             return 0x13000 <= c <= 0x1342F
 
+        viet_chars = set("àáảãạăằắẳẵặâầấẩẫậèéẻẽẹêềếểễệìíỉĩịòóỏõọôồốổỗộơờớởỡợùúủũụưừứửữựỳýỷỹỵđ"
+                         "ÀÁẢÃẠĂẰẮẲẴẶÂẦẤẨẪẬÈÉẺẼẸÊỀẾỂỄỆÌÍỈĨỊÒÓỎÕỌÔỒỐỔỖỘƠỜỚỞỠỢÙÚỦŨỤƯỪỨỬỮỰỲÝỶỸỴĐ")
+
         paragraphs = []
 
         # Strategy A: Extract from <p> tags (real display tab)
@@ -847,10 +859,11 @@ class TruyenDichParser(BaseSiteParser):
             text = self.clean_text(p.get_text(separator=" "))
             if len(text) < 10:
                 continue
+            if re.match(r"^(HTTP_|REQUEST_|SERVER_|REMOTE_)[A-Z0-9_-]+\s*=", text):
+                continue
             hiero_count = sum(1 for ch in text if is_hiero_char(ch))
-            viet_words = len(re.findall(r'[A-Za-zÀ-ỹà-ỹĐđ]{3,}', text))
-            if hiero_count == 0 and viet_words >= 3:
-                # Ignore Turnstile challenge placeholder text
+            has_viet = any(c in viet_chars for c in text)
+            if hiero_count == 0 and has_viet:
                 if "kiểm tra linh căn" in text.lower() or "quá trình này diễn ra tự động" in text.lower():
                     continue
                 paragraphs.append(text)
@@ -863,15 +876,27 @@ class TruyenDichParser(BaseSiteParser):
                 text = self.clean_text(line)
                 if len(text) < 10:
                     continue
+                if re.match(r"^(HTTP_|REQUEST_|SERVER_|REMOTE_)[A-Z0-9_-]+\s*=", text):
+                    continue
                 hiero_count = sum(1 for ch in text if is_hiero_char(ch))
-                viet_words = len(re.findall(r'[A-Za-zÀ-ỹà-ỹĐđ]{3,}', text))
-                if hiero_count == 0 and viet_words >= 3:
+                has_viet = any(c in viet_chars for c in text)
+                if hiero_count == 0 and has_viet:
                     if "kiểm tra linh căn" in text.lower() or "quá trình này diễn ra tự động" in text.lower():
                         continue
                     paragraphs.append(text)
 
         word_count = sum(len(p.split()) for p in paragraphs)
-        return {"title": title, "paragraphs": paragraphs, "word_count": word_count}
+
+        if word_count < 50 or len(paragraphs) == 0:
+            return {
+                "title": title,
+                "paragraphs": [],
+                "word_count": 0,
+                "blocked": True,
+                "reason": "empty_or_too_short",
+            }
+
+        return {"title": title, "paragraphs": paragraphs, "word_count": word_count, "blocked": False}
 
 
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•

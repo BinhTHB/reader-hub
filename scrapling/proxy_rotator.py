@@ -115,10 +115,12 @@ async def _test_proxy(proxy: ProxyInfo, test_url: str = "https://httpbin.org/ip"
                         proxy.last_checked = time.time()
                         return True
                 else:
-                    # For target websites, any status between 200 and 499 shows successful routing.
-                    if 200 <= resp.status < 500:
-                        proxy.last_checked = time.time()
-                        return True
+                    if 200 <= resp.status < 400:
+                        text = await resp.text()
+                        low = text.lower()
+                        if "request_method" not in low and "http_user-agent" not in low and "loại b" not in low and "cloudflare" not in low:
+                            proxy.last_checked = time.time()
+                            return True
     except Exception:
         pass
 
