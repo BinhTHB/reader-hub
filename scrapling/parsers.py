@@ -620,8 +620,25 @@ class TruyenDichParser(BaseSiteParser):
             except:
                 pass
 
+        if self.is_blocked(html) or self.is_trust_challenge(html):
+            return {
+                "title": "",
+                "slug": self.extract_slug(url),
+                "author": None,
+                "description": None,
+                "cover_img_url": None,
+                "genres": [],
+                "status": "ongoing",
+                "source_url": effective_source_url,
+                "source_name": self.name,
+                "blocked": True,
+            }
+
         title_el = page.css("h1, h1.title")
-        title = self.clean_text(get_text(title_el) or "Unknown")
+        raw_title = get_text(title_el) or ""
+        title = self.clean_text(raw_title)
+        if title in ("[]", "None", ""):
+            title = "Unknown"
 
         author_el = page.css(".author, [class*='author']")
         author = self.clean_text(get_text(author_el) or "") if author_el else None
@@ -629,7 +646,7 @@ class TruyenDichParser(BaseSiteParser):
         desc_el = page.css(".prose, .description, [class*='description']")
         description = self.clean_text(get_text(desc_el) or "") if desc_el else None
 
-        cover_el = page.css("img[alt*='bÃ¬a'], img[alt*='cover'], .cover img, img")
+        cover_el = page.css("img[alt*='bìa'], img[alt*='cover'], .cover img, img")
         cover_url = cover_el.attrib.get("src") if cover_el else None
 
         genres = [self.clean_text(get_text(g) or "") for g in page.css("a[href*='/the-loai/']")]

@@ -766,9 +766,11 @@ def run_scraper():
                 resp = sess.fetch(STORY_SOURCE_URL)
                 if resp.status != 200:
                     raise RuntimeError(f"HTTP {resp.status}")
+                if parser.is_blocked(resp.body):
+                    raise RuntimeError("Story info page returned block or dump page")
                 info = parser.parse_story_info(resp.body, STORY_SOURCE_URL)
-                if not info or not info.get("title"):
-                    raise RuntimeError("Failed to parse story info or title is empty")
+                if not info or info.get("blocked") or not info.get("title") or str(info.get("title")).strip() in ("Unknown", "[]", "None", ""):
+                    raise RuntimeError("Failed to parse story info or title is empty/Unknown")
                 return resp, info
 
             response, story_info = fetch_with_rotation_wrapper(session, get_story_info)
@@ -814,46 +816,61 @@ def run_scraper():
                 import re
                 import json
                 
-                max_chapter = 50
-                slug = parser.extract_slug(story_info.get("source_url", STORY_SOURCE_URL))
-                
-                # 1. Try reading total from API /api/novels/{slug}/chapters
-                try:
-                    list_api_url = parser.get_chapter_list_api_url(story_info.get("source_url", STORY_SOURCE_URL), size=50)
-                    list_resp = session.fetch(list_api_url)
-                    if list_resp.status == 200:
-                        list_data = json.loads(list_resp.body.strip())
-                        total = list_data.get("total", 0)
-                        if total and total > 0:
-                            max_chapter = max(max_chapter, int(total))
-                except Exception:
-                    pass
+                existing_total = story.get("total_chapters") or 0
 
-                # 2. Extract from Next.js payload or HTML buttons
-                soup = BeautifulSoup(response.body, "lxml")
-                buttons = soup.find_all("button")
-                for btn in buttons:
-                    text = parser.clean_text(btn.get_text())
-                    match = re.search(r"(\d+)\s*-\s*(\d+)", text)
-                    if match:
-                        max_chapter = max(max_chapter, int(match.group(2)))
-                
-                # Check text matches
-                string_targets = []
-                try:
-                    string_targets.extend(soup.find_all(string=re.compile(r"\d+\s*chương", re.IGNORECASE)))
-                except:
-                    pass
-                for t in string_targets:
-                    match = re.search(r"(\d+)\s*chương", str(t), re.IGNORECASE)
-                    if match:
-                        max_chapter = max(max_chapter, int(match.group(1)))
-                
-                if max_chapter == 50:
-                    page_1_ch = parser.parse_chapter_list(response.body)
-                    if page_1_ch:
-                        max_chapter = max(ch["chapter_number"] for ch in page_1_ch)
-                
+                def get_truyendich_max_chapter(sess):
+                    max_ch = 0
+                    slug = parser.extract_slug(story_info.get("source_url", STORY_SOURCE_URL))
+                    
+                    # 1. Try reading total from API /api/novels/{slug}/chapters
+                    try:
+                        list_api_url = parser.get_chapter_list_api_url(story_info.get("source_url", STORY_SOURCE_URL), size=50)
+                        list_resp = sess.fetch(list_api_url)
+                        if list_resp.status == 200 and not parser.is_blocked(list_resp.body):
+                            list_data = json.loads(list_resp.body.strip())
+                            total = list_data.get("total", 0)
+                            if total and total > 0:
+                                max_ch = max(max_ch, int(total))
+                    except Exception:
+                        pass
+
+                    # 2. Extract from story page HTML
+                    if max_ch == 0:
+                        soup = BeautifulSoup(response.body, "lxml")
+                        buttons = soup.find_all("button")
+                        for btn in buttons:
+                            text = parser.clean_text(btn.get_text())
+                            match = re.search(r"(\d+)\s*-\s*(\d+)", text)
+                            if match:
+                                max_ch = max(max_ch, int(match.group(2)))
+                        
+                        string_targets = []
+                        try:
+                            string_targets.extend(soup.find_all(string=re.compile(r"\d+\s*chương", re.IGNORECASE)))
+                        except Exception:
+                            pass
+                        for t in string_targets:
+                            match = re.search(r"(\d+)\s*chương", str(t), re.IGNORECASE)
+                            if match:
+                                max_ch = max(max_ch, int(match.group(1)))
+
+                    if max_ch == 0:
+                        page_1_ch = parser.parse_chapter_list(response.body)
+                        if page_1_ch:
+                            max_ch = max(ch["chapter_number"] for ch in page_1_ch)
+
+                    if max_ch < existing_total:
+                        max_ch = existing_total
+
+                    if max_ch <= 0:
+                        raise RuntimeError("Failed to determine TruyenDich total chapters count")
+
+                    return None, max_ch
+
+                _, max_chapter = fetch_with_rotation_wrapper(session, get_truyendich_max_chapter)
+                if max_chapter < existing_total:
+                    max_chapter = existing_total
+
                 print(f"  ⚡ Programmatic list generation: latest chapter is {max_chapter}")
                 all_chapters = []
                 base_url = story_info.get("source_url", STORY_SOURCE_URL).rstrip('/')
