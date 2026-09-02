@@ -42,6 +42,20 @@ scrapling.engines.toolbelt.navigation.js_bypass_path = custom_js_bypass_path
 # Monkeypatch PlaywrightEngine.fetch to disable chromium_sandbox and handle active navigation errors
 import scrapling.engines.pw as _pw_module
 
+DEFAULT_WINDOWS_UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36"
+
+def get_clean_browser_headers(custom_ua: str | None = None) -> tuple[dict, str]:
+    from scrapling.engines.toolbelt import generate_headers
+    try:
+        raw_headers = generate_headers(browser_mode=True)
+    except Exception:
+        raw_headers = {}
+    
+    ua = custom_ua or raw_headers.get('User-Agent') or DEFAULT_WINDOWS_UA
+    clean_headers = {k: v for k, v in raw_headers.items() if not k.lower().startswith('sec-fetch-')}
+    clean_headers['User-Agent'] = ua
+    return clean_headers, ua
+
 def _fetch_no_sandbox(self, url):
     """Patched fetch that disables chromium sandbox and handles active navigation errors robustly."""
     if not self.stealth:
@@ -51,17 +65,12 @@ def _fetch_no_sandbox(self, url):
 
     from scrapling.engines.constants import DEFAULT_STEALTH_FLAGS
     from scrapling.engines.toolbelt import (
-        Response, intercept_route, generate_headers,
-        construct_cdp_url, generate_convincing_referer,
+        Response, intercept_route,
+        construct_cdp_url,
     )
 
     with sync_playwright() as p:
-        if self.useragent:
-            extra_headers = {}
-            useragent = self.useragent
-        else:
-            extra_headers = generate_headers(browser_mode=True)
-            useragent = extra_headers.get('User-Agent')
+        extra_headers, useragent = get_clean_browser_headers(self.useragent)
 
         flags = DEFAULT_STEALTH_FLAGS
         if self.hide_canvas:
@@ -113,7 +122,7 @@ def _fetch_no_sandbox(self, url):
             page.add_init_script(path=_js_path('screen_props.js'))
             page.add_init_script(path=_js_path('playwright_fingerprint.js'))
 
-        res = page.goto(url, referer=generate_convincing_referer(url) if self.google_search else None)
+        res = page.goto(url)
         try:
             page.wait_for_load_state(state="load", timeout=15000)
         except Exception:
@@ -207,9 +216,7 @@ class StealthySession:
             chromium_sandbox=False
         )
 
-        from scrapling.engines.toolbelt import generate_headers
-        extra_headers = generate_headers(browser_mode=True)
-        useragent = extra_headers.get('User-Agent')
+        extra_headers, useragent = get_clean_browser_headers()
 
         # Convert proxy if it's a string
         proxy_config = None
@@ -270,9 +277,7 @@ class StealthySession:
 
         self.browser = self.playwright.chromium.launch(**launch_args)
 
-        from scrapling.engines.toolbelt import generate_headers
-        extra_headers = generate_headers(browser_mode=True)
-        useragent = extra_headers.get('User-Agent')
+        extra_headers, useragent = get_clean_browser_headers()
 
         self.context = self.browser.new_context(
             locale='en-US', is_mobile=False, has_touch=False,
@@ -304,7 +309,7 @@ class StealthySession:
             )
 
         from scrapling.engines.toolbelt import (
-            Response, intercept_route, generate_convincing_referer,
+            Response, intercept_route,
         )
 
         page = self.context.new_page()
@@ -325,7 +330,7 @@ class StealthySession:
             page.add_init_script(path=_js_path('screen_props.js'))
             page.add_init_script(path=_js_path('playwright_fingerprint.js'))
 
-        res = page.goto(url, referer=generate_convincing_referer(url))
+        res = page.goto(url)
         try:
             page.wait_for_load_state(state="load", timeout=15000)
         except Exception:
