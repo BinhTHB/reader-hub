@@ -8,13 +8,16 @@ newer sb_* key formats while REST itself accepts them).
 
 import os
 import json
+import time
+import socket
+import http.client
 import urllib.request
 import urllib.error
 from datetime import datetime, timezone
 
 
 def _rest(method: str, table: str, params: str = "", body: dict = None) -> dict:
-    """Execute a REST API call against Supabase.
+    """Execute a REST API call against Supabase with auto-retries on transient errors.
 
     Always uses SUPABASE_SERVICE_KEY (bypasses RLS).
     Returns the JSON response body.
@@ -30,36 +33,50 @@ def _rest(method: str, table: str, params: str = "", body: dict = None) -> dict:
         "Accept": "application/json",
         "Prefer": "return=representation",
     }
-
-    if method == "GET":
-        req = urllib.request.Request(full_url, headers=headers, method="GET")
-    elif method == "POST":
+    if method == "POST":
         headers["Prefer"] = "return=representation,resolution=merge-duplicates"
-        req = urllib.request.Request(
-            full_url, data=json.dumps(body).encode("utf-8"),
-            headers=headers, method="POST"
-        )
-    elif method == "PATCH":
-        req = urllib.request.Request(
-            full_url, data=json.dumps(body).encode("utf-8"),
-            headers=headers, method="PATCH"
-        )
-    elif method == "DELETE":
-        req = urllib.request.Request(full_url, headers=headers, method="DELETE")
-    else:
-        raise ValueError(f"Unsupported method: {method}")
 
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            raw = resp.read().decode("utf-8")
-            if raw.strip():
-                return json.loads(raw)
-            return []
-    except urllib.error.HTTPError as e:
-        err_body = e.read().decode("utf-8", errors="replace")
-        raise RuntimeError(
-            f"Supabase REST HTTP {e.code} on {method} {table}: {err_body[:300]}"
-        ) from e
+    encoded_body = json.dumps(body).encode("utf-8") if body is not None else None
+
+    max_retries = 4
+    retry_delays = [2, 5, 10, 20]
+    transient_http_codes = {429, 500, 502, 503, 504, 520, 521, 522, 524}
+
+    for attempt in range(max_retries + 1):
+        if method == "GET":
+            req = urllib.request.Request(full_url, headers=headers, method="GET")
+        elif method in ("POST", "PATCH"):
+            req = urllib.request.Request(full_url, data=encoded_body, headers=headers, method=method)
+        elif method == "DELETE":
+            req = urllib.request.Request(full_url, headers=headers, method="DELETE")
+        else:
+            raise ValueError(f"Unsupported method: {method}")
+
+        try:
+            with urllib.request.urlopen(req, timeout=30) as resp:
+                raw = resp.read().decode("utf-8")
+                if raw.strip():
+                    return json.loads(raw)
+                return []
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8", errors="replace")
+            if e.code in transient_http_codes and attempt < max_retries:
+                delay = retry_delays[attempt]
+                print(f"  ⚠️ [Supabase] Transient HTTP {e.code} on {method} {table}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})...")
+                time.sleep(delay)
+                continue
+            raise RuntimeError(
+                f"Supabase REST HTTP {e.code} on {method} {table}: {err_body[:300]}"
+            ) from e
+        except (urllib.error.URLError, TimeoutError, socket.timeout, ConnectionError, http.client.RemoteDisconnected) as e:
+            if attempt < max_retries:
+                delay = retry_delays[attempt]
+                print(f"  ⚠️ [Supabase] Connection/Timeout error on {method} {table}: {e}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})...")
+                time.sleep(delay)
+                continue
+            raise RuntimeError(
+                f"Supabase connection failed on {method} {table}: {e}"
+            ) from e
 
 
 # ─── Stories ───────────────────────────────────────────────

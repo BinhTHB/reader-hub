@@ -1190,52 +1190,71 @@ def run_scraper():
                 scrape_progress["end"] = ch_num
                 scrape_progress["count"] = chapters_scraped
 
-                # Update progress on every chapter
-                update_story_scrape_progress(story_id, ch_num)
+                # Update progress on every chapter (non-fatal if telemetry fails)
+                try:
+                    update_story_scrape_progress(story_id, ch_num)
+                except Exception as err:
+                    print(f"  ⚠️ Failed to update story progress in Supabase (non-fatal): {err}")
+
                 if JOB_ID:
-                    update_scrape_job(int(JOB_ID), chapters_scraped=chapters_scraped)
+                    try:
+                        update_scrape_job(int(JOB_ID), chapters_scraped=chapters_scraped)
+                    except Exception as err:
+                        print(f"  ⚠️ Failed to update job progress in Supabase (non-fatal): {err}")
 
                 random_delay()
 
             # Final progress update
-            update_story_scrape_progress(story_id, target_chapters[-1]["chapter_number"] if target_chapters else 0)
+            try:
+                update_story_scrape_progress(story_id, target_chapters[-1]["chapter_number"] if target_chapters else 0)
+            except Exception as err:
+                print(f"  ⚠️ Failed to update final story progress in Supabase (non-fatal): {err}")
 
         except ScraperAbortException as e:
             print(f"\n⚠️ Scraper aborted early: {e}")
             if JOB_ID:
-                start = scrape_progress["start"]
-                end = scrape_progress["end"]
-                scraped_log = f"Scraped chapters from {start} to {end}" if start else "No chapters scraped"
-                update_scrape_job(
-                    int(JOB_ID),
-                    status="completed",
-                    error_message=f"Aborted: {e} | {scraped_log}",
-                    chapters_scraped=chapters_scraped
-                )
+                try:
+                    start = scrape_progress["start"]
+                    end = scrape_progress["end"]
+                    scraped_log = f"Scraped chapters from {start} to {end}" if start else "No chapters scraped"
+                    update_scrape_job(
+                        int(JOB_ID),
+                        status="completed",
+                        error_message=f"Aborted: {e} | {scraped_log}",
+                        chapters_scraped=chapters_scraped
+                    )
+                except Exception as update_err:
+                    print(f"  ⚠️ Failed to update scrape job on abort: {update_err}")
         except Exception as e:
             print(f"\n❌ Fatal error: {e}")
             traceback.print_exc()
             if JOB_ID:
-                start = scrape_progress["start"]
-                end = scrape_progress["end"]
-                scraped_log = f"Scraped chapters from {start} to {end}" if start else "No chapters scraped"
-                update_scrape_job(
-                    int(JOB_ID),
-                    status="failed",
-                    error_message=f"Error: {e} | {scraped_log}",
-                    chapters_scraped=chapters_scraped
-                )
+                try:
+                    start = scrape_progress["start"]
+                    end = scrape_progress["end"]
+                    scraped_log = f"Scraped chapters from {start} to {end}" if start else "No chapters scraped"
+                    update_scrape_job(
+                        int(JOB_ID),
+                        status="failed",
+                        error_message=f"Error: {e} | {scraped_log}",
+                        chapters_scraped=chapters_scraped
+                    )
+                except Exception as update_err:
+                    print(f"  ⚠️ Failed to update scrape job on error: {update_err}")
             raise
 
     # Mark job as completed
     if JOB_ID:
-        scraped_log = "Successfully scraped!"
-        update_scrape_job(
-            int(JOB_ID),
-            status="completed",
-            error_message=scraped_log,
-            chapters_scraped=chapters_scraped
-        )
+        try:
+            scraped_log = "Successfully scraped!"
+            update_scrape_job(
+                int(JOB_ID),
+                status="completed",
+                error_message=scraped_log,
+                chapters_scraped=chapters_scraped
+            )
+        except Exception as err:
+            print(f"  ⚠️ Failed to mark job completed in Supabase: {err}")
 
     print(f"\n✅ Done! Scraped {chapters_scraped} chapters successfully.")
 
