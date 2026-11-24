@@ -703,8 +703,11 @@ def run_scraper():
         print("❌ No STORY_SOURCE_URL provided. Exiting.")
         sys.exit(1)
 
-    parser = detect_parser(STORY_SOURCE_URL)
-    print(f"📖 [Scrapling] Using parser: {parser.name}")
+    parser = detect_parser(STORY_SOURCE_URL, allow_dynamic=True)
+    if parser is not None:
+        print(f"📖 [Scrapling] Using parser: {parser.name}")
+    else:
+        print("🤖 [Scrapling] Unknown domain — will auto-discover CSS selectors via AI")
     print(f"🔗 [Scrapling] Source: {STORY_SOURCE_URL}")
     print(f"📄 [Scrapling] Chapters: {CHAPTER_START} (Limit: {CHAPTER_LIMIT if CHAPTER_LIMIT > 0 else 'All'})")
     if FORCE_RESCRAPE:
@@ -760,6 +763,47 @@ def run_scraper():
     # Start Scrapling session
     with StealthySession(**session_kwargs) as session:
         try:
+            # Auto-discover selectors for unknown domains on first run
+            if parser is None:
+                from urllib.parse import urlparse
+                from ai_selector import DEFAULT_MODEL, discover_site_selectors, normalize_domain
+                from dynamic_parser import DynamicConfigParser
+                from supabase_client import upsert_scrape_source
+
+                print("\n🤖 [AI Selector] Fetching story page for structure discovery...")
+                def _fetch_html(target_url: str) -> str:
+                    def _do(sess):
+                        r = sess.fetch(target_url)
+                        if r.status != 200:
+                            raise RuntimeError(f"HTTP {r.status}")
+                        return r.body
+                    return fetch_with_rotation_wrapper(session, _do)
+
+                initial_story_html = _fetch_html(STORY_SOURCE_URL)
+                selectors, preview = discover_site_selectors(
+                    STORY_SOURCE_URL,
+                    initial_story_html,
+                    fetch_fn=_fetch_html,
+                )
+                domain = normalize_domain(STORY_SOURCE_URL)
+                parsed_u = urlparse(STORY_SOURCE_URL)
+                base_u = f"{parsed_u.scheme}://{parsed_u.netloc}"
+                model_used = os.environ.get("AI_SELECTOR_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
+                try:
+                    upsert_scrape_source(
+                        domain=domain,
+                        base_url=base_u,
+                        selectors=selectors,
+                        model_name=model_used,
+                        generated_by="ai",
+                        is_verified=True,
+                    )
+                    print(f"  💾 Saved verified selectors for '{domain}' to scrape_sources")
+                except Exception as save_err:
+                    print(f"  ⚠️ Could not persist scrape_sources (non-fatal): {save_err}")
+                parser = DynamicConfigParser(domain=domain, base_url=base_u, selectors=selectors)
+                print(f"  ✅ Discovered parser ready: {parser.name} (preview: {preview.get('title')})")
+
             # ─── Step 1: Scrape story info ─────────────────
             print("\n📚 [Scrapling] Scraping story info...")
             

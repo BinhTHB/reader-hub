@@ -1068,13 +1068,40 @@ def get_parser(name: str) -> BaseSiteParser:
     return PARSERS[name]
 
 
-def detect_parser(url: str) -> BaseSiteParser:
-    """Auto-detect the appropriate parser based on the URL domain."""
+def detect_parser(url: str, allow_dynamic: bool = True) -> BaseSiteParser | None:
+    """Auto-detect the appropriate parser based on the URL domain.
+
+    Priority:
+    1. Built-in hardcoded site parsers (truyenfull, metruyenchu, truyendich, uukanshu).
+    2. Dynamic selector config cached in Supabase `scrape_sources` (if allow_dynamic=True).
+    3. Returns None if unknown (allowing caller to run AI auto-selector discovery).
+    """
     site = get_site_by_url(url)
     if site and site.name in PARSERS:
         parser = PARSERS[site.name]
         parser.config = site
         return parser
+
+    if allow_dynamic:
+        from urllib.parse import urlparse
+        from ai_selector import normalize_domain
+        from dynamic_parser import DynamicConfigParser
+        from supabase_client import get_scrape_source
+
+        domain = normalize_domain(url)
+        if domain:
+            row = get_scrape_source(domain)
+            if row and isinstance(row.get("selectors"), dict):
+                parsed = urlparse(url)
+                base_url = row.get("base_url") or f"{parsed.scheme}://{parsed.netloc}"
+                return DynamicConfigParser(
+                    domain=domain,
+                    base_url=base_url,
+                    selectors=row["selectors"],
+                    display_name=row.get("display_name"),
+                )
+        return None
+
     raise ValueError(f"No parser available for URL: {url}")
 
 

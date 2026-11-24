@@ -277,3 +277,52 @@ def update_scrape_job(
         _rest("PATCH", "scrape_jobs",
               params=f"?id=eq.{job_id}",
               body=data)
+
+
+# ─── Dynamic Scrape Sources ────────────────────────────────
+
+def get_scrape_source(domain: str) -> dict | None:
+    """Fetch an enabled dynamic scrape source config by domain.
+
+    Returns None safely if the table does not exist yet or no config matches.
+    """
+    try:
+        from urllib.parse import quote
+        params = f"?domain=eq.{quote(domain, safe='')}&enabled=eq.true&select=*"
+        rows = _rest("GET", "scrape_sources", params=params)
+        if isinstance(rows, list) and rows:
+            return rows[0]
+    except Exception as e:
+        print(f"  ⚠️ [Supabase] Could not query scrape_sources for '{domain}': {e}")
+    return None
+
+
+def upsert_scrape_source(
+    domain: str,
+    base_url: str,
+    selectors: dict,
+    display_name: str | None = None,
+    model_name: str | None = None,
+    generated_by: str = "ai",
+    is_verified: bool = True,
+) -> dict:
+    """Create or update a domain selector config in scrape_sources."""
+    data = {
+        "domain": domain,
+        "base_url": base_url,
+        "selectors": selectors,
+        "generated_by": generated_by,
+        "is_verified": is_verified,
+        "enabled": True,
+    }
+    if display_name is not None:
+        data["display_name"] = display_name
+    if model_name is not None:
+        data["model_name"] = model_name
+    if is_verified:
+        data["last_verified_at"] = datetime.now(timezone.utc).isoformat()
+
+    result = _rest("POST", "scrape_sources", params="?on_conflict=domain", body=data)
+    if isinstance(result, list) and result:
+        return result[0]
+    return result

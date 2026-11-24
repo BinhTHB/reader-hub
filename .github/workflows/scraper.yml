@@ -85,6 +85,8 @@ jobs:
           SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
           PROXY_URL: ${{ secrets.PROXY_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          AI_SELECTOR_MODEL: 'gemini-2.5-flash'
           SCRAPE_MIN_DELAY: '2.0'
           SCRAPE_MAX_DELAY: '5.0'
           USE_FREE_PROXY: 'true'
