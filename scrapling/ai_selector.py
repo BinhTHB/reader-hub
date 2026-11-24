@@ -10,9 +10,14 @@ import httpx
 from dynamic_parser import DynamicConfigParser
 
 
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-2.5-flash-lite"
+DEFAULT_FALLBACK_MODELS = [
+    "gemini-3.5-flash-lite",
+    "gemma-4-31b-it",
+    "gemini-2.5-flash",
+]
 KEEP_ATTRS = {"id", "class", "href", "src", "property", "name", "content", "rel", "data-page"}
-NOISE_TAGS = {"script", "style", "svg", "iframe", "noscript", "link", "path"}
+NOISE_TAGS = {"script", "style", "svg", "iframe", "noscript", "link", "path", "nav", "footer", "aside"}
 BAD_CONTENT_MARKERS = ("document.write", "adsbygoogle", "window.location", "function(")
 
 
@@ -58,7 +63,7 @@ def _collapse_repeated_children(parent: Tag) -> None:
         node.decompose()
 
 
-def skeletonize_html(html: str, max_chars: int = 16000) -> str:
+def skeletonize_html(html: str, max_chars: int = 32000) -> str:
     """Strip noise tags/scripts and shrink HTML to a compact structural skeleton."""
     soup = BeautifulSoup(html or "", "lxml")
 
@@ -86,7 +91,12 @@ def skeletonize_html(html: str, max_chars: int = 16000) -> str:
         new_attrs = {}
         for k, v in tag.attrs.items():
             if k in KEEP_ATTRS:
-                if k == "href" and isinstance(v, str) and len(v) > 120:
+                if k == "class" and isinstance(v, list):
+                    # Drop Tailwind utility classes containing ':', '/', '[', ']' that break CSS selectors
+                    clean_classes = [c for c in v if not any(ch in c for ch in (":", "/", "[", "]"))]
+                    if clean_classes:
+                        new_attrs[k] = clean_classes[:8]
+                elif k == "href" and isinstance(v, str) and len(v) > 120:
                     new_attrs[k] = v[:120]
                 elif k == "content" and isinstance(v, str) and len(v) > 120:
                     new_attrs[k] = v[:120]
@@ -126,14 +136,24 @@ def validate_selectors(
     base_url = f"{parsed.scheme}://{parsed.netloc}"
     parser = DynamicConfigParser(domain=domain, base_url=base_url, selectors=selectors)
 
-    info = parser.parse_story_info(story_html, story_url)
+    info = {}
+    try:
+        info = parser.parse_story_info(story_html, story_url)
+    except Exception as e:
+        errors.append(f"Invalid CSS selector in story metadata: {e}")
+
     title = (info.get("title") or "").strip()
     if not title:
         errors.append("story_title selector produced empty title")
     elif len(title) > 200:
         errors.append(f"story_title too long ({len(title)} chars), likely matched wrong container")
 
-    chapters = parser.parse_chapter_list(story_html)
+    chapters = []
+    try:
+        chapters = parser.parse_chapter_list(story_html)
+    except Exception as e:
+        errors.append(f"Invalid CSS selector in chapter_list: {e}")
+
     valid_urls = {
         ch["source_url"]
         for ch in chapters
@@ -152,7 +172,11 @@ def validate_selectors(
     }
 
     if chapter_html is not None:
-        ch_data = parser.parse_chapter_content(chapter_html)
+        ch_data = {"title": "", "paragraphs": [], "word_count": 0}
+        try:
+            ch_data = parser.parse_chapter_content(chapter_html)
+        except Exception as e:
+            errors.append(f"Invalid CSS selector in chapter_content: {e}")
         paragraphs = ch_data.get("paragraphs") or []
         word_count = ch_data.get("word_count") or 0
         joined = "\n".join(paragraphs).lower()
@@ -173,32 +197,42 @@ def validate_selectors(
     return len(errors) == 0, errors, preview
 
 
-def _strip_json_fences(raw: str) -> str:
+def _extract_json_object(raw: str) -> dict:
     txt = raw.strip()
     if txt.startswith("```"):
         txt = re.sub(r"^```(?:json)?\s*", "", txt)
         txt = re.sub(r"\s*```$", "", txt)
-    return txt.strip()
+        txt = txt.strip()
+    try:
+        return json.loads(txt)
+    except json.JSONDecodeError:
+        start = txt.find("{")
+        end = txt.rfind("}")
+        if start != -1 and end > start:
+            return json.loads(txt[start : end + 1])
+        raise
 
 
 def _call_gemini_for_selectors(prompt: str, api_key: str, model: str) -> dict:
     endpoint = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
+    generation_config: dict = {"temperature": 0.1}
+    # Gemma models do not support responseMimeType: application/json
+    if not model.lower().startswith("gemma"):
+        generation_config["responseMimeType"] = "application/json"
+
     payload = {
         "contents": [{"parts": [{"text": prompt}]}],
-        "generationConfig": {
-            "responseMimeType": "application/json",
-            "temperature": 0.1,
-        },
+        "generationConfig": generation_config,
     }
-    resp = httpx.post(endpoint, json=payload, timeout=45.0)
+    resp = httpx.post(endpoint, json=payload, timeout=60.0)
     if resp.status_code >= 400:
-        raise RuntimeError(f"Gemini API HTTP {resp.status_code}: {resp.text[:300]}")
+        raise RuntimeError(f"Gemini API HTTP {resp.status_code} ({model}): {resp.text[:300]}")
     data = resp.json()
     try:
         text = data["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError, TypeError) as e:
-        raise RuntimeError(f"Unexpected Gemini response format: {data}") from e
-    return json.loads(_strip_json_fences(text))
+        raise RuntimeError(f"Unexpected Gemini response format ({model}): {data}") from e
+    return _extract_json_object(text)
 
 
 def _build_prompt(
@@ -208,7 +242,7 @@ def _build_prompt(
     previous_errors: list[str] | None,
 ) -> str:
     parts = [
-        "You are an expert web-scraping engineer. Analyze the HTML skeleton(s) below and return a JSON object of CSS selectors compatible with BeautifulSoup (.select / .select_one).",
+        "You are an expert web-scraping engineer. Analyze the HTML skeleton(s) below and return a JSON object of CSS selectors compatible with BeautifulSoup (.select / .select_one). Avoid deprecated :contains(...) (use :-soup-contains(...) if needed) and avoid unescaped Tailwind colon classes like md:text-5xl or bg-card/50 in selectors.",
         f"Target story URL: {story_url}",
         "",
         "Return ONLY a JSON object with these keys:",
@@ -247,15 +281,41 @@ def discover_site_selectors(
     fetch_fn,
     max_retries: int = 2,
     llm_fn=None,
+    model: str | None = None,
 ) -> tuple[dict, dict]:
     """Discover, validate, and self-heal CSS selectors for an unknown site."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
-    model = os.environ.get("AI_SELECTOR_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    active_model = (model or os.environ.get("AI_SELECTOR_MODEL") or DEFAULT_MODEL).strip() or DEFAULT_MODEL
+    model_chain = [active_model]
+    if model is None:
+        for fb in DEFAULT_FALLBACK_MODELS:
+            if fb not in model_chain:
+                model_chain.append(fb)
+    chain_idx = 0
 
     if llm_fn is None:
         if not api_key:
             raise RuntimeError("GEMINI_API_KEY is not set; cannot auto-discover selectors")
-        llm_fn = lambda prompt: _call_gemini_for_selectors(prompt, api_key, model)
+
+        def _call_with_fallback(prompt: str) -> dict:
+            nonlocal chain_idx
+            while True:
+                current_model = model_chain[chain_idx]
+                try:
+                    return _call_gemini_for_selectors(prompt, api_key, current_model)
+                except Exception as err:
+                    err_s = str(err)
+                    is_transient = isinstance(err, httpx.TransportError) or any(
+                        code in err_s for code in ("HTTP 429", "HTTP 500", "HTTP 502", "HTTP 503", "HTTP 504")
+                    )
+                    if is_transient and chain_idx + 1 < len(model_chain):
+                        next_model = model_chain[chain_idx + 1]
+                        print(f"  🔄 [AI Selector] {current_model} unavailable ({err_s[:70]}), switching to {next_model}")
+                        chain_idx += 1
+                        continue
+                    raise
+
+        llm_fn = _call_with_fallback
 
     story_skeleton = skeletonize_html(story_html)
     chapter_html: str | None = None
