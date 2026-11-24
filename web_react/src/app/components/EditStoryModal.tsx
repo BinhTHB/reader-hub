@@ -1,24 +1,32 @@
 import { useState, type FormEvent } from "react";
 import { RefreshCw, X } from "lucide-react";
-import { updateStory, type AdminStory, type StoryStatus } from "../../lib/admin";
+import {
+  createStory,
+  slugifyTitle,
+  updateStory,
+  type AdminStory,
+  type StoryStatus,
+} from "../../lib/admin";
 
 interface EditStoryModalProps {
-  story: Partial<AdminStory> & { id: number; title: string };
+  story?: (Partial<AdminStory> & { id: number; title: string }) | null;
   onClose: () => void;
-  onSaved: (updated: AdminStory) => void;
+  onSaved: (saved: AdminStory) => void;
 }
 
 export function EditStoryModal({ story, onClose, onSaved }: EditStoryModalProps) {
-  const [title, setTitle] = useState(story.title || "");
-  const [author, setAuthor] = useState(story.author || "");
+  const isCreate = !story?.id;
+  const [title, setTitle] = useState(story?.title || "");
+  const [slug, setSlug] = useState(story?.slug || "");
+  const [author, setAuthor] = useState(story?.author || "");
   const [status, setStatus] = useState<StoryStatus>(
-    (story.status as StoryStatus) || "ongoing"
+    (story?.status as StoryStatus) || "ongoing",
   );
-  const [genresText, setGenresText] = useState((story.genres || []).join(", "));
-  const [coverUrl, setCoverUrl] = useState(story.cover_url || "");
-  const [sourceUrl, setSourceUrl] = useState(story.source_url || "");
-  const [description, setDescription] = useState(story.description || "");
-  const [isFeatured, setIsFeatured] = useState(Boolean(story.is_featured));
+  const [genresText, setGenresText] = useState((story?.genres || []).join(", "));
+  const [coverUrl, setCoverUrl] = useState(story?.cover_url || "");
+  const [sourceUrl, setSourceUrl] = useState(story?.source_url || "");
+  const [description, setDescription] = useState(story?.description || "");
+  const [isFeatured, setIsFeatured] = useState(Boolean(story?.is_featured));
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -38,7 +46,7 @@ export function EditStoryModal({ story, onClose, onSaved }: EditStoryModalProps)
         .map((g) => g.trim())
         .filter(Boolean);
 
-      const updated = await updateStory(story.id, {
+      const payload = {
         title: trimmedTitle,
         author: author.trim() || null,
         status,
@@ -47,8 +55,16 @@ export function EditStoryModal({ story, onClose, onSaved }: EditStoryModalProps)
         source_url: sourceUrl.trim() || null,
         description: description.trim() || null,
         is_featured: isFeatured,
-      });
-      onSaved(updated);
+      };
+
+      const saved = isCreate
+        ? await createStory({
+            ...payload,
+            slug: slug.trim() || slugifyTitle(trimmedTitle),
+          })
+        : await updateStory(story!.id, payload);
+
+      onSaved(saved);
     } catch (err: any) {
       setError(err?.message || "Không thể lưu thay đổi.");
     } finally {
@@ -66,7 +82,9 @@ export function EditStoryModal({ story, onClose, onSaved }: EditStoryModalProps)
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-medium">Chỉnh sửa truyện</h3>
+          <h3 className="text-lg font-medium">
+            {isCreate ? "Thêm truyện mới" : "Chỉnh sửa truyện"}
+          </h3>
           <button
             type="button"
             onClick={onClose}
@@ -90,11 +108,31 @@ export function EditStoryModal({ story, onClose, onSaved }: EditStoryModalProps)
             <input
               type="text"
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (isCreate && !slug) {
+                  // Preview generated via placeholder; keep manual override clean
+                }
+              }}
               required
               className="w-full px-3 py-2.5 bg-background rounded-xl border border-border focus:border-primary focus:outline-none text-sm"
             />
           </div>
+
+          {isCreate && (
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1">
+                Slug (tự tạo từ tiêu đề nếu để trống)
+              </label>
+              <input
+                type="text"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                placeholder={slugifyTitle(title) || "ten-truyen-khong-dau"}
+                className="w-full px-3 py-2.5 bg-background rounded-xl border border-border focus:border-primary focus:outline-none text-sm font-mono"
+              />
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3">
             <div>
@@ -198,7 +236,7 @@ export function EditStoryModal({ story, onClose, onSaved }: EditStoryModalProps)
               className="flex-1 py-2.5 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {isSaving && <RefreshCw className="w-4 h-4 animate-spin" />}
-              {isSaving ? "Đang lưu..." : "Lưu thay đổi"}
+              {isSaving ? "Đang lưu..." : isCreate ? "Tạo truyện" : "Lưu thay đổi"}
             </button>
           </div>
         </form>

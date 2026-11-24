@@ -1,30 +1,19 @@
-import {
-  Home,
-  Library,
-  Download,
-  User,
-  MoreHorizontal,
-} from "lucide-react";
+import { Database, Download, ShieldCheck } from "lucide-react";
 
 interface BottomNavProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
 }
 
-export function BottomNav({
-  activeTab,
-  onTabChange,
-}: BottomNavProps) {
+export function BottomNav({ activeTab, onTabChange }: BottomNavProps) {
   const tabs = [
-    { id: "home", label: "Trang chủ", icon: Home },
-    { id: "library", label: "Thư viện", icon: Library },
-    { id: "search", label: "Cào", icon: Download },
-    { id: "profile", label: "Cá nhân", icon: User },
-    { id: "more", label: "Thêm", icon: MoreHorizontal },
+    { id: "stories", label: "Truyện", icon: Database },
+    { id: "scrape", label: "Cào & Jobs", icon: Download },
+    { id: "profile", label: "Tài khoản", icon: ShieldCheck },
   ];
 
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-bottom">
+    <div className="fixed bottom-0 left-0 right-0 bg-card border-t border-border safe-area-bottom z-30">
       <div className="max-w-md mx-auto flex items-center justify-around px-4 py-3">
         {tabs.map((tab) => {
           const Icon = tab.icon;
@@ -33,10 +22,10 @@ export function BottomNav({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className="flex flex-col items-center gap-1 min-w-[60px] group"
+              className="flex flex-col items-center gap-1 min-w-[72px] group"
             >
               <Icon
-                className={`w-6 h-6 transition-colors ${
+                className={`w-5 h-5 transition-colors ${
                   isActive
                     ? "text-primary"
                     : "text-muted-foreground group-hover:text-foreground"

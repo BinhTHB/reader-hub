@@ -682,11 +682,11 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                   </div>
                 )}
                 <button
-                  onClick={() => onNavigate?.("library")}
+                  onClick={() => onNavigate?.("stories")}
                   className="w-full px-4 py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
                 >
                   <BookOpen className="w-5 h-5" />
-                  Xem trong thư viện
+                  Xem trong danh sách truyện
                 </button>
               </div>
             )}

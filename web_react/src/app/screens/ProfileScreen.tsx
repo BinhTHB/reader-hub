@@ -1,14 +1,5 @@
 import { useState } from "react";
-import {
-  ChevronRight,
-  Moon,
-  Sun,
-  Settings,
-  HelpCircle,
-  LogOut,
-  User,
-  Info,
-} from "lucide-react";
+import { Moon, Sun, LogOut, User, ShieldCheck, Copy, Check } from "lucide-react";
 
 interface ProfileScreenProps {
   onNavigate?: (screen: string) => void;
@@ -19,42 +10,44 @@ interface ProfileScreenProps {
   isAdmin?: boolean;
 }
 
-export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode, user, onLogout, isAdmin = false }: ProfileScreenProps) {
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+export function ProfileScreen({
+  onNavigate,
+  isDarkMode = false,
+  onToggleDarkMode,
+  user,
+  onLogout,
+  isAdmin = false,
+}: ProfileScreenProps) {
+  const [copied, setCopied] = useState(false);
 
-  const showToast = (message: string) => {
-    setToastMessage(message);
-    const timeoutId = (window as any)._toastTimeout;
-    if (timeoutId) clearTimeout(timeoutId);
-    (window as any)._toastTimeout = setTimeout(() => {
-      setToastMessage(null);
-    }, 2000);
-  };
-
-  const menuItems = [
-    { icon: Settings, label: "Cài đặt ứng dụng", action: "settings" },
-    { icon: HelpCircle, label: "Trợ giúp & Hỗ trợ", action: "help" },
-    { icon: Info, label: "Về ứng dụng", action: "about" },
-  ];
-
-  const displayName = user?.user_metadata?.display_name || user?.email?.split('@')[0] || "Người dùng";
+  const displayName =
+    user?.user_metadata?.display_name ||
+    user?.email?.split("@")[0] ||
+    "Quản trị viên";
   const userEmail = user?.email || "Chưa đăng nhập";
+
+  const copyUserId = () => {
+    if (!user?.id) return;
+    navigator.clipboard?.writeText(user.id);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
     <div className="min-h-screen pb-24 bg-background">
       {/* Header */}
       <div className="bg-gradient-to-br from-primary to-secondary px-4 pt-12 pb-8">
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-20 h-20 rounded-full bg-white flex items-center justify-center text-2xl shadow-lg overflow-hidden">
-            {user?.user_metadata?.avatar_url ? (
-              <img src={user.user_metadata.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+        <div className="flex items-center gap-4 mb-4">
+          <div className="w-16 h-16 rounded-full bg-white flex items-center justify-center shadow-lg overflow-hidden shrink-0">
+            {isAdmin ? (
+              <ShieldCheck className="w-8 h-8 text-emerald-600" />
             ) : (
-              <User className="w-10 h-10 text-primary" />
+              <User className="w-8 h-8 text-primary" />
             )}
           </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <h1 className="text-xl font-medium text-white">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-wrap mb-1">
+              <h1 className="text-xl font-medium text-white truncate">
                 {displayName}
               </h1>
               {user && (
@@ -65,52 +58,67 @@ export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode
                       : "bg-white/20 text-white"
                   }`}
                 >
-                  {isAdmin ? "Quản trị viên (Admin)" : "Người dùng thường"}
+                  {isAdmin ? "Quản trị viên (Admin)" : "Chưa có quyền Admin"}
                 </span>
               )}
             </div>
-            <p className="text-sm text-white/80">{userEmail}</p>
-            {user && !isAdmin && (
-              <p className="text-xs text-white/70 mt-1">
-                Cần quyền Admin trong Supabase để sửa hoặc xoá truyện.
-              </p>
-            )}
+            <p className="text-sm text-white/80 truncate">{userEmail}</p>
           </div>
         </div>
       </div>
 
-      <div className="px-4 -mt-6 space-y-6">
-        {/* Info Card */}
+      <div className="px-4 -mt-4 space-y-5">
+        {/* Account Card */}
         {user ? (
-          <div className="bg-card rounded-2xl p-6 shadow-lg border border-border text-center">
-            <p className="text-muted-foreground mb-4">
-              Bạn đang đăng nhập. Lịch sử đọc và truyện yêu thích được đồng bộ hóa với đám mây.
-            </p>
-            <button 
+          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border space-y-4">
+            <div>
+              <div className="text-xs text-muted-foreground mb-1">User ID</div>
+              <div className="flex items-center justify-between gap-2 bg-muted/60 rounded-xl px-3 py-2">
+                <span className="text-xs font-mono truncate">{user.id}</span>
+                <button
+                  type="button"
+                  onClick={copyUserId}
+                  className="text-primary shrink-0 p-1 hover:bg-muted rounded"
+                  title="Sao chép User ID"
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            {!isAdmin && (
+              <p className="text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                Tài khoản hiện tại chỉ có quyền xem. Hãy cập nhật <code>profiles.role = &apos;admin&apos;</code> trong Supabase để mở khoá thêm/sửa/xoá truyện và chương.
+              </p>
+            )}
+
+            <button
               onClick={onLogout}
-              className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2 shadow-lg shadow-red-500/10"
+              className="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2"
             >
-              <LogOut className="w-5 h-5" />
+              <LogOut className="w-4 h-4" />
               Đăng xuất
             </button>
           </div>
         ) : (
-          <div className="bg-card rounded-2xl p-6 shadow-lg border border-border text-center">
-            <p className="text-muted-foreground mb-4">
-              Đăng nhập để đồng bộ dữ liệu và trải nghiệm đầy đủ tính năng
+          <div className="bg-card rounded-2xl p-5 shadow-sm border border-border text-center">
+            <p className="text-sm text-muted-foreground mb-4">
+              Đăng nhập bằng tài khoản Admin để thêm, chỉnh sửa, xoá truyện/chương và kích hoạt cào dữ liệu.
             </p>
-            <button 
+            <button
               onClick={() => onNavigate?.("auth")}
-              className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity shadow-lg shadow-primary/10"
+              className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:opacity-90 transition-opacity"
             >
-              Đăng nhập / Đăng ký
+              Đăng nhập Admin
             </button>
           </div>
         )}
 
-        {/* Settings */}
+        {/* Appearance */}
         <section>
-          <h2 className="text-lg font-medium mb-3">Cài đặt</h2>
+          <h2 className="text-sm font-medium text-muted-foreground mb-2">
+            Giao diện
+          </h2>
           <div className="bg-card rounded-xl border border-border overflow-hidden">
             <div className="flex items-center justify-between p-4">
               <div className="flex items-center gap-3">
@@ -119,7 +127,7 @@ export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode
                 ) : (
                   <Sun className="w-5 h-5 text-primary" />
                 )}
-                <span className="font-medium">Chế độ tối</span>
+                <span className="font-medium text-sm">Chế độ tối</span>
               </div>
               <button
                 onClick={() => onToggleDarkMode?.(!isDarkMode)}
@@ -142,43 +150,6 @@ export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode
             </div>
           </div>
         </section>
-
-        {/* Menu */}
-        <section>
-          <h2 className="text-lg font-medium mb-3">Khác</h2>
-          <div className="bg-card rounded-xl border border-border overflow-hidden">
-            {menuItems.map((item, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  showToast("Tính năng chưa được triển khai");
-                }}
-                className={`w-full flex items-center justify-between p-4 hover:bg-muted/50 transition-colors ${
-                  index !== menuItems.length - 1 ? "border-b border-border" : ""
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <item.icon className="w-5 h-5 text-primary" />
-                  <span className="font-medium">{item.label}</span>
-                </div>
-                <ChevronRight className="w-5 h-5 text-muted-foreground" />
-              </button>
-            ))}
-          </div>
-        </section>
-
-        {/* App Info */}
-        <div className="text-center text-sm text-muted-foreground py-4">
-          <p className="font-medium">Reader Hub v1.0.0</p>
-          <p className="mt-1">React Web App + Capacitor</p>
-          <p className="mt-1 text-xs">© 2026 Reader Hub Team</p>
-        </div>
-      {/* Toast Notification */}
-      {toastMessage && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 bg-gray-900/90 text-white text-sm px-4 py-2.5 rounded-full shadow-lg backdrop-blur-sm transition-all duration-300 animate-in fade-in slide-in-from-bottom-4 z-50 flex items-center gap-2">
-          <span>{toastMessage}</span>
-        </div>
-      )}
       </div>
     </div>
   );

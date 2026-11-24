@@ -1,27 +1,55 @@
 import { useState, useEffect, lazy, Suspense } from "react";
-import { App as CapacitorApp } from '@capacitor/app';
+import { App as CapacitorApp } from "@capacitor/app";
 import { BottomNav } from "./components/BottomNav";
 import { HomeScreen } from "./screens/HomeScreen";
 import { supabase } from "../lib/supabase";
 import { fetchIsAdmin } from "../lib/admin";
 
-const ReadingScreen = lazy(() => import("./screens/ReadingScreen").then(m => ({ default: m.ReadingScreen })));
-const LibraryScreen = lazy(() => import("./screens/LibraryScreen").then(m => ({ default: m.LibraryScreen })));
-const DetailScreen = lazy(() => import("./screens/DetailScreen").then(m => ({ default: m.DetailScreen })));
-const ProfileScreen = lazy(() => import("./screens/ProfileScreen").then(m => ({ default: m.ProfileScreen })));
-const ScrapeScreen = lazy(() => import("./screens/ScrapeScreen").then(m => ({ default: m.ScrapeScreen })));
-const AuthScreen = lazy(() => import("./screens/AuthScreen").then(m => ({ default: m.AuthScreen })));
+const DetailScreen = lazy(() =>
+  import("./screens/DetailScreen").then((m) => ({ default: m.DetailScreen })),
+);
+const ScrapeScreen = lazy(() =>
+  import("./screens/ScrapeScreen").then((m) => ({ default: m.ScrapeScreen })),
+);
+const ProfileScreen = lazy(() =>
+  import("./screens/ProfileScreen").then((m) => ({ default: m.ProfileScreen })),
+);
+const AuthScreen = lazy(() =>
+  import("./screens/AuthScreen").then((m) => ({ default: m.AuthScreen })),
+);
 
-type Screen = "home" | "library" | "search" | "profile" | "more" | "reading" | "detail" | "auth";
+type Screen = "stories" | "scrape" | "profile" | "detail" | "auth";
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState<Screen>("home");
+  const [currentScreen, setCurrentScreen] = useState<Screen>("stories");
   const [screenData, setScreenData] = useState<any>(null);
-  const [navigationHistory, setNavigationHistory] = useState<Array<{ screen: Screen; data?: any }>>([]);
+  const [navigationHistory, setNavigationHistory] = useState<
+    Array<{ screen: Screen; data?: any }>
+  >([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState<any>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
+
+  useEffect(() => {
+    const savedDarkMode = localStorage.getItem("darkMode");
+    if (savedDarkMode === "true") {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUser(session?.user ?? null);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -43,145 +71,13 @@ export default function App() {
     };
   }, [user?.id]);
 
-  useEffect(() => {
-    // Load dark mode preference
-    const savedDarkMode = localStorage.getItem('darkMode');
-    if (savedDarkMode === 'true') {
-      setIsDarkMode(true);
-      document.documentElement.classList.add('dark');
-    }
-
-    // Get current session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        syncLocalBookmarks(session.user.id);
-        syncLocalReadingHistory(session.user.id);
-      }
-    });
-
-    // Listen for auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      const currentUser = session?.user ?? null;
-      setUser(currentUser);
-      
-      if (event === 'SIGNED_IN' && currentUser) {
-        syncLocalBookmarks(currentUser.id);
-        syncLocalReadingHistory(currentUser.id);
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const syncLocalBookmarks = async (userId: string) => {
-    try {
-      const saved = localStorage.getItem('bookmarks');
-      if (saved) {
-        const bookmarkIds = JSON.parse(saved);
-        if (bookmarkIds.length > 0) {
-          console.log('Syncing local bookmarks for user:', userId);
-          const bookmarkInserts = bookmarkIds.map((storyId: number) => ({
-            user_id: userId,
-            story_id: storyId,
-          }));
-
-          const { error } = await supabase
-            .from('bookmarks')
-            .upsert(bookmarkInserts, { onConflict: 'user_id,story_id' });
-
-          if (error) throw error;
-          localStorage.removeItem('bookmarks');
-          console.log('Local bookmarks synced');
-        }
-      }
-    } catch (err) {
-      console.error('Failed to sync local bookmarks:', err);
-    }
-  };
-
-  const syncLocalReadingHistory = async (userId: string) => {
-    try {
-      const saved = localStorage.getItem('reading_history');
-      const localHistory = saved ? JSON.parse(saved) : [];
-
-      // 1. Fetch remote history from Supabase
-      const { data: remoteHistory, error: fetchError } = await supabase
-        .from('reading_history')
-        .select('story_id, last_chapter_number, last_read_at')
-        .eq('user_id', userId);
-
-      if (fetchError) throw fetchError;
-
-      // 2. Merge history mapping by story_id
-      const mergedMap = new Map<number, any>();
-
-      // Load remote history first
-      if (remoteHistory) {
-        for (const item of remoteHistory) {
-          mergedMap.set(item.story_id, {
-            story_id: item.story_id,
-            chapter_number: item.last_chapter_number,
-            last_read: item.last_read_at,
-            source: 'remote'
-          });
-        }
-      }
-
-      // Merge local history, prioritizing the most recent read time
-      for (const item of localHistory) {
-        const existing = mergedMap.get(item.story_id);
-        if (!existing || new Date(item.last_read).getTime() > new Date(existing.last_read).getTime()) {
-          mergedMap.set(item.story_id, {
-            story_id: item.story_id,
-            chapter_id: item.chapter_id,
-            chapter_number: item.chapter_number,
-            last_read: item.last_read,
-            source: 'local'
-          });
-        }
-      }
-
-      const mergedList = Array.from(mergedMap.values());
-
-      // 3. Save the merged list back to localStorage so it's available offline
-      localStorage.setItem('reading_history', JSON.stringify(mergedList.map(item => ({
-        story_id: item.story_id,
-        chapter_id: item.chapter_id,
-        chapter_number: item.chapter_number,
-        last_read: item.last_read
-      })).slice(0, 50)));
-
-      // 4. Push local changes that are newer or not in the DB to Supabase
-      const localToPush = mergedList.filter(item => item.source === 'local');
-      if (localToPush.length > 0) {
-        console.log('Syncing local-only reading history to DB:', localToPush.length);
-        const historyInserts = localToPush.map((h: any) => ({
-          user_id: userId,
-          story_id: h.story_id,
-          last_chapter_number: h.chapter_number,
-          last_read_at: h.last_read,
-        }));
-
-        const { error: uploadError } = await supabase
-          .from('reading_history')
-          .upsert(historyInserts, { onConflict: 'user_id,story_id' });
-
-        if (uploadError) throw uploadError;
-      }
-      console.log('Bidirectional reading history synced successfully');
-    } catch (err) {
-      console.error('Failed to sync bidirectional reading history:', err);
-    }
-  };
-
   const handleLogout = async () => {
     try {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       setCurrentScreen("profile");
     } catch (err) {
-      console.error('Failed to sign out:', err);
+      console.error("Failed to sign out:", err);
     }
   };
 
@@ -189,19 +85,16 @@ export default function App() {
     let handle: { remove: () => Promise<void> } | null = null;
     let disposed = false;
 
-    CapacitorApp.addListener('backButton', () => {
+    CapacitorApp.addListener("backButton", () => {
       if (navigationHistory.length > 0) {
-        // Navigate back in app history
         const previous = navigationHistory[navigationHistory.length - 1];
         setCurrentScreen(previous.screen);
         setScreenData(previous.data || null);
-        setNavigationHistory(prev => prev.slice(0, -1));
-      } else if (currentScreen !== "home") {
-        // Go to home if not already there
-        setCurrentScreen("home");
+        setNavigationHistory((prev) => prev.slice(0, -1));
+      } else if (currentScreen !== "stories") {
+        setCurrentScreen("stories");
         setScreenData(null);
       } else {
-        // Exit app if on home screen
         CapacitorApp.exitApp();
       }
     }).then((h) => {
@@ -220,11 +113,14 @@ export default function App() {
     };
   }, [currentScreen, navigationHistory]);
 
-  const handleNavigate = (screen: Screen, data?: any) => {
-    // Save current screen to history
-    setNavigationHistory(prev => [...prev, { screen: currentScreen, data: screenData }]);
-    setCurrentScreen(screen);
-    if (data) setScreenData(data);
+  const handleNavigate = (screen: string, data?: any) => {
+    const target = (screen as Screen) || "stories";
+    setNavigationHistory((prev) => [
+      ...prev,
+      { screen: currentScreen, data: screenData },
+    ]);
+    setCurrentScreen(target);
+    if (data !== undefined) setScreenData(data);
   };
 
   const handleBack = () => {
@@ -232,49 +128,51 @@ export default function App() {
       const previous = navigationHistory[navigationHistory.length - 1];
       setCurrentScreen(previous.screen);
       setScreenData(previous.data || null);
-      setNavigationHistory(prev => prev.slice(0, -1));
+      setNavigationHistory((prev) => prev.slice(0, -1));
     } else {
-      setCurrentScreen("home");
+      setCurrentScreen("stories");
       setScreenData(null);
     }
   };
 
   const toggleDarkMode = (enabled: boolean) => {
     setIsDarkMode(enabled);
-    localStorage.setItem('darkMode', enabled.toString());
+    localStorage.setItem("darkMode", enabled.toString());
     if (enabled) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
   };
 
   return (
     <div className="max-w-md mx-auto bg-background min-h-screen relative">
-      {/* Main Content */}
       <div className="h-screen overflow-y-auto">
-        <Suspense fallback={<div className="flex h-screen items-center justify-center text-muted-foreground">Đang tải…</div>}>
-          {currentScreen === "home" && <HomeScreen onNavigate={handleNavigate} isAdmin={isAdmin} />}
-          {currentScreen === "library" && <LibraryScreen onNavigate={handleNavigate} user={user} />}
-          {currentScreen === "profile" && <ProfileScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} user={user} onLogout={handleLogout} isAdmin={isAdmin} />}
-          {currentScreen === "reading" && (
-            <ReadingScreen chapter={screenData} onBack={handleBack} user={user} />
+        <Suspense
+          fallback={
+            <div className="flex h-screen items-center justify-center text-muted-foreground">
+              Đang tải…
+            </div>
+          }
+        >
+          {currentScreen === "stories" && (
+            <HomeScreen onNavigate={handleNavigate} isAdmin={isAdmin} />
           )}
           {currentScreen === "detail" && (
             <DetailScreen
               book={screenData}
               onBack={handleBack}
-              onStartReading={(chapter) => handleNavigate("reading", chapter)}
-              user={user}
               isAdmin={isAdmin}
             />
           )}
-          {currentScreen === "search" && (
-            isAdmin ? (
+          {currentScreen === "scrape" &&
+            (isAdmin ? (
               <ScrapeScreen onNavigate={handleNavigate} />
             ) : (
               <div className="flex flex-col items-center justify-center h-screen px-6 pb-24 text-center">
-                <h2 className="text-xl font-medium mb-2">Khu vực Quản trị (Admin)</h2>
+                <h2 className="text-xl font-medium mb-2">
+                  Khu vực Quản trị (Admin)
+                </h2>
                 <p className="text-sm text-muted-foreground mb-6">
                   {isCheckingAdmin
                     ? "Đang kiểm tra quyền truy cập..."
@@ -291,32 +189,32 @@ export default function App() {
                   </button>
                 )}
               </div>
-            )
-          )}
-          {currentScreen === "auth" && (
-            <AuthScreen 
-              onBack={handleBack} 
-              onSuccess={() => {
-                handleBack();
-              }} 
+            ))}
+          {currentScreen === "profile" && (
+            <ProfileScreen
+              onNavigate={handleNavigate}
+              isDarkMode={isDarkMode}
+              onToggleDarkMode={toggleDarkMode}
+              user={user}
+              onLogout={handleLogout}
+              isAdmin={isAdmin}
             />
           )}
-          {currentScreen === "more" && (
-            <div className="flex flex-col items-center justify-center h-screen px-4 pb-24">
-              <h2 className="text-2xl font-medium mb-4">Thêm</h2>
-              <p className="text-muted-foreground text-center mb-6">
-                Các tính năng bổ sung sẽ được thêm vào đây
-              </p>
-            </div>
+          {currentScreen === "auth" && (
+            <AuthScreen
+              onBack={handleBack}
+              onSuccess={() => {
+                handleBack();
+              }}
+            />
           )}
         </Suspense>
       </div>
 
-      {/* Bottom Navigation */}
-      {!["reading", "detail", "auth"].includes(currentScreen) && (
+      {!["detail", "auth"].includes(currentScreen) && (
         <BottomNav
           activeTab={currentScreen}
-          onTabChange={(tab) => handleNavigate(tab as Screen)}
+          onTabChange={(tab) => handleNavigate(tab)}
         />
       )}
     </div>
