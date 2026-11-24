@@ -10,15 +10,18 @@ import {
   RefreshCw,
   BookOpen,
   Trash2,
+  Pencil,
 } from "lucide-react";
 import { supabase, R2_PUBLIC_DOMAIN } from "../../lib/supabase";
 import { deleteChapterFromCache } from "../../lib/chapterCache";
+import { EditStoryModal } from "../components/EditStoryModal";
 
 interface DetailScreenProps {
   book?: any;
   onBack: () => void;
   onStartReading: (chapter: any) => void;
   user?: any;
+  isAdmin?: boolean;
 }
 
 interface Chapter {
@@ -29,8 +32,9 @@ interface Chapter {
   created_at: string;
 }
 
-export function DetailScreen({ book, onBack, onStartReading, user }: DetailScreenProps) {
+export function DetailScreen({ book, onBack, onStartReading, user, isAdmin = false }: DetailScreenProps) {
   const [isFavorite, setIsFavorite] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [expandedChapters, setExpandedChapters] = useState(true);
   const [chapters, setChapters] = useState<Chapter[]>([]);
@@ -357,12 +361,24 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
                 }`}
             />
           </button>
-          <button
-            onClick={confirmDeleteStory}
-            className="p-2 hover:bg-muted rounded-full transition-colors text-red-500"
-          >
-            <Trash2 className="w-5 h-5" />
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => setShowEditModal(true)}
+                className="p-2 hover:bg-muted rounded-full transition-colors text-primary"
+                title="Chỉnh sửa truyện"
+              >
+                <Pencil className="w-5 h-5" />
+              </button>
+              <button
+                onClick={confirmDeleteStory}
+                className="p-2 hover:bg-muted rounded-full transition-colors text-red-500"
+                title="Xoá truyện"
+              >
+                <Trash2 className="w-5 h-5" />
+              </button>
+            </>
+          )}
           <button className="p-2 hover:bg-muted rounded-full transition-colors">
             <Share2 className="w-5 h-5" />
           </button>
@@ -425,7 +441,7 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
                 : 'Bắt đầu đọc'}
           </button>
 
-          {chapters.length > 0 && bookData.source_url && (
+          {isAdmin && chapters.length > 0 && bookData.source_url && (
             <div className="flex gap-2 w-full sm:w-auto">
               <button
                 onClick={handleCheckLatest}
@@ -538,16 +554,18 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            confirmDeleteChapter(chapter);
-                          }}
-                          className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950 rounded-full transition-colors text-muted-foreground hover:text-red-500"
-                          title="Xoa chuong"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                        {isAdmin && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              confirmDeleteChapter(chapter);
+                            }}
+                            className="p-1.5 hover:bg-red-50 dark:hover:bg-red-950 rounded-full transition-colors text-muted-foreground hover:text-red-500"
+                            title="Xoá chương"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
                         <BookOpen className="w-4 h-4 text-muted-foreground" />
                       </div>
                     </div>
@@ -596,6 +614,17 @@ export function DetailScreen({ book, onBack, onStartReading, user }: DetailScree
             </div>
           </div>
         </div>
+      )}
+      {showEditModal && bookData?.id && (
+        <EditStoryModal
+          story={bookData}
+          onClose={() => setShowEditModal(false)}
+          onSaved={(updated) => {
+            setStory(updated);
+            setShowEditModal(false);
+            setUpdateMessage("Đã cập nhật thông tin truyện thành công.");
+          }}
+        />
       )}
     </div>
   );

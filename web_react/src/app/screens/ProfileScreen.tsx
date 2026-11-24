@@ -16,9 +16,10 @@ interface ProfileScreenProps {
   onToggleDarkMode?: (enabled: boolean) => void;
   user?: any;
   onLogout?: () => void;
+  isAdmin?: boolean;
 }
 
-export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode, user, onLogout }: ProfileScreenProps) {
+export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode, user, onLogout, isAdmin = false }: ProfileScreenProps) {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   const showToast = (message: string) => {
@@ -52,10 +53,28 @@ export function ProfileScreen({ onNavigate, isDarkMode = false, onToggleDarkMode
             )}
           </div>
           <div className="flex-1">
-            <h1 className="text-xl font-medium text-white mb-1">
-              {displayName}
-            </h1>
+            <div className="flex items-center gap-2 mb-1">
+              <h1 className="text-xl font-medium text-white">
+                {displayName}
+              </h1>
+              {user && (
+                <span
+                  className={`text-[11px] px-2 py-0.5 rounded-full font-medium ${
+                    isAdmin
+                      ? "bg-emerald-500/90 text-white"
+                      : "bg-white/20 text-white"
+                  }`}
+                >
+                  {isAdmin ? "Quản trị viên (Admin)" : "Người dùng thường"}
+                </span>
+              )}
+            </div>
             <p className="text-sm text-white/80">{userEmail}</p>
+            {user && !isAdmin && (
+              <p className="text-xs text-white/70 mt-1">
+                Cần quyền Admin trong Supabase để sửa hoặc xoá truyện.
+              </p>
+            )}
           </div>
         </div>
       </div>

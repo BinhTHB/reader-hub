@@ -68,6 +68,39 @@ async function deleteStoryR2Content(slug: string, r2: AwsClient): Promise<void> 
   }
 }
 
+async function requireAdmin(
+  req: Request,
+  supabase: ReturnType<typeof createClient>,
+): Promise<Response | null> {
+  const authHeader = req.headers.get("authorization") || req.headers.get("Authorization") || "";
+  if (!authHeader.startsWith("Bearer ")) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized: missing bearer token" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+  const token = authHeader.slice(7).trim();
+  const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+  if (authError || !user) {
+    return new Response(
+      JSON.stringify({ error: "Unauthorized: invalid token" }),
+      { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile?.role !== "admin") {
+    return new Response(
+      JSON.stringify({ error: "Forbidden: admin role required" }),
+      { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+  return null;
+}
+
 serve(async (req: Request) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -77,6 +110,9 @@ serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
+
+    const authDenied = await requireAdmin(req, supabase);
+    if (authDenied) return authDenied;
 
     const body: DeleteRequest = await req.json();
     const { type, id } = body;

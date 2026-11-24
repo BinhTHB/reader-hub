@@ -3,6 +3,7 @@ import { App as CapacitorApp } from '@capacitor/app';
 import { BottomNav } from "./components/BottomNav";
 import { HomeScreen } from "./screens/HomeScreen";
 import { supabase } from "../lib/supabase";
+import { fetchIsAdmin } from "../lib/admin";
 
 const ReadingScreen = lazy(() => import("./screens/ReadingScreen").then(m => ({ default: m.ReadingScreen })));
 const LibraryScreen = lazy(() => import("./screens/LibraryScreen").then(m => ({ default: m.LibraryScreen })));
@@ -19,6 +20,28 @@ export default function App() {
   const [navigationHistory, setNavigationHistory] = useState<Array<{ screen: Screen; data?: any }>>([]);
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isCheckingAdmin, setIsCheckingAdmin] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user?.id) {
+      setIsAdmin(false);
+      setIsCheckingAdmin(false);
+      return;
+    }
+    setIsCheckingAdmin(true);
+    fetchIsAdmin(user.id)
+      .then((ok) => {
+        if (!cancelled) setIsAdmin(ok);
+      })
+      .finally(() => {
+        if (!cancelled) setIsCheckingAdmin(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     // Load dark mode preference
@@ -231,9 +254,9 @@ export default function App() {
       {/* Main Content */}
       <div className="h-screen overflow-y-auto">
         <Suspense fallback={<div className="flex h-screen items-center justify-center text-muted-foreground">Đang tải…</div>}>
-          {currentScreen === "home" && <HomeScreen onNavigate={handleNavigate} />}
+          {currentScreen === "home" && <HomeScreen onNavigate={handleNavigate} isAdmin={isAdmin} />}
           {currentScreen === "library" && <LibraryScreen onNavigate={handleNavigate} user={user} />}
-          {currentScreen === "profile" && <ProfileScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} user={user} onLogout={handleLogout} />}
+          {currentScreen === "profile" && <ProfileScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} user={user} onLogout={handleLogout} isAdmin={isAdmin} />}
           {currentScreen === "reading" && (
             <ReadingScreen chapter={screenData} onBack={handleBack} user={user} />
           )}
@@ -243,10 +266,32 @@ export default function App() {
               onBack={handleBack}
               onStartReading={(chapter) => handleNavigate("reading", chapter)}
               user={user}
+              isAdmin={isAdmin}
             />
           )}
           {currentScreen === "search" && (
-            <ScrapeScreen onNavigate={handleNavigate} />
+            isAdmin ? (
+              <ScrapeScreen onNavigate={handleNavigate} />
+            ) : (
+              <div className="flex flex-col items-center justify-center h-screen px-6 pb-24 text-center">
+                <h2 className="text-xl font-medium mb-2">Khu vực Quản trị (Admin)</h2>
+                <p className="text-sm text-muted-foreground mb-6">
+                  {isCheckingAdmin
+                    ? "Đang kiểm tra quyền truy cập..."
+                    : user
+                      ? "Tài khoản hiện tại chưa được cấp quyền Admin để cào hoặc chỉnh sửa truyện."
+                      : "Vui lòng đăng nhập bằng tài khoản Admin để sử dụng tính năng quản lý & cào truyện."}
+                </p>
+                {!user && (
+                  <button
+                    onClick={() => handleNavigate("auth")}
+                    className="px-6 py-2.5 bg-primary text-white rounded-xl font-medium"
+                  >
+                    Đăng nhập Admin
+                  </button>
+                )}
+              </div>
+            )
           )}
           {currentScreen === "auth" && (
             <AuthScreen 
