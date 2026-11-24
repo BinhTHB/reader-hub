@@ -12,6 +12,7 @@ CHAPTER_NUM_RE = re.compile(
     r"(?:chương|chuong|chapter|chap|c\.?|第)\s*(\d+)",
     re.IGNORECASE,
 )
+LEADING_NUM_RE = re.compile(r"^\s*(\d+)\s*[.:\-–—\s]")
 URL_NUM_RE = re.compile(r"(\d+)(?:[./?#]|$)")
 
 
@@ -181,9 +182,16 @@ class DynamicConfigParser(BaseSiteParser):
             if m:
                 num = int(m.group(1))
             else:
-                m2 = URL_NUM_RE.search(abs_url)
-                if m2:
-                    num = int(m2.group(1))
+                m_lead = LEADING_NUM_RE.match(title)
+                if m_lead:
+                    num = int(m_lead.group(1))
+                else:
+                    m2 = URL_NUM_RE.search(abs_url)
+                    if m2:
+                        candidate = int(m2.group(1))
+                        # Ignore large numeric path IDs (e.g. /chapter/301815/...)
+                        if candidate <= 20000:
+                            num = candidate
             if num is None or num <= 0:
                 num = idx + 1
 
