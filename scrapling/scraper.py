@@ -755,6 +755,7 @@ def run_scraper():
 
     chapters_scraped = 0
     consecutive_failures = 0
+    story_id = None
 
     # Start Scrapling session
     with StealthySession(**session_kwargs) as session:
@@ -934,6 +935,7 @@ def run_scraper():
 
             # Fetch remaining pages
             should_fetch_all = CHAPTER_LIMIT == 0
+            seen_keys = {chapter_source_key(ch, parser) for ch in all_chapters}
             page_num = 2
             while page_num <= max_pages:
                 if not should_fetch_all:
@@ -984,14 +986,14 @@ def run_scraper():
                     print(f"  ⚠️ Failed to fetch page {page_num}: {e}")
                     break
                 
-                existing_keys = {chapter_source_key(ch, parser) for ch in all_chapters}
-                new_chapters = [ch for ch in p_chapters if chapter_source_key(ch, parser) not in existing_keys]
+                new_chapters = [ch for ch in p_chapters if chapter_source_key(ch, parser) not in seen_keys]
                 
                 if not new_chapters:
                     print(f"  ⚠️ No new chapters on page {page_num}, stopping")
                     break
                     
                 all_chapters.extend(new_chapters)
+                seen_keys.update(chapter_source_key(ch, parser) for ch in new_chapters)
                 print(f"  Added {len(new_chapters)} new chapters (total: {len(all_chapters)})")
                 page_num += 1
 
@@ -1190,17 +1192,18 @@ def run_scraper():
                 scrape_progress["end"] = ch_num
                 scrape_progress["count"] = chapters_scraped
 
-                # Update progress on every chapter (non-fatal if telemetry fails)
-                try:
-                    update_story_scrape_progress(story_id, ch_num)
-                except Exception as err:
-                    print(f"  ⚠️ Failed to update story progress in Supabase (non-fatal): {err}")
-
-                if JOB_ID:
+                # Throttle progress updates every 10 chapters (non-fatal if telemetry fails)
+                if chapters_scraped % 10 == 0:
                     try:
-                        update_scrape_job(int(JOB_ID), chapters_scraped=chapters_scraped)
+                        update_story_scrape_progress(story_id, ch_num)
                     except Exception as err:
-                        print(f"  ⚠️ Failed to update job progress in Supabase (non-fatal): {err}")
+                        print(f"  ⚠️ Failed to update story progress in Supabase (non-fatal): {err}")
+
+                    if JOB_ID:
+                        try:
+                            update_scrape_job(int(JOB_ID), chapters_scraped=chapters_scraped)
+                        except Exception as err:
+                            print(f"  ⚠️ Failed to update job progress in Supabase (non-fatal): {err}")
 
                 random_delay()
 
@@ -1212,6 +1215,11 @@ def run_scraper():
 
         except ScraperAbortException as e:
             print(f"\n⚠️ Scraper aborted early: {e}")
+            if story_id and scrape_progress["end"] is not None:
+                try:
+                    update_story_scrape_progress(story_id, scrape_progress["end"])
+                except Exception as err:
+                    print(f"  ⚠️ Failed to update story progress on abort: {err}")
             if JOB_ID:
                 try:
                     start = scrape_progress["start"]
@@ -1228,6 +1236,11 @@ def run_scraper():
         except Exception as e:
             print(f"\n❌ Fatal error: {e}")
             traceback.print_exc()
+            if story_id and scrape_progress["end"] is not None:
+                try:
+                    update_story_scrape_progress(story_id, scrape_progress["end"])
+                except Exception as err:
+                    print(f"  ⚠️ Failed to update story progress on error: {err}")
             if JOB_ID:
                 try:
                     start = scrape_progress["start"]

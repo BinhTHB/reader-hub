@@ -35,7 +35,7 @@ export function HomeScreen({ onNavigate }: HomeScreenProps) {
     try {
       const { data, error } = await supabase
         .from('stories')
-        .select('*')
+        .select('id, title, author, description, cover_url, source_url, genres, status, total_chapters')
         .order('updated_at', { ascending: false })
         .limit(50);
 

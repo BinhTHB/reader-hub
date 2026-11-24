@@ -7,13 +7,21 @@ newer sb_* key formats while REST itself accepts them).
 """
 
 import os
+import re
 import json
 import time
-import socket
-import http.client
-import urllib.request
-import urllib.error
 from datetime import datetime, timezone
+import httpx
+
+_client: httpx.Client | None = None
+
+
+def _get_client() -> httpx.Client:
+    """Return a reusable module-level HTTP client for Supabase REST keep-alive."""
+    global _client
+    if _client is None:
+        _client = httpx.Client(timeout=30.0, http2=False)
+    return _client
 
 
 def _rest(method: str, table: str, params: str = "", body: dict = None) -> dict:
@@ -42,33 +50,31 @@ def _rest(method: str, table: str, params: str = "", body: dict = None) -> dict:
     retry_delays = [2, 5, 10, 20]
     transient_http_codes = {429, 500, 502, 503, 504, 520, 521, 522, 524}
 
-    for attempt in range(max_retries + 1):
-        if method == "GET":
-            req = urllib.request.Request(full_url, headers=headers, method="GET")
-        elif method in ("POST", "PATCH"):
-            req = urllib.request.Request(full_url, data=encoded_body, headers=headers, method=method)
-        elif method == "DELETE":
-            req = urllib.request.Request(full_url, headers=headers, method="DELETE")
-        else:
-            raise ValueError(f"Unsupported method: {method}")
+    if method not in ("GET", "POST", "PATCH", "DELETE"):
+        raise ValueError(f"Unsupported method: {method}")
 
+    client = _get_client()
+    for attempt in range(max_retries + 1):
         try:
-            with urllib.request.urlopen(req, timeout=30) as resp:
-                raw = resp.read().decode("utf-8")
-                if raw.strip():
-                    return json.loads(raw)
-                return []
-        except urllib.error.HTTPError as e:
-            err_body = e.read().decode("utf-8", errors="replace")
-            if e.code in transient_http_codes and attempt < max_retries:
-                delay = retry_delays[attempt]
-                print(f"  ⚠️ [Supabase] Transient HTTP {e.code} on {method} {table}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})...")
-                time.sleep(delay)
-                continue
-            raise RuntimeError(
-                f"Supabase REST HTTP {e.code} on {method} {table}: {err_body[:300]}"
-            ) from e
-        except (urllib.error.URLError, TimeoutError, socket.timeout, ConnectionError, http.client.RemoteDisconnected) as e:
+            resp = client.request(
+                method,
+                full_url,
+                headers=headers,
+                content=encoded_body if method in ("POST", "PATCH") else None,
+            )
+            if resp.status_code >= 400:
+                if resp.status_code in transient_http_codes and attempt < max_retries:
+                    delay = retry_delays[attempt]
+                    print(f"  ⚠️ [Supabase] Transient HTTP {resp.status_code} on {method} {table}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})...")
+                    time.sleep(delay)
+                    continue
+                raise RuntimeError(
+                    f"Supabase REST HTTP {resp.status_code} on {method} {table}: {resp.text[:300]}"
+                )
+            if resp.text.strip():
+                return resp.json()
+            return []
+        except httpx.TransportError as e:
             if attempt < max_retries:
                 delay = retry_delays[attempt]
                 print(f"  ⚠️ [Supabase] Connection/Timeout error on {method} {table}: {e}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})...")
@@ -113,7 +119,9 @@ def upsert_story(
     if cover_url is not None:
         data["cover_url"] = cover_url
     if genres is not None:
-        data["genres"] = genres
+        if isinstance(genres, str):
+            genres = [g.strip() for g in re.split(r"[,/|;]+", genres) if g.strip()]
+        data["genres"] = list(genres) if genres else ["Khác"]
 
     # Upsert via POST with on_conflict
     params = f"?on_conflict=slug"
@@ -202,18 +210,33 @@ def get_unscraped_chapters(story_id: int, limit: int = 50) -> list[dict]:
 def get_story_chapters_index(story_id: int) -> dict[int, dict]:
     """Fetch all chapters for a story and return a dict keyed by chapter_number.
 
+    Paginates in batches of 1000 to handle stories with >1000 chapters.
+
     Returns:
         {chapter_number: {source_url, is_scraped, text_r2_url, word_count, title}}
     """
-    params = (
-        f"?story_id=eq.{story_id}"
-        f"&select=chapter_number,source_url,is_scraped,text_r2_url,word_count,title"
-        f"&order=chapter_number.asc"
-    )
-    rows = _rest("GET", "chapters", params=params)
-    if not isinstance(rows, list):
-        return {}
-    return {row["chapter_number"]: row for row in rows if row.get("chapter_number") is not None}
+    all_chapters = {}
+    limit = 1000
+    offset = 0
+
+    while True:
+        params = (
+            f"?story_id=eq.{story_id}"
+            f"&select=chapter_number,source_url,is_scraped,text_r2_url,word_count,title"
+            f"&order=chapter_number.asc"
+            f"&limit={limit}&offset={offset}"
+        )
+        rows = _rest("GET", "chapters", params=params)
+        if not isinstance(rows, list) or not rows:
+            break
+        for row in rows:
+            if row.get("chapter_number") is not None:
+                all_chapters[row["chapter_number"]] = row
+        if len(rows) < limit:
+            break
+        offset += limit
+
+    return all_chapters
 
 
 # ─── Scrape Jobs ───────────────────────────────────────────

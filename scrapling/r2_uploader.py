@@ -5,12 +5,14 @@ Uses boto3 (S3-compatible API) to store JSON content files
 and cover images in Cloudflare R2.
 """
 
+import functools
 import json
 import os
 import boto3
 from botocore.config import Config
 
 
+@functools.lru_cache(maxsize=1)
 def get_r2_client():
     """Create and return an S3-compatible client configured for Cloudflare R2."""
     account_id = os.environ["CF_ACCOUNT_ID"]

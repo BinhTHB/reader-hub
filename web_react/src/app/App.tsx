@@ -1,14 +1,15 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { App as CapacitorApp } from '@capacitor/app';
 import { BottomNav } from "./components/BottomNav";
 import { HomeScreen } from "./screens/HomeScreen";
-import { ReadingScreen } from "./screens/ReadingScreen";
-import { LibraryScreen } from "./screens/LibraryScreen";
-import { DetailScreen } from "./screens/DetailScreen";
-import { ProfileScreen } from "./screens/ProfileScreen";
-import { ScrapeScreen } from "./screens/ScrapeScreen";
-import { AuthScreen } from "./screens/AuthScreen";
 import { supabase } from "../lib/supabase";
+
+const ReadingScreen = lazy(() => import("./screens/ReadingScreen").then(m => ({ default: m.ReadingScreen })));
+const LibraryScreen = lazy(() => import("./screens/LibraryScreen").then(m => ({ default: m.LibraryScreen })));
+const DetailScreen = lazy(() => import("./screens/DetailScreen").then(m => ({ default: m.DetailScreen })));
+const ProfileScreen = lazy(() => import("./screens/ProfileScreen").then(m => ({ default: m.ProfileScreen })));
+const ScrapeScreen = lazy(() => import("./screens/ScrapeScreen").then(m => ({ default: m.ScrapeScreen })));
+const AuthScreen = lazy(() => import("./screens/AuthScreen").then(m => ({ default: m.AuthScreen })));
 
 type Screen = "home" | "library" | "search" | "profile" | "more" | "reading" | "detail" | "auth";
 
@@ -162,7 +163,10 @@ export default function App() {
   };
 
   useEffect(() => {
-    const backButtonListener = CapacitorApp.addListener('backButton', ({ canGoBack }) => {
+    let handle: { remove: () => Promise<void> } | null = null;
+    let disposed = false;
+
+    CapacitorApp.addListener('backButton', () => {
       if (navigationHistory.length > 0) {
         // Navigate back in app history
         const previous = navigationHistory[navigationHistory.length - 1];
@@ -177,11 +181,18 @@ export default function App() {
         // Exit app if on home screen
         CapacitorApp.exitApp();
       }
+    }).then((h) => {
+      if (disposed) {
+        void h.remove();
+      } else {
+        handle = h;
+      }
     });
 
     return () => {
-      if (backButtonListener && typeof backButtonListener.remove === 'function') {
-        backButtonListener.remove();
+      disposed = true;
+      if (handle) {
+        void handle.remove();
       }
     };
   }, [currentScreen, navigationHistory]);
@@ -219,39 +230,41 @@ export default function App() {
     <div className="max-w-md mx-auto bg-background min-h-screen relative">
       {/* Main Content */}
       <div className="h-screen overflow-y-auto">
-        {currentScreen === "home" && <HomeScreen onNavigate={handleNavigate} />}
-        {currentScreen === "library" && <LibraryScreen onNavigate={handleNavigate} user={user} />}
-        {currentScreen === "profile" && <ProfileScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} user={user} onLogout={handleLogout} />}
-        {currentScreen === "reading" && (
-          <ReadingScreen chapter={screenData} onBack={handleBack} user={user} />
-        )}
-        {currentScreen === "detail" && (
-          <DetailScreen
-            book={screenData}
-            onBack={handleBack}
-            onStartReading={(chapter) => handleNavigate("reading", chapter)}
-            user={user}
-          />
-        )}
-        {currentScreen === "search" && (
-          <ScrapeScreen onNavigate={handleNavigate} />
-        )}
-        {currentScreen === "auth" && (
-          <AuthScreen 
-            onBack={handleBack} 
-            onSuccess={() => {
-              handleBack();
-            }} 
-          />
-        )}
-        {currentScreen === "more" && (
-          <div className="flex flex-col items-center justify-center h-screen px-4 pb-24">
-            <h2 className="text-2xl font-medium mb-4">Thêm</h2>
-            <p className="text-muted-foreground text-center mb-6">
-              Các tính năng bổ sung sẽ được thêm vào đây
-            </p>
-          </div>
-        )}
+        <Suspense fallback={<div className="flex h-screen items-center justify-center text-muted-foreground">Đang tải…</div>}>
+          {currentScreen === "home" && <HomeScreen onNavigate={handleNavigate} />}
+          {currentScreen === "library" && <LibraryScreen onNavigate={handleNavigate} user={user} />}
+          {currentScreen === "profile" && <ProfileScreen onNavigate={handleNavigate} isDarkMode={isDarkMode} onToggleDarkMode={toggleDarkMode} user={user} onLogout={handleLogout} />}
+          {currentScreen === "reading" && (
+            <ReadingScreen chapter={screenData} onBack={handleBack} user={user} />
+          )}
+          {currentScreen === "detail" && (
+            <DetailScreen
+              book={screenData}
+              onBack={handleBack}
+              onStartReading={(chapter) => handleNavigate("reading", chapter)}
+              user={user}
+            />
+          )}
+          {currentScreen === "search" && (
+            <ScrapeScreen onNavigate={handleNavigate} />
+          )}
+          {currentScreen === "auth" && (
+            <AuthScreen 
+              onBack={handleBack} 
+              onSuccess={() => {
+                handleBack();
+              }} 
+            />
+          )}
+          {currentScreen === "more" && (
+            <div className="flex flex-col items-center justify-center h-screen px-4 pb-24">
+              <h2 className="text-2xl font-medium mb-4">Thêm</h2>
+              <p className="text-muted-foreground text-center mb-6">
+                Các tính năng bổ sung sẽ được thêm vào đây
+              </p>
+            </div>
+          )}
+        </Suspense>
       </div>
 
       {/* Bottom Navigation */}
