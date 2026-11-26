@@ -58,14 +58,26 @@ jobs:
           cache: 'pip'
           cache-dependency-path: ${{ env.SCRAPER_DIR }}/requirements.txt
 
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles(format('{0}/requirements.txt', env.SCRAPER_DIR)) }}
+
       - name: Install dependencies
         run: |
           pip install -r ${{ env.SCRAPER_DIR }}/requirements.txt
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" != "true" ]; then
+            if python -c "import rebrowser_playwright" 2>/dev/null; then
+              python -m rebrowser_playwright install chromium
+            else
+              playwright install chromium
+            fi
+          fi
           if python -c "import rebrowser_playwright" 2>/dev/null; then
-            python -m rebrowser_playwright install chromium
             python -m rebrowser_playwright install-deps chromium
           else
-            playwright install chromium
             playwright install-deps chromium
           fi
 
@@ -87,8 +99,8 @@ jobs:
           PROXY_URL: ${{ secrets.PROXY_URL }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           AI_SELECTOR_MODEL: 'gemini-2.5-flash-lite'
-          SCRAPE_MIN_DELAY: '2.0'
-          SCRAPE_MAX_DELAY: '5.0'
+          SCRAPE_MIN_DELAY: '1.0'
+          SCRAPE_MAX_DELAY: '2.5'
           USE_FREE_PROXY: 'true'
 
   search:
@@ -106,14 +118,26 @@ jobs:
           cache: 'pip'
           cache-dependency-path: ${{ env.SCRAPER_DIR }}/requirements.txt
 
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles(format('{0}/requirements.txt', env.SCRAPER_DIR)) }}
+
       - name: Install dependencies
         run: |
           pip install -r ${{ env.SCRAPER_DIR }}/requirements.txt
+          if [ "${{ steps.playwright-cache.outputs.cache-hit }}" != "true" ]; then
+            if python -c "import rebrowser_playwright" 2>/dev/null; then
+              python -m rebrowser_playwright install chromium
+            else
+              playwright install chromium
+            fi
+          fi
           if python -c "import rebrowser_playwright" 2>/dev/null; then
-            python -m rebrowser_playwright install chromium
             python -m rebrowser_playwright install-deps chromium
           else
-            playwright install chromium
             playwright install-deps chromium
           fi
 

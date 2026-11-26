@@ -155,6 +155,66 @@ class AiSelectorTests(unittest.TestCase):
         self.assertEqual(preview["title"], "Phàm Nhân Tu Tiên")
         self.assertEqual(preview["chapter_paragraphs"], 4)
 
+    def test_hybrid_session_fast_http_and_lazy_browser_upgrade(self):
+        from hybrid_session import HybridSession, SimpleResponse
+
+        browser_launched = []
+
+        class FakeBrowser:
+            def __init__(self, **_kwargs):
+                browser_launched.append(True)
+
+            def __enter__(self):
+                return self
+
+            def __exit__(self, *_args):
+                pass
+
+            def rotate_proxy(self, _p):
+                pass
+
+            def fetch(self, url):
+                return SimpleResponse(url=url, body="<html><body>Browser OK " + ("x" * 500) + "</body></html>", status=200)
+
+        with HybridSession(FakeBrowser, prefer_http=True) as hs:
+            hs._http_get = lambda url: SimpleResponse(
+                url=url, body="<html><body>Fast HTTP " + ("y" * 500) + "</body></html>", status=200
+            )
+            r1 = hs.fetch("https://example.com/1")
+            self.assertEqual(r1.status, 200)
+            self.assertEqual(hs.mode, "http")
+            self.assertEqual(len(browser_launched), 0)
+
+            # Now simulate Cloudflare 403 block -> should auto-upgrade to browser
+            hs._http_get = lambda url: SimpleResponse(url=url, body="Just a moment...", status=403)
+            r2 = hs.fetch("https://example.com/2")
+            self.assertEqual(r2.status, 200)
+            self.assertEqual(hs.mode, "browser")
+            self.assertEqual(len(browser_launched), 1)
+
+    def test_upsert_chapters_batch_uses_single_rest_call(self):
+        import supabase_client
+
+        calls = []
+        orig_rest = supabase_client._rest
+        try:
+            def fake_rest(method, table, params="", body=None):
+                calls.append((method, table, params, body))
+                return body
+
+            supabase_client._rest = fake_rest
+            res = supabase_client.upsert_chapters_batch([
+                {"story_id": 1, "chapter_number": 1, "title": "C1", "is_scraped": True},
+                {"story_id": 1, "chapter_number": 2, "title": "C2", "is_scraped": True},
+            ])
+            self.assertEqual(len(res), 2)
+            self.assertEqual(len(calls), 1)
+            self.assertEqual(calls[0][0], "POST")
+            self.assertEqual(calls[0][1], "chapters")
+            self.assertIn("scraped_at", calls[0][3][0])
+        finally:
+            supabase_client._rest = orig_rest
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -194,6 +194,22 @@ def upsert_chapter(
     return result
 
 
+def upsert_chapters_batch(rows: list[dict]) -> list:
+    """Batch upsert multiple chapter records in a single Supabase REST request."""
+    if not rows:
+        return []
+    now_iso = datetime.now(timezone.utc).isoformat()
+    payload = []
+    for row in rows:
+        item = {k: v for k, v in row.items() if v is not None}
+        if item.get("is_scraped") and "scraped_at" not in item:
+            item["scraped_at"] = now_iso
+        payload.append(item)
+
+    result = _rest("POST", "chapters", params="?on_conflict=story_id,chapter_number", body=payload)
+    return result if isinstance(result, list) else []
+
+
 def get_unscraped_chapters(story_id: int, limit: int = 50) -> list[dict]:
     """Get chapters that haven't been scraped yet."""
     params = (

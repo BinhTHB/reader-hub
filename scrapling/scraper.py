@@ -18,6 +18,7 @@ import argparse
 import io
 import traceback
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -382,10 +383,12 @@ class StealthySession:
 
 
 from parsers import detect_parser
+from hybrid_session import HybridSession
 from r2_uploader import upload_chapter, upload_cover, get_existing_chapters, get_chapter_metadata
 from supabase_client import (
     upsert_story,
     upsert_chapter,
+    upsert_chapters_batch,
     update_story_scrape_progress,
     update_story_total_chapters,
     update_scrape_job,
@@ -446,36 +449,60 @@ class ScraperAbortException(Exception):
     pass
 
 
-def fetch_with_rotation_wrapper(session: StealthySession, action_fn, max_rotations: int = 10):
-    """Executes action_fn(session). If it raises an exception, rotates proxy and retries."""
+def _ensure_proxy_pool(target_url: str):
+    """Lazily build free proxy pool only when direct connection fails."""
+    global proxy_pool
+    if proxy_pool is not None or PROXY_URL or not USE_FREE_PROXY:
+        return
+    print("\n🌐 [Scrapling] Direct connection failed — building free proxy pool lazily...")
+    import asyncio
+    from urllib.parse import urlparse
+
+    parsed_url = urlparse(target_url)
+    test_target_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
+    print(f"  🎯 Testing proxy connectivity against target: {test_target_url}")
+    proxy_pool = asyncio.run(build_proxy_pool(max_proxies=200, test_concurrency=150, test_url=test_target_url))
+    if proxy_pool.size == 0:
+        print("  ⚠️ No working proxies found for target site. Falling back to general proxy testing...")
+        proxy_pool = asyncio.run(build_proxy_pool(max_proxies=200, test_concurrency=150, test_url="https://httpbin.org/ip"))
+    if proxy_pool.size == 0:
+        print("  ⚠️ No working free proxies found; staying on direct connection")
+
+
+def fetch_with_rotation_wrapper(session, action_fn, max_rotations: int = 8):
+    """Executes action_fn(session) direct-first; lazily builds/rotates proxies on failure."""
     global proxy_pool, current_proxy
-    
+
     for rotation in range(max_rotations):
         try:
             return action_fn(session)
         except Exception as e:
-            if (PROXY_URL or (proxy_pool and proxy_pool.size > 0)) and rotation < max_rotations - 1:
-                print(f"  ❌ Action failed: {e}")
-                print(f"  🔄 Rotating proxy and retrying... ({rotation + 1}/{max_rotations})")
-                
-                # If we are using a free proxy pool, mark the current proxy as failed
-                if proxy_pool and current_proxy:
-                    current_proxy.fail_count += 1
-                    if current_proxy.fail_count >= 3:
-                        proxy_pool.remove(current_proxy)
-                        print(f"  🗑️ Removed bad proxy: {current_proxy.url} (pool: {proxy_pool.size})")
-                
-                # Get next proxy and rotate session
-                if proxy_pool:
-                    current_proxy = proxy_pool.get_next()
-                    new_proxy_url = current_proxy.url if current_proxy else None
-                else:
-                    new_proxy_url = PROXY_URL
-                
-                session.rotate_proxy(new_proxy_url)
-                time.sleep(2)
-            else:
+            can_retry_proxy = (PROXY_URL or USE_FREE_PROXY) and rotation < max_rotations - 1
+            if not can_retry_proxy:
                 raise e
+
+            print(f"  ❌ Action failed: {e}")
+            if not PROXY_URL and proxy_pool is None:
+                _ensure_proxy_pool(STORY_SOURCE_URL)
+
+            if not PROXY_URL and (proxy_pool is None or proxy_pool.size == 0):
+                raise e
+
+            print(f"  🔄 Rotating proxy and retrying... ({rotation + 1}/{max_rotations})")
+            if proxy_pool and current_proxy:
+                current_proxy.fail_count += 1
+                if current_proxy.fail_count >= 3:
+                    proxy_pool.remove(current_proxy)
+                    print(f"  🗑️ Removed bad proxy: {current_proxy.url} (pool: {proxy_pool.size})")
+
+            if proxy_pool:
+                current_proxy = proxy_pool.get_next()
+                new_proxy_url = current_proxy.url if current_proxy else None
+            else:
+                new_proxy_url = PROXY_URL
+
+            session.rotate_proxy(new_proxy_url)
+            time.sleep(1.5)
     raise RuntimeError(f"Action failed after {max_rotations} proxy rotations")
 
 
@@ -717,31 +744,7 @@ def run_scraper():
     if JOB_ID:
         update_scrape_job(int(JOB_ID), status="running")
 
-    # ─── Build proxy pool ──────────────────────────────
-    if not PROXY_URL and USE_FREE_PROXY:
-        print("\n🌐 [Scrapling] Building free proxy pool...")
-        from urllib.parse import urlparse
-        parsed_url = urlparse(STORY_SOURCE_URL)
-        test_target_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
-        print(f"  🎯 Testing proxy connectivity against target: {test_target_url}")
-        
-        import asyncio
-        proxy_pool = asyncio.run(build_proxy_pool(max_proxies=200, test_concurrency=150, test_url=test_target_url))
-        
-        if proxy_pool.size == 0:
-            print("  ⚠️ No working proxies found for the target site. Falling back to general proxy testing...")
-            proxy_pool = asyncio.run(build_proxy_pool(max_proxies=200, test_concurrency=150, test_url="https://httpbin.org/ip"))
-            
-        if proxy_pool.size == 0:
-            print("  ⚠️ No working free proxies found, will connect directly")
-            current_proxy = None
-        else:
-            current_proxy = proxy_pool.get_next()
-    else:
-        proxy_pool = None
-        current_proxy = None
-
-    # Configure session proxy
+    # Configure session (direct-first, fast HTTP -> lazy Playwright browser)
     session_kwargs = {
         "headless": True,
         "solve_cloudflare": True,
@@ -752,16 +755,21 @@ def run_scraper():
     if PROXY_URL:
         session_kwargs["proxy"] = PROXY_URL
         print(f"🔄 [Scrapling] Configured paid proxy: {PROXY_URL[:35]}...")
-    elif current_proxy:
-        session_kwargs["proxy"] = current_proxy.url
-        print(f"🔄 [Scrapling] Configured free proxy: {current_proxy.url}")
+    else:
+        print("⚡ [Scrapling] Direct-first mode enabled (free proxy pool will only build if blocked)")
 
+    prefer_http = os.environ.get("FORCE_BROWSER", "false").lower() != "true"
     chapters_scraped = 0
     consecutive_failures = 0
     story_id = None
 
-    # Start Scrapling session
-    with StealthySession(**session_kwargs) as session:
+    # Start 2-tier HybridSession (fast curl_cffi HTTP -> lazy StealthySession)
+    with HybridSession(
+        StealthySession,
+        browser_kwargs=session_kwargs,
+        prefer_http=prefer_http,
+        proxy=PROXY_URL or None,
+    ) as session:
         try:
             # Auto-discover selectors for unknown domains on first run
             if parser is None:
@@ -1083,173 +1091,192 @@ def run_scraper():
             existing_r2_ch_nums = get_existing_chapters(story_info["slug"])
             print(f"  Found {len(existing_r2_ch_nums)} chapters in R2 storage.")
 
-            for i, ch_info in enumerate(target_chapters):
-                ch_num = ch_info["chapter_number"]
-                print(f"\n📖 [{i+1}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
+            pending_uploads = []
 
-                # Primary skip check: Supabase index (fast, 1 query for all chapters)
-                if not FORCE_RESCRAPE and ch_num in existing_index:
-                    existing = existing_index[ch_num]
-                    expected_url = ch_info.get("source_url")
-                    existing_url = existing.get("source_url")
+            def _flush_pending(force_progress: bool = False):
+                if pending_uploads:
+                    batch_rows = []
+                    for fut, row_meta in pending_uploads:
+                        r2_url = fut.result()
+                        row_meta["text_r2_url"] = r2_url
+                        batch_rows.append(row_meta)
+                    pending_uploads.clear()
+                    upsert_chapters_batch(batch_rows)
+                    print(f"  💾 Batch upserted {len(batch_rows)} chapters to Supabase")
 
-                    # Skip if source_url matches and chapter is marked as scraped
-                    if existing_url and expected_url and existing_url == expected_url:
-                        if existing.get("is_scraped") and existing.get("text_r2_url"):
-                            print("  ⏭️ Already scraped (Supabase index match), skipping")
-                            chapters_scraped += 1
-                            continue
-                        print("  ♻️ Supabase shows not scraped yet, proceeding")
-
-                    # If URLs differ or missing, check R2 metadata for confirmation
-                    elif ch_num in existing_r2_ch_nums:
-                        existing_meta = get_chapter_metadata(story_info["slug"], ch_num)
-                        if existing_chapter_matches(ch_info, existing_meta):
-                            print("  ⏭️ R2 metadata matches, skipping")
-                            chapters_scraped += 1
-                            continue
-                        print("  ♻️ R2 chapter stale or mismatched, re-scraping")
-
-                # Fallback: check R2 directly if not in Supabase index
-                elif not FORCE_RESCRAPE and ch_num in existing_r2_ch_nums:
-                    existing_meta = get_chapter_metadata(story_info["slug"], ch_num)
-                    if existing_chapter_matches(ch_info, existing_meta):
-                        print("  ⏭️ Already exists in R2 (not in Supabase index), skipping")
-                        chapters_scraped += 1
-                        continue
-                    print("  ♻️ Existing R2 chapter looks stale or mismatched, re-scraping")
-
-                try:
-                    def get_chapter_content(sess):
-                        if parser.name == "truyendich":
-                            is_cv = "/cv/" in story_info.get("source_url", STORY_SOURCE_URL)
-                            # 1. Try direct API first
-                            try:
-                                api_url = parser.get_chapter_api_url(
-                                    story_info.get("source_url", STORY_SOURCE_URL),
-                                    ch_num,
-                                    edition_type="cv" if is_cv else None
-                                )
-                                api_resp = sess.fetch(api_url)
-                                if api_resp.status == 200:
-                                    api_content = parser.parse_chapter_content(api_resp.body)
-                                    if api_content.get("blocked"):
-                                        # Loai B/C detected -> force proxy rotation/retry
-                                        raise Exception(f"blocked chapter (api cv): {api_content.get('reason')}")
-                                    if api_content["paragraphs"]:
-                                        return api_content
-                            except Exception:
-                                pass
-
-                            # 2. Try HTML page (contains real Vietnamese in display tab, filtered of hieroglyphs)
-                            try:
-                                ch_resp = sess.fetch(ch_info["source_url"])
-                                if ch_resp.status == 200:
-                                    html_content = parser.parse_chapter_content(ch_resp.body)
-                                    if html_content.get("blocked"):
-                                        raise Exception(f"blocked chapter (html): {html_content.get('reason')}")
-                                    if html_content["paragraphs"]:
-                                        return html_content
-                            except Exception:
-                                pass
-
-                            # 3. If cv was requested, fallback to AI edition direct API
-                            if is_cv:
-                                try:
-                                    api_url_ai = parser.get_chapter_api_url(
-                                        story_info.get("source_url", STORY_SOURCE_URL),
-                                        ch_num,
-                                        edition_type=None
-                                    )
-                                    api_resp_ai = sess.fetch(api_url_ai)
-                                    if api_resp_ai.status == 200:
-                                        ai_content = parser.parse_chapter_content(api_resp_ai.body)
-                                        if ai_content.get("blocked"):
-                                            raise Exception(f"blocked chapter (api ai): {ai_content.get('reason')}")
-                                        if ai_content["paragraphs"]:
-                                            return ai_content
-                                except Exception:
-                                    pass
-
-                            raise RuntimeError("No content returned from TruyenDich API or HTML page")
-
-                        # Other parsers (HTML page)
-                        ch_resp = sess.fetch(ch_info["source_url"])
-                        if ch_resp.status != 200:
-                            raise RuntimeError(f"HTTP {ch_resp.status}")
-                        
-                        content = parser.parse_chapter_content(ch_resp.body)
-                        if not content["paragraphs"]:
-                            raise RuntimeError("No content found/parsed (page might be blank or blocked by Turnstile)")
-                        return content
-
-                    content = fetch_with_rotation_wrapper(session, get_chapter_content)
-                    consecutive_failures = 0
-                except Exception as e:
-                    print(f"  ❌ Failed to fetch chapter {ch_num}: {e}")
-                    consecutive_failures += 1
-                    if consecutive_failures >= 5:
-                        raise ScraperAbortException(
-                            f"Aborting: {consecutive_failures} consecutive chapter failures detected."
-                        )
-                    continue
-
-                if not content or not content.get("paragraphs") or content.get("word_count", 0) < 50 or content.get("blocked"):
-                    print(f"  ❌ Chapter {ch_num} has invalid/blocked content ({content.get('reason', 'too short')}). Skipping.")
-                    consecutive_failures += 1
-                    if consecutive_failures >= 5:
-                        raise ScraperAbortException(
-                            f"Aborting: {consecutive_failures} consecutive chapter failures detected."
-                        )
-                    continue
-
-                print(f"  📝 {len(content['paragraphs'])} paragraphs, {content['word_count']} words")
-
-                # Upload to R2
-                target_slug = story_info.get("slug") or parser.extract_slug(STORY_SOURCE_URL)
-                r2_url = upload_chapter(
-                    story_slug=target_slug,
-                    chapter_number=ch_num,
-                    title=content["title"] or ch_info["title"],
-                    paragraphs=content["paragraphs"],
-                    word_count=content["word_count"],
-                    source_url=ch_info.get("source_url"),
-                    source_chapter_number=ch_info.get("source_chapter_number"),
-                )
-
-                # Update Supabase
-                upsert_chapter(
-                    story_id=story_id,
-                    chapter_number=ch_num,
-                    title=content["title"] or ch_info["title"],
-                    text_r2_url=r2_url,
-                    word_count=content["word_count"],
-                    source_url=ch_info["source_url"],
-                    is_scraped=True,
-                )
-
-                chapters_scraped += 1
-
-                # Update progress tracking for signals/aborts
-                if scrape_progress["start"] is None:
-                    scrape_progress["start"] = ch_num
-                scrape_progress["end"] = ch_num
-                scrape_progress["count"] = chapters_scraped
-
-                # Throttle progress updates every 10 chapters (non-fatal if telemetry fails)
-                if chapters_scraped % 10 == 0:
-                    try:
-                        update_story_scrape_progress(story_id, ch_num)
-                    except Exception as err:
-                        print(f"  ⚠️ Failed to update story progress in Supabase (non-fatal): {err}")
-
+                if force_progress or (chapters_scraped > 0 and chapters_scraped % 10 == 0):
+                    if story_id and scrape_progress["end"] is not None:
+                        try:
+                            update_story_scrape_progress(story_id, scrape_progress["end"])
+                        except Exception as err:
+                            print(f"  ⚠️ Failed to update story progress in Supabase (non-fatal): {err}")
                     if JOB_ID:
                         try:
                             update_scrape_job(int(JOB_ID), chapters_scraped=chapters_scraped)
                         except Exception as err:
                             print(f"  ⚠️ Failed to update job progress in Supabase (non-fatal): {err}")
 
-                random_delay()
+            with ThreadPoolExecutor(max_workers=4) as upload_pool:
+                try:
+                    for i, ch_info in enumerate(target_chapters):
+                        ch_num = ch_info["chapter_number"]
+                        print(f"\n📖 [{i+1}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
+
+                        # Primary skip check: Supabase index (fast, 1 query for all chapters)
+                        if not FORCE_RESCRAPE and ch_num in existing_index:
+                            existing = existing_index[ch_num]
+                            expected_url = ch_info.get("source_url")
+                            existing_url = existing.get("source_url")
+
+                            # Skip if source_url matches and chapter is marked as scraped
+                            if existing_url and expected_url and existing_url == expected_url:
+                                if existing.get("is_scraped") and existing.get("text_r2_url"):
+                                    print("  ⏭️ Already scraped (Supabase index match), skipping")
+                                    chapters_scraped += 1
+                                    continue
+                                print("  ♻️ Supabase shows not scraped yet, proceeding")
+
+                            # If URLs differ or missing, check R2 metadata for confirmation
+                            elif ch_num in existing_r2_ch_nums:
+                                existing_meta = get_chapter_metadata(story_info["slug"], ch_num)
+                                if existing_chapter_matches(ch_info, existing_meta):
+                                    print("  ⏭️ R2 metadata matches, skipping")
+                                    chapters_scraped += 1
+                                    continue
+                                print("  ♻️ R2 chapter stale or mismatched, re-scraping")
+
+                        # Fallback: check R2 directly if not in Supabase index
+                        elif not FORCE_RESCRAPE and ch_num in existing_r2_ch_nums:
+                            existing_meta = get_chapter_metadata(story_info["slug"], ch_num)
+                            if existing_chapter_matches(ch_info, existing_meta):
+                                print("  ⏭️ Already exists in R2 (not in Supabase index), skipping")
+                                chapters_scraped += 1
+                                continue
+                            print("  ♻️ Existing R2 chapter looks stale or mismatched, re-scraping")
+
+                        try:
+                            def get_chapter_content(sess):
+                                if parser.name == "truyendich":
+                                    is_cv = "/cv/" in story_info.get("source_url", STORY_SOURCE_URL)
+                                    # 1. Try direct API first
+                                    try:
+                                        api_url = parser.get_chapter_api_url(
+                                            story_info.get("source_url", STORY_SOURCE_URL),
+                                            ch_num,
+                                            edition_type="cv" if is_cv else None
+                                        )
+                                        api_resp = sess.fetch(api_url)
+                                        if api_resp.status == 200:
+                                            api_content = parser.parse_chapter_content(api_resp.body)
+                                            if api_content.get("blocked"):
+                                                # Loai B/C detected -> force proxy rotation/retry
+                                                raise Exception(f"blocked chapter (api cv): {api_content.get('reason')}")
+                                            if api_content["paragraphs"]:
+                                                return api_content
+                                    except Exception:
+                                        pass
+
+                                    # 2. Try HTML page (contains real Vietnamese in display tab, filtered of hieroglyphs)
+                                    try:
+                                        ch_resp = sess.fetch(ch_info["source_url"])
+                                        if ch_resp.status == 200:
+                                            html_content = parser.parse_chapter_content(ch_resp.body)
+                                            if html_content.get("blocked"):
+                                                raise Exception(f"blocked chapter (html): {html_content.get('reason')}")
+                                            if html_content["paragraphs"]:
+                                                return html_content
+                                    except Exception:
+                                        pass
+
+                                    # 3. If cv was requested, fallback to AI edition direct API
+                                    if is_cv:
+                                        try:
+                                            api_url_ai = parser.get_chapter_api_url(
+                                                story_info.get("source_url", STORY_SOURCE_URL),
+                                                ch_num,
+                                                edition_type=None
+                                            )
+                                            api_resp_ai = sess.fetch(api_url_ai)
+                                            if api_resp_ai.status == 200:
+                                                ai_content = parser.parse_chapter_content(api_resp_ai.body)
+                                                if ai_content.get("blocked"):
+                                                    raise Exception(f"blocked chapter (api ai): {ai_content.get('reason')}")
+                                                if ai_content["paragraphs"]:
+                                                    return ai_content
+                                        except Exception:
+                                            pass
+
+                                    raise RuntimeError("No content returned from TruyenDich API or HTML page")
+
+                                # Other parsers (HTML page)
+                                ch_resp = sess.fetch(ch_info["source_url"])
+                                if ch_resp.status != 200:
+                                    raise RuntimeError(f"HTTP {ch_resp.status}")
+                        
+                                content = parser.parse_chapter_content(ch_resp.body)
+                                if not content["paragraphs"]:
+                                    raise RuntimeError("No content found/parsed (page might be blank or blocked by Turnstile)")
+                                return content
+
+                            content = fetch_with_rotation_wrapper(session, get_chapter_content)
+                            consecutive_failures = 0
+                        except Exception as e:
+                            print(f"  ❌ Failed to fetch chapter {ch_num}: {e}")
+                            consecutive_failures += 1
+                            if consecutive_failures >= 5:
+                                raise ScraperAbortException(
+                                    f"Aborting: {consecutive_failures} consecutive chapter failures detected."
+                                )
+                            continue
+
+                        if not content or not content.get("paragraphs") or content.get("word_count", 0) < 50 or content.get("blocked"):
+                            print(f"  ❌ Chapter {ch_num} has invalid/blocked content ({content.get('reason', 'too short')}). Skipping.")
+                            consecutive_failures += 1
+                            if consecutive_failures >= 5:
+                                raise ScraperAbortException(
+                                    f"Aborting: {consecutive_failures} consecutive chapter failures detected."
+                                )
+                            continue
+
+                        print(f"  📝 {len(content['paragraphs'])} paragraphs, {content['word_count']} words")
+
+                        # Upload to R2 asynchronously and batch upsert to Supabase
+                        target_slug = story_info.get("slug") or parser.extract_slug(STORY_SOURCE_URL)
+                        ch_title = content["title"] or ch_info["title"]
+                        fut = upload_pool.submit(
+                            upload_chapter,
+                            story_slug=target_slug,
+                            chapter_number=ch_num,
+                            title=ch_title,
+                            paragraphs=content["paragraphs"],
+                            word_count=content["word_count"],
+                            source_url=ch_info.get("source_url"),
+                            source_chapter_number=ch_info.get("source_chapter_number"),
+                        )
+                        pending_uploads.append((fut, {
+                            "story_id": story_id,
+                            "chapter_number": ch_num,
+                            "title": ch_title,
+                            "word_count": content["word_count"],
+                            "source_url": ch_info.get("source_url"),
+                            "is_scraped": True,
+                        }))
+
+                        chapters_scraped += 1
+
+                        # Update progress tracking for signals/aborts
+                        if scrape_progress["start"] is None:
+                            scrape_progress["start"] = ch_num
+                        scrape_progress["end"] = ch_num
+                        scrape_progress["count"] = chapters_scraped
+
+                        if len(pending_uploads) >= 10:
+                            _flush_pending()
+
+                        random_delay()
+
+                finally:
+                    _flush_pending(force_progress=True)
 
             # Final progress update
             try:
