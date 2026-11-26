@@ -63,7 +63,11 @@ def _rest(method: str, table: str, params: str = "", body: dict = None) -> dict:
                 content=encoded_body if method in ("POST", "PATCH") else None,
             )
             if resp.status_code >= 400:
-                if resp.status_code in transient_http_codes and attempt < max_retries:
+                deterministic_pg_error = any(
+                    code in resp.text
+                    for code in ('"code":"21000"', '"code":"22P02"', '"code":"23505"', '"code":"23503"', '"code":"42703"')
+                )
+                if resp.status_code in transient_http_codes and not deterministic_pg_error and attempt < max_retries:
                     delay = retry_delays[attempt]
                     print(f"  ⚠️ [Supabase] Transient HTTP {resp.status_code} on {method} {table}. Retrying in {delay}s (attempt {attempt + 1}/{max_retries})...")
                     time.sleep(delay)
@@ -199,13 +203,20 @@ def upsert_chapters_batch(rows: list[dict]) -> list:
     if not rows:
         return []
     now_iso = datetime.now(timezone.utc).isoformat()
-    payload = []
+    deduped: dict[tuple, dict] = {}
+    passthrough: list[dict] = []
     for row in rows:
         item = {k: v for k, v in row.items() if v is not None}
         if item.get("is_scraped") and "scraped_at" not in item:
             item["scraped_at"] = now_iso
-        payload.append(item)
+        sid = item.get("story_id")
+        ch_num = item.get("chapter_number")
+        if sid is not None and ch_num is not None:
+            deduped[(sid, ch_num)] = item
+        else:
+            passthrough.append(item)
 
+    payload = [*deduped.values(), *passthrough]
     result = _rest("POST", "chapters", params="?on_conflict=story_id,chapter_number", body=payload)
     return result if isinstance(result, list) else []
 

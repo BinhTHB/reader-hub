@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup, Comment, NavigableString, Tag
 import httpx
 
-from dynamic_parser import DynamicConfigParser
+from dynamic_parser import DynamicConfigParser, is_site_branding_element
 
 
 DEFAULT_MODEL = "gemini-2.5-flash-lite"
@@ -147,6 +147,19 @@ def validate_selectors(
         errors.append("story_title selector produced empty title")
     elif len(title) > 200:
         errors.append(f"story_title too long ({len(title)} chars), likely matched wrong container")
+    else:
+        story_title_css = (selectors.get("story_title") or "").strip()
+        if story_title_css:
+            try:
+                story_soup = BeautifulSoup(story_html, "lxml")
+                matched_title_el = story_soup.select_one(story_title_css)
+                if matched_title_el is not None and is_site_branding_element(matched_title_el):
+                    errors.append(
+                        f"story_title selector '{story_title_css}' matched site header/branding ('{title}') "
+                        "instead of the book title; scope it to the main story container matching <title>/og:title"
+                    )
+            except Exception:
+                pass
 
     chapters = []
     try:
@@ -243,6 +256,7 @@ def _build_prompt(
 ) -> str:
     parts = [
         "You are an expert web-scraping engineer. Analyze the HTML skeleton(s) below and return a JSON object of CSS selectors compatible with BeautifulSoup (.select / .select_one). Avoid deprecated :contains(...) (use :-soup-contains(...) if needed) and avoid unescaped Tailwind colon classes like md:text-5xl or bg-card/50 in selectors.",
+        "IMPORTANT: Never select site logo/brand/header titles inside <header>, <nav>, or .site-title for story_title; always scope story_title to the main story/novel container so it matches the actual book title in <title> / og:title.",
         f"Target story URL: {story_url}",
         "",
         "Return ONLY a JSON object with these keys:",

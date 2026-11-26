@@ -426,6 +426,7 @@ CHAPTER_LIMIT = args.limit if args.limit is not None else (int(_limit_env) if _l
 PROXY_URL = os.environ.get("PROXY_URL", "")
 JOB_ID = args.job_id or os.environ.get("JOB_ID", "")
 FORCE_RESCRAPE = args.force or os.environ.get("FORCE_RESCRAPE", "").lower() in {"1", "true", "yes"}
+FORCE_REDISCOVER = os.environ.get("FORCE_REDISCOVER", "false").lower() == "true"
 USE_FREE_PROXY = os.environ.get("USE_FREE_PROXY", "false").lower() == "true"
 
 # Rate limiting
@@ -730,7 +731,7 @@ def run_scraper():
         print("❌ No STORY_SOURCE_URL provided. Exiting.")
         sys.exit(1)
 
-    parser = detect_parser(STORY_SOURCE_URL, allow_dynamic=True)
+    parser = detect_parser(STORY_SOURCE_URL, allow_dynamic=not FORCE_REDISCOVER)
     if parser is not None:
         print(f"📖 [Scrapling] Using parser: {parser.name}")
     else:
@@ -771,30 +772,32 @@ def run_scraper():
         proxy=PROXY_URL or None,
     ) as session:
         try:
-            # Auto-discover selectors for unknown domains on first run
-            if parser is None:
+            rediscovered_in_run = False
+
+            def _discover_dynamic_parser(sess_wrapper, story_url: str):
                 from urllib.parse import urlparse
                 from ai_selector import DEFAULT_MODEL, discover_site_selectors, normalize_domain
                 from dynamic_parser import DynamicConfigParser
                 from supabase_client import upsert_scrape_source
 
                 print("\n🤖 [AI Selector] Fetching story page for structure discovery...")
+
                 def _fetch_html(target_url: str) -> str:
                     def _do(sess):
                         r = sess.fetch(target_url)
                         if r.status != 200:
                             raise RuntimeError(f"HTTP {r.status}")
                         return r.body
-                    return fetch_with_rotation_wrapper(session, _do)
+                    return fetch_with_rotation_wrapper(sess_wrapper, _do)
 
-                initial_story_html = _fetch_html(STORY_SOURCE_URL)
+                initial_story_html = _fetch_html(story_url)
                 selectors, preview = discover_site_selectors(
-                    STORY_SOURCE_URL,
+                    story_url,
                     initial_story_html,
                     fetch_fn=_fetch_html,
                 )
-                domain = normalize_domain(STORY_SOURCE_URL)
-                parsed_u = urlparse(STORY_SOURCE_URL)
+                domain = normalize_domain(story_url)
+                parsed_u = urlparse(story_url)
                 base_u = f"{parsed_u.scheme}://{parsed_u.netloc}"
                 model_used = os.environ.get("AI_SELECTOR_MODEL", DEFAULT_MODEL).strip() or DEFAULT_MODEL
                 try:
@@ -809,8 +812,14 @@ def run_scraper():
                     print(f"  💾 Saved verified selectors for '{domain}' to scrape_sources")
                 except Exception as save_err:
                     print(f"  ⚠️ Could not persist scrape_sources (non-fatal): {save_err}")
-                parser = DynamicConfigParser(domain=domain, base_url=base_u, selectors=selectors)
-                print(f"  ✅ Discovered parser ready: {parser.name} (preview: {preview.get('title')})")
+                new_parser = DynamicConfigParser(domain=domain, base_url=base_u, selectors=selectors)
+                print(f"  ✅ Discovered parser ready: {new_parser.name} (preview: {preview.get('title')})")
+                return new_parser
+
+            # Auto-discover selectors for unknown domains on first run
+            if parser is None:
+                parser = _discover_dynamic_parser(session, STORY_SOURCE_URL)
+                rediscovered_in_run = True
 
             # ─── Step 1: Scrape story info ─────────────────
             print("\n📚 [Scrapling] Scraping story info...")
@@ -826,7 +835,20 @@ def run_scraper():
                     raise RuntimeError("Failed to parse story info or title is empty/Unknown")
                 return resp, info
 
-            response, story_info = fetch_with_rotation_wrapper(session, get_story_info)
+            try:
+                response, story_info = fetch_with_rotation_wrapper(session, get_story_info)
+            except Exception as info_err:
+                if (
+                    parser.name.startswith("dynamic:")
+                    and not rediscovered_in_run
+                    and os.environ.get("GEMINI_API_KEY", "").strip()
+                ):
+                    print(f"  🔄 [AI Selector] Cached dynamic parser failed story info ({info_err}); re-discovering...")
+                    parser = _discover_dynamic_parser(session, STORY_SOURCE_URL)
+                    rediscovered_in_run = True
+                    response, story_info = fetch_with_rotation_wrapper(session, get_story_info)
+                else:
+                    raise
             if not story_info.get("slug"):
                 story_info["slug"] = parser.extract_slug(story_info.get("source_url") or STORY_SOURCE_URL)
             print(f"  Title: {story_info['title']}")
@@ -946,6 +968,17 @@ def run_scraper():
                     return ch_list, max_p, resp
 
                 all_chapters, max_pages, first_page_resp = fetch_with_rotation_wrapper(session, get_first_page)
+                if (
+                    not all_chapters
+                    and parser.name.startswith("dynamic:")
+                    and not rediscovered_in_run
+                    and os.environ.get("GEMINI_API_KEY", "").strip()
+                ):
+                    print("  🔄 [AI Selector] Cached dynamic parser returned 0 chapters; re-discovering...")
+                    parser = _discover_dynamic_parser(session, STORY_SOURCE_URL)
+                    rediscovered_in_run = True
+                    first_page_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=1)
+                    all_chapters, max_pages, first_page_resp = fetch_with_rotation_wrapper(session, get_first_page)
                 
             print(f"  Found {len(all_chapters)} chapters (Total pages: {max_pages})")
 
@@ -1068,6 +1101,20 @@ def run_scraper():
             # Sort sequentially to ensure correct scrape order
             # Sort primarily by chapter_number, then by sequence_index if numbers are duplicate or None
             target_chapters.sort(key=lambda x: (x["chapter_number"] if x["chapter_number"] is not None else float('inf'), x.get("sequence_index", 0)))
+
+            # Deduplicate by chapter_number (preserving first occurrence in sorted order)
+            seen_target_nums: set[int] = set()
+            deduped_targets: list[dict] = []
+            for ch in target_chapters:
+                num = ch["chapter_number"]
+                if num in seen_target_nums:
+                    continue
+                seen_target_nums.add(num)
+                deduped_targets.append(ch)
+            target_chapters = deduped_targets
+
+            if CHAPTER_LIMIT > 0:
+                target_chapters = target_chapters[:CHAPTER_LIMIT]
 
             print(f"  Targeting {len(target_chapters)} chapters (starting from {CHAPTER_START})")
 

@@ -38,6 +38,11 @@ on:
         required: false
         default: '5'
         type: string
+      force_rediscover:
+        description: 'Force AI re-discovery of selectors (ignore cached scrape_sources)'
+        required: false
+        default: false
+        type: boolean
 env:
   SCRAPER_DIR: scrapling # Set to 'scrapling' to use the Scrapling engine
 
@@ -102,6 +107,7 @@ jobs:
           SCRAPE_MIN_DELAY: '1.0'
           SCRAPE_MAX_DELAY: '2.5'
           USE_FREE_PROXY: 'true'
+          FORCE_REDISCOVER: ${{ github.event.client_payload.force_rediscover || github.event.inputs.force_rediscover || 'false' }}
 
   search:
     if: >

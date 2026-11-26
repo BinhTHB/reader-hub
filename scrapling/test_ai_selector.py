@@ -215,6 +215,148 @@ class AiSelectorTests(unittest.TestCase):
         finally:
             supabase_client._rest = orig_rest
 
+    def test_comma_separated_chapter_numbers_and_author_prefix(self):
+        html = """
+        <html>
+          <head><title>Trận Vấn Trường Sinh - lore</title></head>
+          <body>
+            <header class="site-header"><h1 class="site-title">lore Đọc truyện online</h1></header>
+            <div class="novel-detail-main">
+              <h1>Trận Vấn Trường Sinh</h1>
+              <span class="author">Tác giả: Quan Hư</span>
+            </div>
+            <ul class="chapters">
+              <li><a href="/read/1">Chương 1 Họa mực</a></li>
+              <li><a href="/read/2">Chương 2 Bia mộ</a></li>
+              <li><a href="/read/1000">Chương 1,000 Tông Môn Đạo Binh</a></li>
+              <li><a href="/read/1001">Chương 1,001 Kiếm chỉ tứ tông</a></li>
+            </ul>
+          </body>
+        </html>
+        """
+        parser = DynamicConfigParser(
+            domain="lore5.com",
+            base_url="https://www.lore5.com",
+            selectors={
+                "story_title": "",
+                "story_author": "span.author",
+                "chapter_list": "ul.chapters li a",
+            },
+        )
+        info = parser.parse_story_info(html, "https://www.lore5.com/book/lb00000197")
+        self.assertEqual(info["title"], "Trận Vấn Trường Sinh")
+        self.assertEqual(info["author"], "Quan Hư")
+
+        chapters = parser.parse_chapter_list(html)
+        self.assertEqual([c["chapter_number"] for c in chapters], [1, 2, 1000, 1001])
+
+    def test_validate_selectors_rejects_site_branding_header_and_self_heals(self):
+        html = """
+        <html>
+          <head><title>Trận Vấn Trường Sinh - lore</title></head>
+          <body>
+            <header class="site-header"><h1 class="site-title">lore Đọc truyện online</h1></header>
+            <div class="novel-detail-main">
+              <h1>Trận Vấn Trường Sinh</h1>
+              <span class="author">Tác giả: Quan Hư</span>
+            </div>
+            <ul class="chapters">
+              <li><a href="/read/1">Chương 1 Họa mực</a></li>
+              <li><a href="/read/2">Chương 2 Bia mộ</a></li>
+              <li><a href="/read/3">Chương 3 Nhà chiến lược</a></li>
+            </ul>
+          </body>
+        </html>
+        """
+        prompts_seen: list[str] = []
+
+        def fake_llm(prompt: str) -> dict:
+            prompts_seen.append(prompt)
+            if len(prompts_seen) == 1:
+                return {
+                    **VALID_SELECTORS,
+                    "story_title": "h1.site-title",
+                    "story_author": "span.author",
+                    "chapter_list": "ul.chapters li a",
+                }
+            return {
+                **VALID_SELECTORS,
+                "story_title": ".novel-detail-main h1",
+                "story_author": "span.author",
+                "chapter_list": "ul.chapters li a",
+            }
+
+        selectors, preview = discover_site_selectors(
+            story_url="https://www.lore5.com/book/lb00000197",
+            story_html=html,
+            fetch_fn=lambda _url: SAMPLE_CHAPTER_HTML,
+            max_retries=2,
+            llm_fn=fake_llm,
+        )
+        self.assertEqual(len(prompts_seen), 2)
+        self.assertIn("site header/branding", prompts_seen[1])
+        self.assertEqual(selectors["story_title"], ".novel-detail-main h1")
+        self.assertEqual(preview["title"], "Trận Vấn Trường Sinh")
+
+    def test_upsert_chapters_batch_deduplicates_same_chapter_number(self):
+        import supabase_client
+
+        calls = []
+        orig_rest = supabase_client._rest
+        try:
+            def fake_rest(method, table, params="", body=None):
+                calls.append((method, table, params, body))
+                return body
+
+            supabase_client._rest = fake_rest
+            res = supabase_client.upsert_chapters_batch([
+                {"story_id": 1, "chapter_number": 1, "title": "Old", "is_scraped": True},
+                {"story_id": 1, "chapter_number": 1, "title": "New", "is_scraped": True},
+                {"story_id": 1, "chapter_number": 2, "title": "C2", "is_scraped": True},
+            ])
+            self.assertEqual(len(res), 2)
+            self.assertEqual([r["title"] for r in calls[0][3]], ["New", "C2"])
+        finally:
+            supabase_client._rest = orig_rest
+
+    def test_rest_does_not_retry_deterministic_pg_21000(self):
+        import os
+        import supabase_client
+
+        class FakeResp:
+            status_code = 500
+            text = '{"code":"21000","message":"ON CONFLICT DO UPDATE command cannot affect row a second time"}'
+
+        class FakeClient:
+            def __init__(self):
+                self.calls = 0
+
+            def request(self, *_args, **_kwargs):
+                self.calls += 1
+                return FakeResp()
+
+        fake_client = FakeClient()
+        orig_get_client = supabase_client._get_client
+        orig_url = os.environ.get("SUPABASE_URL")
+        orig_key = os.environ.get("SUPABASE_SERVICE_KEY")
+        try:
+            os.environ["SUPABASE_URL"] = "https://example.supabase.co"
+            os.environ["SUPABASE_SERVICE_KEY"] = "test-key"
+            supabase_client._get_client = lambda: fake_client
+            with self.assertRaises(RuntimeError):
+                supabase_client._rest("POST", "chapters", params="?on_conflict=story_id,chapter_number", body=[])
+            self.assertEqual(fake_client.calls, 1)
+        finally:
+            supabase_client._get_client = orig_get_client
+            if orig_url is None:
+                os.environ.pop("SUPABASE_URL", None)
+            else:
+                os.environ["SUPABASE_URL"] = orig_url
+            if orig_key is None:
+                os.environ.pop("SUPABASE_SERVICE_KEY", None)
+            else:
+                os.environ["SUPABASE_SERVICE_KEY"] = orig_key
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -9,11 +9,36 @@ from sites_config import SiteConfig
 
 
 CHAPTER_NUM_RE = re.compile(
-    r"(?:chương|chuong|chapter|chap|c\.?|第)\s*(\d+)",
+    r"(?:chương|chuong|chapter|chap|c\.?|第)\s*(\d{1,3}(?:,\d{3})+|\d+)",
     re.IGNORECASE,
 )
-LEADING_NUM_RE = re.compile(r"^\s*(\d+)\s*[.:\-–—\s]")
+LEADING_NUM_RE = re.compile(r"^\s*(\d{1,3}(?:,\d{3})+|\d+)\s*[.:\-–—\s]")
 URL_NUM_RE = re.compile(r"(\d+)(?:[./?#]|$)")
+_BRANDING_ATTR_RE = re.compile(r"(?:site-title|site-name|site-logo|brand|logo)", re.IGNORECASE)
+_HEADER_ANCESTOR_RE = re.compile(r"(?:site-header|navbar|topbar|main-header)", re.IGNORECASE)
+_AUTHOR_PREFIX_RE = re.compile(r"^(?:tác\s*giả|author|by)\s*[:：\-]?\s*", re.IGNORECASE)
+
+
+def _attr_tokens(el) -> str:
+    classes = el.get("class") or []
+    if isinstance(classes, str):
+        classes = [classes]
+    return " ".join([*[str(c) for c in classes], str(el.get("id") or "")])
+
+
+def is_site_branding_element(el) -> bool:
+    """Return True when an element looks like a site header/brand/logo title."""
+    if el is None:
+        return False
+    if _BRANDING_ATTR_RE.search(_attr_tokens(el)):
+        return True
+    for parent in el.parents:
+        name = getattr(parent, "name", None)
+        if name == "nav":
+            return True
+        if name == "header" and _HEADER_ANCESTOR_RE.search(_attr_tokens(parent)):
+            return True
+    return False
 
 
 class DynamicConfigParser(BaseSiteParser):
@@ -94,19 +119,25 @@ class DynamicConfigParser(BaseSiteParser):
     def parse_story_info(self, html: str, url: str) -> dict:
         soup = BeautifulSoup(html, "lxml")
 
+        fallback_h1 = ""
+        if not self.selectors.get("story_title"):
+            for h in soup.find_all("h1"):
+                if not is_site_branding_element(h):
+                    fallback_h1 = self.clean_text(h.get_text(" ", strip=True))
+                    if fallback_h1:
+                        break
+
         title = (
             self._select_text(soup, self.selectors.get("story_title"))
             or self._meta_content(soup, "property", "og:title")
-            or self._select_text(soup, "h1")
+            or fallback_h1
         )
         # Strip common site-name suffixes from og:title if h1 wasn't used
         if title and " - " in title and not self.selectors.get("story_title"):
             title = title.split(" - ")[0].strip()
 
-        author = (
-            self._select_text(soup, self.selectors.get("story_author"))
-            or "Đang cập nhật"
-        )
+        raw_author = self._select_text(soup, self.selectors.get("story_author"))
+        author = _AUTHOR_PREFIX_RE.sub("", raw_author).strip() or "Đang cập nhật"
 
         description = (
             self._select_text(soup, self.selectors.get("story_description"))
@@ -180,11 +211,11 @@ class DynamicConfigParser(BaseSiteParser):
             num: int | None = None
             m = CHAPTER_NUM_RE.search(title)
             if m:
-                num = int(m.group(1))
+                num = int(m.group(1).replace(",", ""))
             else:
                 m_lead = LEADING_NUM_RE.match(title)
                 if m_lead:
-                    num = int(m_lead.group(1))
+                    num = int(m_lead.group(1).replace(",", ""))
                 else:
                     m2 = URL_NUM_RE.search(abs_url)
                     if m2:
