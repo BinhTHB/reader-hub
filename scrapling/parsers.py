@@ -1100,9 +1100,8 @@ def detect_parser(url: str, allow_dynamic: bool = True) -> BaseSiteParser | None
                     selectors=row["selectors"],
                     display_name=row.get("display_name"),
                 )
-        return None
 
-    raise ValueError(f"No parser available for URL: {url}")
+    return None
 
 
 def get_all_parsers() -> list[BaseSiteParser]:
