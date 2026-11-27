@@ -144,7 +144,11 @@ class AiSelectorTests(unittest.TestCase):
         selectors, preview = discover_site_selectors(
             story_url=SAMPLE_STORY_URL,
             story_html=_make_story_html(5),
-            fetch_fn=lambda _url: SAMPLE_CHAPTER_HTML,
+            fetch_fn=lambda url: (
+                _make_story_html(5).replace("chuong-", "chuong-p2-")
+                if "page=2" in url
+                else SAMPLE_CHAPTER_HTML
+            ),
             max_retries=2,
             llm_fn=fake_llm,
         )
@@ -454,6 +458,102 @@ class AiSelectorTests(unittest.TestCase):
         vol_parsed = parser.parse_chapter_list(html_vol)
         self.assertEqual([c["chapter_number"] for c in vol_parsed], [1, 2, 3, 4, 5])
         self.assertEqual([c["source_chapter_number"] for c in vol_parsed], [1, 2, 1, 2, 1])
+
+    def test_skeletonize_preserves_pagination_nav_and_rejects_missing_pagination(self):
+        html_with_nav = """
+        <html>
+          <head><title>Truyện Test - KhoTruyenChu</title></head>
+          <body>
+            <nav class="main-menu"><a href="/home">Trang chủ</a><a href="/hot">Hot</a></nav>
+            <div class="novel">
+              <h1 class="truyen-title">Truyện Test</h1>
+              <span class="author">Tác giả A</span>
+            </div>
+            <ul class="chapter-list">
+              <li><a href="/c-1">Chương 1</a></li>
+              <li><a href="/c-2">Chương 2</a></li>
+              <li><a href="/c-3">Chương 3</a></li>
+            </ul>
+            <nav aria-label="Phân trang" class="ct-pagination" data-max="33">
+              <a class="page-numbers" href="/truyen/test/page/2/">2</a>
+              <a class="next page-numbers" href="/truyen/test/page/2/">Sau</a>
+            </nav>
+          </body>
+        </html>
+        """
+        skel = skeletonize_html(html_with_nav)
+        self.assertNotIn("main-menu", skel)
+        self.assertIn("ct-pagination", skel)
+        self.assertIn('data-max="33"', skel)
+
+        no_pag_sel = {
+            **VALID_SELECTORS,
+            "story_title": "h1.truyen-title",
+            "story_author": "span.author",
+            "chapter_list": "ul.chapter-list li a",
+            "pagination_links": "",
+            "page_url_pattern": "",
+            "next_page_selector": "",
+        }
+        ok, errs, _ = validate_selectors(html_with_nav, SAMPLE_CHAPTER_HTML, "https://khotruyenchu.fun/truyen/test", no_pag_sel)
+        self.assertFalse(ok)
+        self.assertTrue(any("pagination" in e.lower() for e in errs))
+
+        parser = DynamicConfigParser(
+            domain="khotruyenchu.fun",
+            base_url="https://khotruyenchu.fun",
+            selectors={
+                **no_pag_sel,
+                "pagination_links": "nav.ct-pagination a.page-numbers",
+                "page_url_pattern": "{story_url}/page/{page}/",
+                "next_page_selector": "nav.ct-pagination a.next",
+            },
+        )
+        self.assertEqual(parser.parse_max_pages(html_with_nav), 33)
+        self.assertEqual(
+            parser.parse_next_page_url(html_with_nav, "https://khotruyenchu.fun/truyen/test"),
+            "https://khotruyenchu.fun/truyen/test/page/2/",
+        )
+
+    def test_discover_live_page2_probe_and_ai_auditor_self_healing(self):
+        story_p1 = _make_story_html(5).replace(
+            '<div class="pagination"><a href="?page=1">1</a><a href="?page=2">2</a><a href="?page=12">12</a></div>',
+            '<div class="pagination"><a href="?page=1">1</a><a class="next" href="?page=2">2</a></div>',
+        )
+        story_p2 = _make_story_html(5).replace("chuong-", "chuong-p2-")
+
+        prompts: list[str] = []
+        audits: list[str] = []
+
+        def fake_llm(prompt: str) -> dict:
+            prompts.append(prompt)
+            if len(prompts) == 1:
+                return {**VALID_SELECTORS, "page_url_pattern": "{story_url}?wrong={page}"}
+            return VALID_SELECTORS
+
+        def fake_audit(prompt: str) -> dict:
+            audits.append(prompt)
+            return {"ok": True, "issues": []}
+
+        def fake_fetch(url: str) -> str:
+            if "page=2" in url:
+                return story_p2
+            if "wrong=2" in url:
+                return story_p1
+            return SAMPLE_CHAPTER_HTML
+
+        selectors, _ = discover_site_selectors(
+            story_url=SAMPLE_STORY_URL,
+            story_html=story_p1,
+            fetch_fn=fake_fetch,
+            max_retries=2,
+            llm_fn=fake_llm,
+            audit_fn=fake_audit,
+        )
+        self.assertEqual(len(prompts), 2)
+        self.assertIn("Live page-2 probe", prompts[1])
+        self.assertEqual(selectors["page_url_pattern"], "{story_url}?page={page}")
+        self.assertEqual(len(audits), 1)
 
 
 if __name__ == "__main__":

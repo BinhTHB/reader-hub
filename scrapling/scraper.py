@@ -1087,6 +1087,50 @@ def run_scraper():
                 print(f"  Added {len(new_chapters)} new chapters (total: {len(all_chapters)})")
                 page_num += 1
 
+            # Strategy: follow next_page_selector links when no page_url_pattern / max_pages == 1
+            if (
+                hasattr(parser, "parse_next_page_url")
+                and getattr(parser, "selectors", {}).get("next_page_selector")
+                and (max_pages <= 1 or not getattr(parser, "selectors", {}).get("page_url_pattern"))
+            ):
+                curr_html = first_page_resp.body if hasattr(first_page_resp, "body") else ""
+                curr_url = first_page_url
+                visited_page_urls = {curr_url.rstrip("/")}
+                next_page_count = 1
+                while curr_html:
+                    if not should_fetch_all:
+                        target_range = set(range(CHAPTER_START, CHAPTER_START + CHAPTER_LIMIT))
+                        found_nums = {ch["chapter_number"] for ch in all_chapters if ch["chapter_number"] is not None}
+                        if target_range.issubset(found_nums):
+                            break
+                    next_url = parser.parse_next_page_url(curr_html, curr_url)
+                    if not next_url or next_url.rstrip("/") in visited_page_urls:
+                        break
+                    visited_page_urls.add(next_url.rstrip("/"))
+                    next_page_count += 1
+                    print(f"  📑 Following next-page link ({next_page_count}): {next_url}")
+                    random_delay()
+
+                    def _get_next_page(sess, target_u=next_url):
+                        p_resp = sess.fetch(target_u)
+                        if p_resp.status != 200:
+                            raise RuntimeError(f"HTTP {p_resp.status}")
+                        return p_resp.body, parser.parse_chapter_list(p_resp.body)
+
+                    try:
+                        curr_html, p_chapters = fetch_with_rotation_wrapper(session, _get_next_page)
+                        curr_url = next_url
+                    except Exception as e:
+                        print(f"  ⚠️ Failed next-page fetch ({next_url}): {e}")
+                        break
+
+                    new_chapters = [ch for ch in p_chapters if chapter_source_key(ch, parser) not in seen_keys]
+                    if not new_chapters:
+                        break
+                    all_chapters.extend(new_chapters)
+                    seen_keys.update(chapter_source_key(ch, parser) for ch in new_chapters)
+                    print(f"  Added {len(new_chapters)} new chapters (total: {len(all_chapters)})")
+
             if CHAPTER_LIMIT == 0:
                 all_chapters = normalize_misnumbered_chapters(all_chapters, parser)
 
@@ -1170,9 +1214,16 @@ def run_scraper():
 
             with ThreadPoolExecutor(max_workers=4) as upload_pool:
                 try:
-                    for i, ch_info in enumerate(target_chapters):
+                    seen_chapter_urls = {
+                        ch.get("source_url") for ch in target_chapters if ch.get("source_url")
+                    }
+                    i = 0
+                    while i < len(target_chapters):
+                        ch_info = target_chapters[i]
+                        i += 1
                         ch_num = ch_info["chapter_number"]
-                        print(f"\n📖 [{i+1}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
+                        print(f"\n📖 [{i}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
+                        last_ch_html = ""
 
                         # Primary skip check: Supabase index (fast, 1 query for all chapters)
                         if not FORCE_RESCRAPE and ch_num in existing_index:
@@ -1268,9 +1319,11 @@ def run_scraper():
                                 content = parser.parse_chapter_content(ch_resp.body)
                                 if not content["paragraphs"]:
                                     raise RuntimeError("No content found/parsed (page might be blank or blocked by Turnstile)")
+                                content["_raw_html"] = ch_resp.body
                                 return content
 
                             content = fetch_with_rotation_wrapper(session, get_chapter_content)
+                            last_ch_html = content.pop("_raw_html", "") if isinstance(content, dict) else ""
                             consecutive_failures = 0
                         except Exception as e:
                             print(f"  ❌ Failed to fetch chapter {ch_num}: {e}")
@@ -1324,6 +1377,25 @@ def run_scraper():
 
                         if len(pending_uploads) >= 10:
                             _flush_pending()
+
+                        # Strategy: follow next_chapter_selector when reaching end of target_chapters in next_chapter_chain mode
+                        if (
+                            i >= len(target_chapters)
+                            and last_ch_html
+                            and hasattr(parser, "parse_next_chapter_url")
+                            and getattr(parser, "selectors", {}).get("pagination_mode") == "next_chapter_chain"
+                            and getattr(parser, "selectors", {}).get("next_chapter_selector")
+                            and (CHAPTER_LIMIT == 0 or chapters_scraped < CHAPTER_LIMIT)
+                        ):
+                            next_ch_url = parser.parse_next_chapter_url(last_ch_html, ch_info["source_url"])
+                            if next_ch_url and next_ch_url not in seen_chapter_urls:
+                                seen_chapter_urls.add(next_ch_url)
+                                next_num = ch_num + 1
+                                target_chapters.append({
+                                    "chapter_number": next_num,
+                                    "title": f"Chương {next_num}",
+                                    "source_url": next_ch_url,
+                                })
 
                         random_delay()
 

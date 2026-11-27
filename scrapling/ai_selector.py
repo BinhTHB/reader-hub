@@ -10,15 +10,79 @@ import httpx
 from dynamic_parser import DynamicConfigParser, is_site_branding_element
 
 
-DEFAULT_MODEL = "gemini-2.5-flash-lite"
+DEFAULT_MODEL = "gemini-2.5-flash"
 DEFAULT_FALLBACK_MODELS = [
     "gemini-3.5-flash-lite",
+    "gemini-2.5-flash-lite",
     "gemma-4-31b-it",
+]
+AUDIT_MODELS = [
+    "gemini-3.5-flash-lite",
+    "gemma-4-31b-it",
+    "gemini-2.5-flash-lite",
     "gemini-2.5-flash",
 ]
-KEEP_ATTRS = {"id", "class", "href", "src", "property", "name", "content", "rel", "data-page"}
-NOISE_TAGS = {"script", "style", "svg", "iframe", "noscript", "link", "path", "nav", "footer", "aside"}
+KEEP_ATTRS = {
+    "id",
+    "class",
+    "href",
+    "src",
+    "property",
+    "name",
+    "content",
+    "rel",
+    "data-page",
+    "aria-label",
+    "data-max",
+    "data-base",
+    "data-tpl",
+}
+NOISE_TAGS = {"script", "style", "svg", "iframe", "noscript", "link", "path", "footer", "aside"}
 BAD_CONTENT_MARKERS = ("document.write", "adsbygoogle", "window.location", "function(")
+_PAGINATION_ATTR_RE = re.compile(r"(?:pag|page|pager|phân trang|phan-trang)", re.IGNORECASE)
+_PAGINATION_HREF_RE = re.compile(r"(?:/page/\d+|/trang-\d+|[?&](?:page|p)=\d+)", re.IGNORECASE)
+
+
+def _is_pagination_element(tag: Tag) -> bool:
+    """Return True if a tag looks like a pagination container or holds page-2+ links."""
+    classes = tag.get("class") or []
+    if isinstance(classes, str):
+        classes = [classes]
+    attr_text = " ".join([
+        *[str(c) for c in classes],
+        str(tag.get("id") or ""),
+        str(tag.get("aria-label") or ""),
+    ])
+    if _PAGINATION_ATTR_RE.search(attr_text):
+        return True
+    for a in tag.find_all("a", href=True):
+        href = str(a.get("href") or "")
+        if _PAGINATION_HREF_RE.search(href):
+            return True
+        rels = a.get("rel") or []
+        if isinstance(rels, str):
+            rels = [rels]
+        if any(str(r).lower() == "next" for r in rels):
+            return True
+    return False
+
+
+def _detect_html_pagination_signals(story_html: str) -> list[str]:
+    """Detect pagination containers or page-2+ links in raw story HTML."""
+    soup = BeautifulSoup(story_html or "", "lxml")
+    signals: list[str] = []
+    for nav in soup.find_all(["nav", "ul", "div"]):
+        if nav.name == "nav" and _is_pagination_element(nav):
+            cls = ".".join(nav.get("class") or [])
+            signals.append(f"<nav{('.' + cls) if cls else ''}>")
+            break
+    if not signals:
+        for a in soup.find_all("a", href=True):
+            href = str(a.get("href") or "")
+            if re.search(r"(?:/page/2\b|/trang-2\b|[?&](?:page|p)=2\b)", href, re.IGNORECASE):
+                signals.append(href[:80])
+                break
+    return signals
 
 
 def normalize_domain(url: str) -> str:
@@ -72,6 +136,10 @@ def skeletonize_html(html: str, max_chars: int = 32000) -> str:
 
     for tag in soup.find_all(NOISE_TAGS):
         tag.decompose()
+
+    for nav in soup.find_all("nav"):
+        if not _is_pagination_element(nav):
+            nav.decompose()
 
     if soup.head:
         for child in list(soup.head.children):
@@ -224,6 +292,16 @@ def validate_selectors(
         preview["chapter_paragraphs"] = len(paragraphs)
         preview["chapter_word_count"] = word_count
 
+    pag_links_css = (selectors.get("pagination_links") or "").strip()
+    page_pattern = (selectors.get("page_url_pattern") or "").strip()
+    next_page_css = (selectors.get("next_page_selector") or "").strip()
+    if not pag_links_css and not page_pattern and not next_page_css:
+        pag_signals = _detect_html_pagination_signals(story_html)
+        if pag_signals:
+            errors.append(
+                f"HTML contains pagination ({pag_signals[0]}) but pagination_links, page_url_pattern, and next_page_selector are all empty; extract them so all pages are scraped"
+            )
+
     return len(errors) == 0, errors, preview
 
 
@@ -285,10 +363,13 @@ def _build_prompt(
         '  "story_genres": "CSS selector matching genre tags/links (or empty string)",',
         '  "story_status": "CSS selector for ongoing/completed status (or empty string)",',
         '  "chapter_list": "CSS selector matching chapter <a> links in reading order",',
-        '  "pagination_links": "CSS selector for pagination <a> links (or empty string)",',
-        '  "page_url_pattern": "URL pattern for page > 1 e.g. {story_url}?page={page} or {story_url}/trang-{page}/ (or empty string)",',
+        '  "pagination_mode": "single_page | url_pattern | next_page_link | next_chapter_chain",',
+        '  "pagination_links": "CSS selector for pagination <a> links or container (or empty string)",',
+        '  "page_url_pattern": "URL pattern for page > 1 e.g. {story_url}?page={page} or {story_url}/page/{page}/ (or empty string)",',
+        '  "next_page_selector": "CSS selector for next-page <a> link if pagination uses next button (or empty string)",',
         '  "chapter_title": "CSS selector for chapter title on chapter page",',
         '  "chapter_content": "CSS selector for main chapter body container on chapter page",',
+        '  "next_chapter_selector": "CSS selector for next-chapter <a> link on chapter page (or empty string)",',
         '  "remove_selectors": ["CSS selectors inside chapter_content to remove ads/scripts/watermarks"]',
         '}',
         "",
@@ -306,6 +387,54 @@ def _build_prompt(
     return "\n".join(parts)
 
 
+def _call_model_chain(prompt: str, api_key: str, model_chain: list[str]) -> dict:
+    """Call Gemini/Gemma models in order, falling back on transient errors."""
+    last_err: Exception | None = None
+    for idx, current_model in enumerate(model_chain):
+        try:
+            return _call_gemini_for_selectors(prompt, api_key, current_model)
+        except Exception as err:
+            last_err = err
+            err_s = str(err)
+            is_transient = isinstance(err, httpx.TransportError) or any(
+                code in err_s for code in ("HTTP 429", "HTTP 500", "HTTP 502", "HTTP 503", "HTTP 504")
+            )
+            if is_transient and idx + 1 < len(model_chain):
+                next_model = model_chain[idx + 1]
+                print(f"  🔄 [AI Selector] {current_model} unavailable ({err_s[:70]}), switching to {next_model}")
+                continue
+            raise
+    raise last_err or RuntimeError("No models available")
+
+
+def _build_audit_prompt(
+    story_url: str,
+    selectors: dict,
+    preview: dict,
+    chapter_data: dict,
+    pag_signals: list[str],
+    page2_new_count: int | None,
+) -> str:
+    paragraphs = chapter_data.get("paragraphs") or []
+    sample_paras = paragraphs[:2] + (paragraphs[-2:] if len(paragraphs) > 2 else [])
+    sample_text = "\n---\n".join(p[:220] for p in sample_paras)
+    return "\n".join([
+        "You are a QA auditor for a web-novel scraper. Inspect the extracted preview below and decide if the CSS selectors are accurate.",
+        f"URL: {story_url}",
+        f"Selectors: {json.dumps(selectors, ensure_ascii=False)}",
+        f"Preview: {json.dumps(preview, ensure_ascii=False)}",
+        f"Detected raw HTML pagination cues: {pag_signals}",
+        f"Live page-2 probe new chapters count: {page2_new_count}",
+        "Sample extracted chapter paragraphs (first 2 & last 2):",
+        sample_text,
+        "",
+        "Check: (1) Is story_title the actual book title (not website name)?",
+        "(2) If pagination cues exist, did pagination/page-2 probe find new chapters?",
+        "(3) Are sample paragraphs clean story prose without navigation/ad/comment junk?",
+        'Return ONLY JSON: {"ok": true, "issues": []} or {"ok": false, "issues": ["specific actionable issue"]}',
+    ])
+
+
 def discover_site_selectors(
     story_url: str,
     story_html: str,
@@ -313,8 +442,9 @@ def discover_site_selectors(
     max_retries: int = 2,
     llm_fn=None,
     model: str | None = None,
+    audit_fn=None,
 ) -> tuple[dict, dict]:
-    """Discover, validate, and self-heal CSS selectors for an unknown site."""
+    """Discover, validate, live-probe, audit, and self-heal CSS selectors."""
     api_key = os.environ.get("GEMINI_API_KEY", "").strip()
     active_model = (model or os.environ.get("AI_SELECTOR_MODEL") or DEFAULT_MODEL).strip() or DEFAULT_MODEL
     model_chain = [active_model]
@@ -322,36 +452,24 @@ def discover_site_selectors(
         for fb in DEFAULT_FALLBACK_MODELS:
             if fb not in model_chain:
                 model_chain.append(fb)
-    chain_idx = 0
 
+    use_real_api = llm_fn is None
     if llm_fn is None:
         if not api_key:
             raise RuntimeError("GEMINI_API_KEY is not set; cannot auto-discover selectors")
+        llm_fn = lambda prompt: _call_model_chain(prompt, api_key, model_chain)
 
-        def _call_with_fallback(prompt: str) -> dict:
-            nonlocal chain_idx
-            while True:
-                current_model = model_chain[chain_idx]
-                try:
-                    return _call_gemini_for_selectors(prompt, api_key, current_model)
-                except Exception as err:
-                    err_s = str(err)
-                    is_transient = isinstance(err, httpx.TransportError) or any(
-                        code in err_s for code in ("HTTP 429", "HTTP 500", "HTTP 502", "HTTP 503", "HTTP 504")
-                    )
-                    if is_transient and chain_idx + 1 < len(model_chain):
-                        next_model = model_chain[chain_idx + 1]
-                        print(f"  🔄 [AI Selector] {current_model} unavailable ({err_s[:70]}), switching to {next_model}")
-                        chain_idx += 1
-                        continue
-                    raise
-
-        llm_fn = _call_with_fallback
+    if audit_fn is None and use_real_api and api_key:
+        audit_fn = lambda prompt: _call_model_chain(prompt, api_key, AUDIT_MODELS)
 
     story_skeleton = skeletonize_html(story_html)
+    pag_signals = _detect_html_pagination_signals(story_html)
     chapter_html: str | None = None
     chapter_skeleton: str | None = None
     previous_errors: list[str] | None = None
+    domain = normalize_domain(story_url)
+    parsed_u = urlparse(story_url)
+    base_url = f"{parsed_u.scheme}://{parsed_u.netloc}"
 
     for attempt in range(max_retries + 1):
         prompt = _build_prompt(story_url, story_skeleton, chapter_skeleton, previous_errors)
@@ -371,8 +489,53 @@ def discover_site_selectors(
                 story_html, chapter_html, story_url, selectors
             )
             if ok_all:
-                return selectors, preview
-            previous_errors = all_errors
+                # Pass 2: Live page-2 pagination probe
+                probe_errors: list[str] = []
+                page2_new_count: int | None = None
+                parser = DynamicConfigParser(domain=domain, base_url=base_url, selectors=selectors)
+                page1_urls = {ch["source_url"] for ch in parser.parse_chapter_list(story_html)}
+                page2_url: str | None = None
+                if (selectors.get("page_url_pattern") or "").strip() and parser.parse_max_pages(story_html) > 1:
+                    page2_url = parser.get_chapter_list_url(story_url, 2)
+                elif (selectors.get("next_page_selector") or "").strip():
+                    page2_url = parser.parse_next_page_url(story_html, story_url)
+
+                if page2_url and page2_url.rstrip("/") != story_url.rstrip("/"):
+                    try:
+                        page2_html = fetch_fn(page2_url)
+                        page2_chapters = parser.parse_chapter_list(page2_html) if page2_html else []
+                        new_urls = [ch["source_url"] for ch in page2_chapters if ch["source_url"] not in page1_urls]
+                        page2_new_count = len(new_urls)
+                        if page2_new_count == 0:
+                            probe_errors.append(
+                                f"Live page-2 probe at '{page2_url}' found 0 new chapters; fix page_url_pattern/next_page_selector/chapter_list"
+                            )
+                    except Exception as probe_err:
+                        probe_errors.append(f"Live page-2 probe failed ({page2_url}): {probe_err}")
+
+                if probe_errors:
+                    previous_errors = probe_errors
+                else:
+                    # Pass 3: AI Quality Auditor (non-fatal if API errors)
+                    audit_issues: list[str] = []
+                    if audit_fn is not None and attempt < max_retries:
+                        try:
+                            ch_data = parser.parse_chapter_content(chapter_html)
+                            audit_prompt = _build_audit_prompt(
+                                story_url, selectors, preview, ch_data, pag_signals, page2_new_count
+                            )
+                            audit_res = audit_fn(audit_prompt)
+                            if isinstance(audit_res, dict) and audit_res.get("ok") is False:
+                                raw_issues = audit_res.get("issues") or []
+                                audit_issues = [str(i) for i in raw_issues if i]
+                        except Exception as audit_err:
+                            print(f"  ⚠️ [AI Auditor] Skipped due to error (non-fatal): {audit_err}")
+
+                    if not audit_issues:
+                        return selectors, preview
+                    previous_errors = audit_issues
+            else:
+                previous_errors = all_errors
         else:
             previous_errors = story_errors
 

@@ -255,12 +255,43 @@ class DynamicConfigParser(BaseSiteParser):
         soup = BeautifulSoup(html, "lxml")
         max_page = 1
         for el in soup.select(pag_css):
+            for node in (el, el.parent):
+                if node is not None and hasattr(node, "get"):
+                    dmax = node.get("data-max")
+                    if dmax and str(dmax).isdigit():
+                        val = int(str(dmax))
+                        if 1 <= val <= 5000 and val > max_page:
+                            max_page = val
             for candidate in (el.get_text(" ", strip=True), str(el.get("href") or "")):
                 for m in re.finditer(r"(\d+)", candidate):
                     val = int(m.group(1))
                     if 1 <= val <= 5000 and val > max_page:
                         max_page = val
         return max_page
+
+    def _select_next_href(self, html: str, css: str | None, current_url: str) -> str | None:
+        if not css or not html:
+            return None
+        soup = BeautifulSoup(html, "lxml")
+        el = soup.select_one(css)
+        if not el:
+            return None
+        link_el = el if el.name == "a" else el.find("a")
+        if not link_el:
+            return None
+        href = (link_el.get("href") or "").strip()
+        if not href or href.startswith("#") or href.lower().startswith("javascript:"):
+            return None
+        resolved = urljoin(current_url, href)
+        if resolved.rstrip("/") == current_url.rstrip("/"):
+            return None
+        return resolved
+
+    def parse_next_page_url(self, html: str, current_url: str) -> str | None:
+        return self._select_next_href(html, self.selectors.get("next_page_selector"), current_url)
+
+    def parse_next_chapter_url(self, html: str, current_url: str) -> str | None:
+        return self._select_next_href(html, self.selectors.get("next_chapter_selector"), current_url)
 
     def parse_chapter_content(self, html: str) -> dict:
         soup = BeautifulSoup(html, "lxml")
