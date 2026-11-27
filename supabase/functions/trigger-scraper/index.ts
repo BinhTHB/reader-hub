@@ -27,6 +27,7 @@ interface ScrapeRequest {
   source_url: string;
   chapter_start?: number;
   chapter_limit?: number;
+  force_rediscover?: boolean;
   action?: "scrape" | "check_latest";
 }
 
@@ -255,6 +256,9 @@ async function checkLatestChapter(sourceUrl: string): Promise<{ chapter_number: 
       }
     }
 
+    if (maxChapter === 0) {
+      throw new Error("Nguồn này chưa hỗ trợ kiểm tra nhanh số chương; hãy bấm Cào tiếp trực tiếp.");
+    }
     return { chapter_number: maxChapter, title: `Chương ${maxChapter}` };
   }
 }
@@ -310,7 +314,14 @@ serve(async (req: Request) => {
     const GITHUB_REPO = Deno.env.get("GITHUB_REPO");
 
     const body: ScrapeRequest = await req.json();
-    const { story_id, source_url, chapter_start = 1, chapter_limit = 0, action = "scrape" } = body;
+    const {
+      story_id,
+      source_url,
+      chapter_start = 1,
+      chapter_limit = 0,
+      force_rediscover = false,
+      action = "scrape",
+    } = body;
 
     if (!source_url) {
       return new Response(
@@ -381,6 +392,7 @@ serve(async (req: Request) => {
           source_url,
           chapter_start: chapter_start.toString(),
           chapter_limit: chapter_limit.toString(),
+          force_rediscover: String(Boolean(force_rediscover)),
         },
       }),
     });

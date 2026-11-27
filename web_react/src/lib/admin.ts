@@ -10,6 +10,7 @@ export interface AdminStory {
   description: string | null;
   cover_url: string | null;
   source_url: string | null;
+  source_name?: string | null;
   genres: string[];
   status: StoryStatus;
   total_chapters: number;
@@ -36,13 +37,29 @@ export interface StoryUpdatePayload {
   description: string | null;
   cover_url: string | null;
   source_url: string | null;
+  source_name?: string | null;
   genres: string[];
   status: StoryStatus;
   is_featured: boolean;
 }
 
 const STORY_SELECT =
-  "id, slug, title, author, description, cover_url, source_url, genres, status, total_chapters, view_count, is_featured, updated_at";
+  "id, slug, title, author, description, cover_url, source_url, source_name, genres, status, total_chapters, view_count, is_featured, updated_at";
+
+const SOURCE_LABELS: Record<string, string> = {
+  truyenfull: "TruyenFull",
+  metruyenchu: "MeTruyenChu",
+  truyendich: "TruyenDich",
+  uukanshu: "UUKanshu",
+  gdrive: "Google Drive",
+};
+
+export function formatSourceName(sourceName?: string | null): string | null {
+  if (!sourceName) return null;
+  const trimmed = sourceName.trim();
+  if (!trimmed) return null;
+  return SOURCE_LABELS[trimmed.toLowerCase()] ?? trimmed;
+}
 
 const CHAPTER_SELECT =
   "id, story_id, chapter_number, title, word_count, text_r2_url, source_url, is_scraped, created_at";

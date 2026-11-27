@@ -357,6 +357,70 @@ class AiSelectorTests(unittest.TestCase):
             else:
                 os.environ["SUPABASE_SERVICE_KEY"] = orig_key
 
+    def test_build_source_slug_and_resolve_story_slug_isolation(self):
+        import supabase_client
+
+        self.assertEqual(
+            supabase_client.build_source_slug("tran-van-truong-sinh", "lore5.com"),
+            "tran-van-truong-sinh-lore5-com",
+        )
+        self.assertEqual(
+            supabase_client.build_source_slug("tran-van-truong-sinh-lore5-com", "lore5.com"),
+            "tran-van-truong-sinh-lore5-com",
+        )
+
+        orig_get_by_url = supabase_client.get_story_by_source_url
+        orig_get_by_slug = supabase_client.get_story_by_slug
+        try:
+            # a) Existing story with same source_url -> reuses existing plain slug
+            supabase_client.get_story_by_source_url = lambda _u: {"slug": "tran-van-truong-sinh"}
+            supabase_client.get_story_by_slug = lambda _s: None
+            self.assertEqual(
+                supabase_client.resolve_story_slug(
+                    "tran-van-truong-sinh", "lore5.com", "https://www.lore5.com/book/lb00000197"
+                ),
+                "tran-van-truong-sinh",
+            )
+
+            # b) Existing plain slug belongs to DIFFERENT source_name -> returns source-scoped slug
+            supabase_client.get_story_by_source_url = lambda _u: None
+            supabase_client.get_story_by_slug = lambda s: (
+                {"slug": "tran-van-truong-sinh", "source_name": "truyendich", "source_url": "https://truyendich.net/a"}
+                if s == "tran-van-truong-sinh"
+                else None
+            )
+            self.assertEqual(
+                supabase_client.resolve_story_slug(
+                    "tran-van-truong-sinh", "lore5.com", "https://www.lore5.com/book/lb00000197"
+                ),
+                "tran-van-truong-sinh-lore5-com",
+            )
+
+            # c) Brand new story -> returns source-scoped slug
+            supabase_client.get_story_by_slug = lambda _s: None
+            self.assertEqual(
+                supabase_client.resolve_story_slug(
+                    "tran-van-truong-sinh", "lore5.com", "https://www.lore5.com/book/lb00000197"
+                ),
+                "tran-van-truong-sinh-lore5-com",
+            )
+
+            # d) Legacy plain slug with same source_name and empty source_url -> reuses plain slug
+            supabase_client.get_story_by_slug = lambda s: (
+                {"slug": "tran-van-truong-sinh", "source_name": "lore5.com", "source_url": None}
+                if s == "tran-van-truong-sinh"
+                else None
+            )
+            self.assertEqual(
+                supabase_client.resolve_story_slug(
+                    "tran-van-truong-sinh", "lore5.com", "https://www.lore5.com/book/lb00000197"
+                ),
+                "tran-van-truong-sinh",
+            )
+        finally:
+            supabase_client.get_story_by_source_url = orig_get_by_url
+            supabase_client.get_story_by_slug = orig_get_by_slug
+
 
 if __name__ == "__main__":
     unittest.main()

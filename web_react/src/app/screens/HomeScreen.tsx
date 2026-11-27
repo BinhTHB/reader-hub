@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { EditStoryModal } from "../components/EditStoryModal";
 import { supabase, R2_PUBLIC_DOMAIN } from "../../lib/supabase";
-import { deleteContent, type AdminStory } from "../../lib/admin";
+import { deleteContent, formatSourceName, type AdminStory } from "../../lib/admin";
 
 interface HomeScreenProps {
   onNavigate: (screen: string, data?: any) => void;
@@ -50,7 +50,7 @@ export function HomeScreen({ onNavigate, isAdmin = false }: HomeScreenProps) {
       const { data, error } = await supabase
         .from("stories")
         .select(
-          "id, slug, title, author, description, cover_url, source_url, genres, status, total_chapters, view_count, is_featured, updated_at",
+          "id, slug, title, author, description, cover_url, source_url, source_name, genres, status, total_chapters, view_count, is_featured, updated_at",
         )
         .order("updated_at", { ascending: false })
         .limit(200);
@@ -85,7 +85,8 @@ export function HomeScreen({ onNavigate, isAdmin = false }: HomeScreenProps) {
       return (
         story.title.toLowerCase().includes(q) ||
         (story.author || "").toLowerCase().includes(q) ||
-        (story.slug || "").toLowerCase().includes(q)
+        (story.slug || "").toLowerCase().includes(q) ||
+        (story.source_name || "").toLowerCase().includes(q)
       );
     });
 
@@ -309,6 +310,11 @@ export function HomeScreen({ onNavigate, isAdmin = false }: HomeScreenProps) {
                         <span className="text-[11px] text-muted-foreground">
                           {story.total_chapters || 0} chương
                         </span>
+                        {formatSourceName(story.source_name) && (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground font-medium">
+                            {formatSourceName(story.source_name)}
+                          </span>
+                        )}
                         {story.is_featured && (
                           <span className="inline-flex items-center gap-0.5 text-[10px] px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-500 font-medium">
                             <Star className="w-2.5 h-2.5 fill-current" /> Nổi bật

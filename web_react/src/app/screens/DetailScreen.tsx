@@ -13,6 +13,7 @@ import {
 import { supabase, R2_PUBLIC_DOMAIN } from "../../lib/supabase";
 import {
   deleteContent,
+  formatSourceName,
   type AdminChapter,
   type AdminStory,
 } from "../../lib/admin";
@@ -71,7 +72,7 @@ export function DetailScreen({
       const { data, error } = await supabase
         .from("stories")
         .select(
-          "id, slug, title, author, description, cover_url, source_url, genres, status, total_chapters, view_count, is_featured, updated_at",
+          "id, slug, title, author, description, cover_url, source_url, source_name, genres, status, total_chapters, view_count, is_featured, updated_at",
         )
         .eq("id", book.id)
         .single();
@@ -190,24 +191,25 @@ export function DetailScreen({
     }
   };
 
-  const handleStartScrape = async () => {
+  const handleStartScrape = async (startFrom = 1) => {
     if (!bookData.source_url || !bookData.id) return;
     setIsUpdating(true);
     setUpdateMessage(null);
     try {
-      const { error } = await supabase.functions.invoke("trigger-scraper", {
+      const { data, error } = await supabase.functions.invoke("trigger-scraper", {
         body: {
           story_id: bookData.id,
           source_url: bookData.source_url,
-          chapter_start: 1,
+          chapter_start: Math.max(1, startFrom),
           chapter_limit: 0,
           action: "scrape",
         },
       });
 
       if (error) throw error;
+      const jobText = data?.job_id ? ` (Job #${data.job_id})` : "";
       setUpdateMessage(
-        "Đã gửi yêu cầu cào chương mới thành công! Hệ thống đang cào trong nền...",
+        `Đã gửi yêu cầu cào từ chương ${Math.max(1, startFrom)}${jobText}! Hệ thống đang chạy trong nền...`,
       );
       setShowScrapeConfirm(false);
     } catch (err: any) {
@@ -343,6 +345,14 @@ export function DetailScreen({
               <span>{bookData.total_chapters || chapters.length} chương</span>
               <span>•</span>
               <span className="capitalize">{bookData.status || "ongoing"}</span>
+              {formatSourceName(bookData.source_name) && (
+                <>
+                  <span>•</span>
+                  <span className="px-2 py-0.5 rounded-full bg-secondary text-secondary-foreground text-[11px] font-medium">
+                    {formatSourceName(bookData.source_name)}
+                  </span>
+                </>
+              )}
               {bookData.slug && (
                 <>
                   <span>•</span>
@@ -371,6 +381,17 @@ export function DetailScreen({
         {isAdmin && bookData.source_url && (
           <div className="flex gap-2 flex-wrap">
             <button
+              onClick={() => void handleStartScrape(chapters.length + 1)}
+              disabled={isUpdating}
+              className="px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 inline-flex items-center gap-1.5"
+            >
+              <RefreshCw
+                className={`w-4 h-4 ${isUpdating ? "animate-spin" : ""}`}
+              />
+              Cào tiếp từ chương {chapters.length + 1}
+            </button>
+
+            <button
               onClick={handleCheckLatest}
               disabled={isUpdating}
               className="px-4 py-2.5 border border-primary text-primary bg-transparent rounded-xl text-xs font-medium hover:bg-primary/5 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
@@ -385,7 +406,7 @@ export function DetailScreen({
 
             {showScrapeConfirm && (
               <button
-                onClick={handleStartScrape}
+                onClick={() => void handleStartScrape(1)}
                 disabled={
                   isUpdating ||
                   (latestChapterInfo
@@ -396,7 +417,7 @@ export function DetailScreen({
               >
                 {isUpdating && showScrapeConfirm
                   ? "Đang gửi..."
-                  : "Cào chương mới"}
+                  : "Cào toàn bộ mới"}
               </button>
             )}
           </div>

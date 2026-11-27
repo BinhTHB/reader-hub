@@ -393,6 +393,7 @@ from supabase_client import (
     update_story_total_chapters,
     update_scrape_job,
     get_story_chapters_index,
+    resolve_story_slug,
 )
 from proxy_rotator import build_proxy_pool, ProxyPool, ProxyInfo
 
@@ -849,11 +850,15 @@ def run_scraper():
                     response, story_info = fetch_with_rotation_wrapper(session, get_story_info)
                 else:
                     raise
-            if not story_info.get("slug"):
-                story_info["slug"] = parser.extract_slug(story_info.get("source_url") or STORY_SOURCE_URL)
+            base_slug = story_info.get("slug") or parser.extract_slug(story_info.get("source_url") or STORY_SOURCE_URL)
+            story_info["slug"] = resolve_story_slug(
+                base_slug=base_slug,
+                source_name=story_info.get("source_name"),
+                source_url=story_info.get("source_url") or STORY_SOURCE_URL,
+            )
             print(f"  Title: {story_info['title']}")
             print(f"  Author: {story_info.get('author', 'N/A')}")
-            print(f"  Slug: {story_info['slug']}")
+            print(f"  Slug: {story_info['slug']} | Source: {story_info.get('source_name', 'N/A')}")
 
             # Download cover image
             cover_url = None

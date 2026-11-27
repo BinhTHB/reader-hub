@@ -14,6 +14,8 @@ import {
   Shield,
   List,
   Star,
+  RefreshCw,
+  Link2,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
 
@@ -103,10 +105,13 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
   const [error, setError] = useState("");
   const [activeSources, setActiveSources] = useState<Set<string>>(new Set());
   const [availableSources, setAvailableSources] = useState<string[]>([]);
+  const [directUrl, setDirectUrl] = useState("");
+  const [chapterStart, setChapterStart] = useState(1);
+  const [chapterLimit, setChapterLimit] = useState(0);
+  const [forceRediscover, setForceRediscover] = useState(false);
+  const [isTriggeringDirect, setIsTriggeringDirect] = useState(false);
 
-  // Load job history from Supabase
-  useEffect(() => {
-    const loadJobHistory = async () => {
+  const loadJobHistory = async () => {
       try {
         const { data, error } = await supabase
           .from('scrape_jobs')
@@ -117,7 +122,8 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               author,
               cover_url,
               total_chapters,
-              source_name
+              source_name,
+              source_url
             )
           `)
           .order('created_at', { ascending: false })
@@ -191,7 +197,8 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
       }
     };
 
-    loadJobHistory();
+  useEffect(() => {
+    void loadJobHistory();
   }, []);
 
   const handleSearch = async () => {
@@ -271,16 +278,28 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
     }
   };
 
-  const handleScrapeResult = async (result: SearchResult) => {
-    setSearchResults([]);
-    setSearchQuery("");
+  const triggerScrape = async (
+    targetUrl: string,
+    opts?: { chapter_start?: number; chapter_limit?: number; force_rediscover?: boolean },
+  ) => {
+    const cleanUrl = targetUrl.trim();
+    if (!cleanUrl) {
+      setError("Vui lòng nhập URL truyện hợp lệ.");
+      return;
+    }
+    setError("");
+
+    const startCh = Math.max(1, Number(opts?.chapter_start) || 1);
+    const limitCh = Math.max(0, Number(opts?.chapter_limit) || 0);
+    const rediscover = Boolean(opts?.force_rediscover);
 
     try {
       const { data, error } = await supabase.functions.invoke('trigger-scraper', {
         body: {
-          source_url: result.url,
-          chapter_start: 0,
-          chapter_limit: 0
+          source_url: cleanUrl,
+          chapter_start: startCh,
+          chapter_limit: limitCh,
+          force_rediscover: rediscover,
         }
       });
 
@@ -292,18 +311,20 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
 
       if (data && data.job_id) {
         const jobId = data.job_id.toString();
-        
+
         const initialJob: ScrapeJob = {
           id: jobId,
-          url: result.url,
+          url: cleanUrl,
           status: "pending",
           progress: 0,
           currentStep: "Đang khởi tạo...",
-          logs: [`[${new Date().toLocaleTimeString()}] Job ${jobId} created`],
+          chapter_start: startCh,
+          logs: [`[${new Date().toLocaleTimeString()}] Job ${jobId} created (${cleanUrl})`],
           created_at: new Date().toISOString(),
         };
-        
+
         setActiveJob(initialJob);
+        void loadJobHistory();
 
         const channel = supabase
           .channel(`job:${jobId}`)
@@ -328,10 +349,10 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
               } else if (rawStatus === 'running' || rawStatus === 'scraping_chapters' || rawStatus === 'in_progress') {
                 mappedStatus = "scraping_chapters";
               }
-              
+
               const job: ScrapeJob = {
                 id: updatedJob.id.toString(),
-                url: result.url,
+                url: cleanUrl,
                 status: mappedStatus,
                 progress: mappedStatus === 'completed'
                   ? 100
@@ -350,17 +371,16 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                 completed_at: updatedJob.completed_at,
                 error: updatedJob.error_message,
               };
-              
+
               setActiveJob(job);
-              
+
               if (mappedStatus === 'completed' || mappedStatus === 'failed' || mappedStatus === 'canceled') {
-                setJobHistory(prev => [job, ...prev]);
+                setJobHistory(prev => [job, ...prev.filter(j => j.id !== job.id)]);
                 channel.unsubscribe();
               }
             }
           )
           .subscribe();
-
       } else {
         setError("Không thể khởi tạo scraper. Vui lòng thử lại.");
       }
@@ -368,6 +388,33 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
       console.error('Scrape exception:', err);
       setError("Lỗi khi khởi tạo scraper. Vui lòng thử lại.");
     }
+  };
+
+  const handleDirectScrape = async () => {
+    if (!directUrl.trim()) {
+      setError("Vui lòng nhập URL truyện cần cào.");
+      return;
+    }
+    setIsTriggeringDirect(true);
+    try {
+      await triggerScrape(directUrl, {
+        chapter_start: chapterStart,
+        chapter_limit: chapterLimit,
+        force_rediscover: forceRediscover,
+      });
+    } finally {
+      setIsTriggeringDirect(false);
+    }
+  };
+
+  const handleScrapeResult = async (result: SearchResult) => {
+    setSearchResults([]);
+    setSearchQuery("");
+    await triggerScrape(result.url, {
+      chapter_start: 1,
+      chapter_limit: 0,
+      force_rediscover: false,
+    });
   };
 
   const getStatusColor = (status: ScrapeJob["status"]) => {
@@ -444,6 +491,79 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
       </div>
 
       <div className="px-4 -mt-6">
+        {/* Direct URL Scrape Card */}
+        <div className="bg-card rounded-2xl p-4 shadow-lg border border-border mb-4 space-y-3">
+          <div className="flex items-center gap-2">
+            <Link2 className="w-4 h-4 text-primary" />
+            <label className="text-sm font-medium">
+              Cào trực tiếp từ URL (mọi web qua AI)
+            </label>
+          </div>
+          <input
+            type="url"
+            value={directUrl}
+            onChange={(e) => {
+              setDirectUrl(e.target.value);
+              setError("");
+            }}
+            placeholder="https://www.lore5.com/book/... hoặc bất kỳ trang truyện nào"
+            className="w-full px-3.5 py-2.5 bg-input-background rounded-xl border border-border/50 focus:border-primary focus:outline-none text-sm"
+          />
+          <div className="grid grid-cols-2 gap-2.5">
+            <div>
+              <label className="text-[11px] text-muted-foreground block mb-1">
+                Chương bắt đầu
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={chapterStart}
+                onChange={(e) => setChapterStart(Math.max(1, Number(e.target.value) || 1))}
+                className="w-full px-3 py-2 bg-input-background rounded-xl border border-border/50 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-[11px] text-muted-foreground block mb-1">
+                Giới hạn chương (0 = tất cả)
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={chapterLimit}
+                onChange={(e) => setChapterLimit(Math.max(0, Number(e.target.value) || 0))}
+                className="w-full px-3 py-2 bg-input-background rounded-xl border border-border/50 text-sm"
+              />
+            </div>
+          </div>
+          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={forceRediscover}
+              onChange={(e) => setForceRediscover(e.target.checked)}
+              className="rounded border-border"
+            />
+            Ép AI dò lại cấu trúc trang (force_rediscover)
+          </label>
+          <button
+            type="button"
+            onClick={handleDirectScrape}
+            disabled={isTriggeringDirect}
+            className="w-full py-2.5 bg-primary text-white rounded-xl text-sm font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {isTriggeringDirect ? (
+              <>
+                <Loader className="w-4 h-4 animate-spin" />
+                Đang gửi...
+              </>
+            ) : (
+              <>
+                <Play className="w-4 h-4" />
+                Bắt đầu cào URL
+              </>
+            )}
+          </button>
+        </div>
+
         {/* Search Input Card */}
         <div className="bg-card rounded-2xl p-4 shadow-lg border border-border mb-6">
           <label className="text-sm font-medium mb-2 block">
@@ -725,10 +845,20 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
         {/* Job History */}
         {jobHistory.length > 0 && (
           <section className="mb-6">
-            <h2 className="text-lg font-medium mb-4 flex items-center gap-2">
-              <Clock className="w-5 h-5 text-primary" />
-              Lịch sử Jobs
-            </h2>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-medium flex items-center gap-2">
+                <Clock className="w-5 h-5 text-primary" />
+                Lịch sử Jobs
+              </h2>
+              <button
+                type="button"
+                onClick={() => void loadJobHistory()}
+                className="text-xs text-primary flex items-center gap-1"
+              >
+                <RefreshCw className="w-3.5 h-3.5" />
+                Làm mới
+              </button>
+            </div>
             <div className="space-y-3">
               {jobHistory.map((job) => (
                 <div

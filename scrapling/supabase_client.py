@@ -138,11 +138,102 @@ def upsert_story(
 
 def get_story_by_slug(slug: str) -> dict | None:
     """Fetch a story by its slug."""
-    params = f"?slug=eq.{slug}&select=*"
+    from urllib.parse import quote
+    params = f"?slug=eq.{quote(slug, safe='')}&select=*"
     result = _rest("GET", "stories", params=params)
     if result and isinstance(result, list) and len(result) > 0:
         return result[0]
     return None
+
+
+def normalize_source_url(url: str | None) -> str:
+    """Normalize a source URL for cross-variant comparison."""
+    if not url:
+        return ""
+    from urllib.parse import urlparse
+
+    raw = url.strip()
+    parsed = urlparse(raw)
+    if not parsed.netloc:
+        return raw.rstrip("/").lower()
+    host = parsed.netloc.lower()
+    if host.startswith("www."):
+        host = host[4:]
+    path = parsed.path.rstrip("/")
+    query = f"?{parsed.query}" if parsed.query else ""
+    return f"https://{host}{path}{query}"
+
+
+def build_source_slug(base_slug: str, source_name: str | None) -> str:
+    """Build a source-scoped slug (e.g. 'pham-nhan-tu-tien-truyenfull')."""
+    source_key = re.sub(r"[^a-z0-9]+", "-", (source_name or "").lower()).strip("-")
+    if not source_key or base_slug.endswith(f"-{source_key}"):
+        return base_slug
+    return f"{base_slug}-{source_key}"
+
+
+def get_story_by_source_url(source_url: str) -> dict | None:
+    """Fetch an existing story matching source_url (including trailing-slash/www variants)."""
+    if not source_url or not source_url.strip():
+        return None
+    from urllib.parse import quote, urlparse
+
+    raw = source_url.strip()
+    candidates: list[str] = []
+    for base in (raw, raw.rstrip("/"), raw.rstrip("/") + "/"):
+        if base and base not in candidates:
+            candidates.append(base)
+
+    parsed = urlparse(raw)
+    if parsed.netloc:
+        alt_host = parsed.netloc[4:] if parsed.netloc.lower().startswith("www.") else f"www.{parsed.netloc}"
+        alt_base = f"{parsed.scheme}://{alt_host}{parsed.path}"
+        if parsed.query:
+            alt_base += f"?{parsed.query}"
+        for alt in (alt_base.rstrip("/"), alt_base.rstrip("/") + "/"):
+            if alt not in candidates:
+                candidates.append(alt)
+
+    for cand in candidates:
+        params = f"?source_url=eq.{quote(cand, safe='')}&select=*&limit=1"
+        result = _rest("GET", "stories", params=params)
+        if result and isinstance(result, list):
+            return result[0]
+    return None
+
+
+def resolve_story_slug(
+    base_slug: str,
+    source_name: str | None,
+    source_url: str | None = None,
+) -> str:
+    """Resolve a story slug isolated by source while staying backward-compatible.
+
+    1. Reuses existing story slug if an entry with the same source_url already exists.
+    2. Reuses source-scoped slug if it already exists.
+    3. Reuses legacy plain slug only if it belongs to the same source_name and compatible source_url.
+    4. Otherwise returns source-scoped slug so different sources never collide or overwrite R2/DB.
+    """
+    if source_url:
+        existing_by_url = get_story_by_source_url(source_url)
+        if existing_by_url and existing_by_url.get("slug"):
+            return existing_by_url["slug"]
+
+    scoped_slug = build_source_slug(base_slug, source_name)
+    if scoped_slug != base_slug and get_story_by_slug(scoped_slug):
+        return scoped_slug
+
+    existing_plain = get_story_by_slug(base_slug)
+    if existing_plain:
+        existing_src = (existing_plain.get("source_name") or "").strip().lower()
+        incoming_src = (source_name or "").strip().lower()
+        existing_url = existing_plain.get("source_url")
+        if existing_src == incoming_src and (
+            not existing_url or normalize_source_url(existing_url) == normalize_source_url(source_url)
+        ):
+            return base_slug
+
+    return scoped_slug
 
 
 def update_story_scrape_progress(story_id: int, last_chapter: int):
