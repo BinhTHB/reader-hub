@@ -145,8 +145,11 @@ class TruyenFullParser(BaseSiteParser):
     name = "truyenfull"
 
     def get_search_url(self, query: str) -> str:
-        template = self.config.search_url_template if self.config else \
-            "https://truyenfull.vision/tim-kiem/?tukhoa={query}"
+        template = (
+            self.config.search_url_template
+            if self.config and self.config.search_url_template
+            else f"{self.base_url}/tim-kiem/?tukhoa={{query}}"
+        )
         return template.replace("{query}", quote(query))
 
     def parse_search_results(self, html: str) -> list[dict]:
@@ -293,8 +296,11 @@ class MeTruyenChuParser(BaseSiteParser):
     name = "metruyenchu"
 
     def get_search_url(self, query: str) -> str:
-        template = self.config.search_url_template if self.config else \
-            "https://metruyenchuvn.com/search?q={query}"
+        template = (
+            self.config.search_url_template
+            if self.config and self.config.search_url_template
+            else f"{self.base_url}/search?q={{query}}"
+        )
         return template.replace("{query}", quote(query))
 
     def parse_search_results(self, html: str) -> list[dict]:
@@ -523,8 +529,11 @@ class TruyenDichParser(BaseSiteParser):
     name = "truyendich"
 
     def get_search_url(self, query: str) -> str:
-        template = self.config.search_url_template if self.config else \
-            "https://truyendich.space/tim-kiem?q={query}"
+        template = (
+            self.config.search_url_template
+            if self.config and self.config.search_url_template
+            else f"{self.base_url}/tim-kiem?q={{query}}"
+        )
         return template.replace("{query}", quote(query))
 
     def parse_search_results(self, html: str) -> list[dict]:
@@ -924,7 +933,12 @@ class UUKanShuParser(BaseSiteParser):
     name = "uukanshu"
 
     def get_search_url(self, query: str) -> str:
-        return f"https://uukanshu.cc/search.html?keyword={quote(query)}"
+        template = (
+            self.config.search_url_template
+            if self.config and self.config.search_url_template
+            else f"{self.base_url}/search.html?keyword={{query}}"
+        )
+        return template.replace("{query}", quote(query))
 
     def parse_search_results(self, html: str) -> list[dict]:
         page = Selector(html)
@@ -1053,11 +1067,214 @@ class UUKanShuParser(BaseSiteParser):
 # Parser Registry
 # â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
+class KhoTruyenChuParser(BaseSiteParser):
+    """Flagship parser for KhoTruyenChu (TLD-agnostic via sites_config)."""
+
+    name = "khotruyenchu"
+
+    def get_search_url(self, query: str) -> str:
+        template = (
+            self.config.search_url_template
+            if self.config and self.config.search_url_template
+            else f"{self.base_url}/?s={{query}}"
+        )
+        return template.replace("{query}", quote(query))
+
+    def parse_search_results(self, html: str) -> list[dict]:
+        from bs4 import BeautifulSoup
+        from urllib.parse import urljoin
+
+        soup = BeautifulSoup(html, "lxml")
+        results: list[dict] = []
+        seen_urls: set[str] = set()
+
+        for link in soup.select("a[href*='/truyen/']"):
+            href = (link.get("href") or "").strip()
+            if not href or href.startswith("#"):
+                continue
+            abs_url = urljoin(self.base_url + "/", href)
+            if abs_url in seen_urls:
+                continue
+            title = self.clean_text(link.get_text(" ", strip=True))
+            if not title or len(title) < 2:
+                continue
+            seen_urls.add(abs_url)
+            results.append({
+                "title": title,
+                "slug": self.slugify(title),
+                "author": "Đang cập nhật",
+                "cover_url": "",
+                "source_url": abs_url,
+                "source_name": self.name,
+                "genres": [],
+            })
+        return results
+
+    def parse_story_info(self, html: str, url: str) -> dict:
+        from bs4 import BeautifulSoup
+        from urllib.parse import urljoin
+
+        soup = BeautifulSoup(html, "lxml")
+        title_el = soup.select_one("h1.truyen-title") or soup.select_one("h1")
+        title = self.clean_text(title_el.get_text(" ", strip=True)) if title_el else ""
+
+        author = "Đang cập nhật"
+        status = "ongoing"
+        for span in soup.select("div.truyen-info span"):
+            txt = self.clean_text(span.get_text(" ", strip=True))
+            lower = txt.lower()
+            if "tác giả" in lower:
+                cleaned = re.sub(r"^.*?tác\s*giả\s*[:：\-]?\s*", "", txt, flags=re.IGNORECASE).strip()
+                if cleaned:
+                    author = cleaned
+            elif "tình trạng" in lower:
+                if any(k in lower for k in ("hoàn", "full", "complete")):
+                    status = "completed"
+
+        genres: list[str] = []
+        for g_el in soup.select("div.truyen-info a[href*='the-loai']"):
+            g_txt = self.clean_text(g_el.get_text(" ", strip=True))
+            if g_txt and g_txt not in genres:
+                genres.append(g_txt)
+
+        cover_img_url = None
+        img_el = soup.select_one("div.truyen-cover img")
+        if img_el:
+            src = img_el.get("src") or img_el.get("data-src") or img_el.get("data-original")
+            if src:
+                cover_img_url = urljoin(url, str(src).strip())
+
+        desc_el = soup.select_one("div.truyen-desc")
+        description = self.clean_text(desc_el.get_text(" ", strip=True)) if desc_el else ""
+
+        return {
+            "title": title,
+            "slug": self.slugify(title) if title else self.slugify(url.rstrip("/").split("/")[-1]),
+            "author": author,
+            "description": description,
+            "cover_img_url": cover_img_url,
+            "source_url": url,
+            "source_name": self.name,
+            "genres": genres,
+            "status": status,
+        }
+
+    def get_chapter_list_url(self, story_url: str, page: int = 1) -> str:
+        if page <= 1:
+            return story_url
+        return f"{story_url.rstrip('/')}/page/{page}/"
+
+    def parse_max_pages(self, html: str) -> int:
+        from bs4 import BeautifulSoup
+
+        soup = BeautifulSoup(html, "lxml")
+        max_page = 1
+        nav = soup.select_one("nav.ct-pagination")
+        if nav and nav.get("data-max") and str(nav.get("data-max")).isdigit():
+            max_page = max(max_page, int(str(nav.get("data-max"))))
+        for el in soup.select("nav.ct-pagination a.page-numbers"):
+            for candidate in (el.get_text(" ", strip=True), str(el.get("href") or "")):
+                for m in re.finditer(r"(\d+)", candidate):
+                    val = int(m.group(1))
+                    if 1 <= val <= 5000 and val > max_page:
+                        max_page = val
+        return max_page
+
+    def parse_chapter_list(self, html: str) -> list[dict]:
+        from bs4 import BeautifulSoup
+        from urllib.parse import urljoin
+        from dynamic_parser import CHAPTER_NUM_RE, LEADING_NUM_RE, _parse_formatted_int
+
+        soup = BeautifulSoup(html, "lxml")
+        chapters: list[dict] = []
+        seen_urls: set[str] = set()
+
+        for idx, link_el in enumerate(soup.select("ul.chapter-list li.chapter-item a")):
+            href = (link_el.get("href") or "").strip()
+            if not href or href.startswith("#") or href.lower().startswith("javascript:"):
+                continue
+            abs_url = urljoin(self.base_url + "/", href)
+            if abs_url in seen_urls:
+                continue
+            seen_urls.add(abs_url)
+
+            title = self.clean_text(link_el.get_text(" ", strip=True))
+            num: int | None = None
+            m = CHAPTER_NUM_RE.search(title)
+            if m:
+                num = _parse_formatted_int(m.group(1))
+            else:
+                m_lead = LEADING_NUM_RE.match(title)
+                if m_lead:
+                    num = _parse_formatted_int(m_lead.group(1))
+            if num is None or num <= 0:
+                num = idx + 1
+
+            chapters.append({
+                "chapter_number": num,
+                "title": title or f"Chương {num}",
+                "source_url": abs_url,
+            })
+
+        return chapters
+
+    def parse_chapter_content(self, html: str) -> dict:
+        from bs4 import BeautifulSoup
+        from dynamic_parser import _HIDDEN_STYLE_RE, _WATERMARK_PARA_RE
+
+        soup = BeautifulSoup(html, "lxml")
+        title_el = soup.select_one("h1.entry-title") or soup.select_one("h1")
+        title = self.clean_text(title_el.get_text(" ", strip=True)) if title_el else ""
+
+        content_el = soup.select_one("div.entry-content")
+        if not content_el:
+            return {"title": title, "paragraphs": [], "word_count": 0}
+
+        for sel in (
+            "script",
+            "style",
+            "iframe",
+            "ins",
+            "noscript",
+            "strong.vlxnpyih",
+            "div.story-navigation",
+            "div.reading-tools-bar",
+            "div.chapter-end",
+            "div.ktc-rec-block",
+            "section.ktc-comments",
+        ):
+            for tag in content_el.select(sel):
+                tag.decompose()
+
+        for tag in list(content_el.find_all(True)):
+            if tag.has_attr("hidden") or _HIDDEN_STYLE_RE.search(str(tag.get("style") or "")):
+                tag.decompose()
+
+        for br in content_el.find_all("br"):
+            br.replace_with("\n")
+
+        paragraphs: list[str] = []
+        p_tags = content_el.find_all("p")
+        if len(p_tags) >= 2:
+            for p in p_tags:
+                txt = self.clean_text(p.get_text(" ", strip=True))
+                if txt and len(txt) > 1 and not (len(txt) < 140 and _WATERMARK_PARA_RE.search(txt)):
+                    paragraphs.append(txt)
+        else:
+            for line in content_el.get_text(separator="\n").split("\n"):
+                txt = self.clean_text(line)
+                if txt and len(txt) > 1 and not (len(txt) < 140 and _WATERMARK_PARA_RE.search(txt)):
+                    paragraphs.append(txt)
+
+        return {"title": title, "paragraphs": paragraphs, "word_count": self.count_words(paragraphs)}
+
+
 PARSERS: dict[str, BaseSiteParser] = {
     "truyenfull": TruyenFullParser(),
     "metruyenchu": MeTruyenChuParser(),
     "truyendich": TruyenDichParser(),
     "uukanshu": UUKanShuParser(),
+    "khotruyenchu": KhoTruyenChuParser(),
 }
 
 

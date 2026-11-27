@@ -51,6 +51,7 @@ const SOURCE_LABELS: Record<string, string> = {
   metruyenchu: "MeTruyenChu",
   truyendich: "TruyenDich",
   uukanshu: "UUKanshu",
+  khotruyenchu: "KhoTruyenChu",
   gdrive: "Google Drive",
 };
 

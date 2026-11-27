@@ -76,11 +76,12 @@ async function checkLatestChapter(
   supabase: ReturnType<typeof createClient>,
 ): Promise<{ chapter_number: number; title: string }> {
   const url = sourceUrl.trim();
+  const hostname = normalizeDomain(url);
   const headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
   };
 
-  if (url.includes("truyenfull")) {
+  if (hostname.includes("truyenfull")) {
     const resp = await fetch(url, { headers });
     if (!resp.ok) throw new Error(`Fetch TruyenFull failed with status ${resp.status}`);
     const html = await resp.text();
@@ -131,7 +132,7 @@ async function checkLatestChapter(
 
     return { chapter_number: maxChapter, title: `Chương ${maxChapter}` };
 
-  } else if (url.includes("metruyenchu")) {
+  } else if (hostname.includes("metruyenchu")) {
     const resp = await fetch(url, { headers });
     if (!resp.ok) throw new Error(`Fetch MeTruyenChu failed with status ${resp.status}`);
     const html = await resp.text();
@@ -172,7 +173,7 @@ async function checkLatestChapter(
 
     return { chapter_number: maxChapter, title: `Chương ${maxChapter}` };
 
-  } else if (url.includes("truyendich")) {
+  } else if (hostname.includes("truyendich")) {
     const resp = await fetch(url, { headers });
     if (!resp.ok) throw new Error(`Fetch TruyenDich failed with status ${resp.status}`);
     const html = await resp.text();
@@ -241,7 +242,7 @@ async function checkLatestChapter(
 
     return { chapter_number: maxChapter, title: `Chương ${maxChapter}` };
 
-  } else if (url.includes("uukanshu")) {
+  } else if (hostname.includes("uukanshu")) {
     const resp = await fetch(url, { headers });
     if (!resp.ok) throw new Error(`Fetch UUKanShu failed with status ${resp.status}`);
     const html = await resp.text();
@@ -269,6 +270,51 @@ async function checkLatestChapter(
       }
     }
 
+    return { chapter_number: maxChapter, title: `Chương ${maxChapter}` };
+
+  } else if (hostname.includes("khotruyenchu")) {
+    const resp = await fetch(url, { headers });
+    if (!resp.ok) throw new Error(`Fetch KhoTruyenChu failed with status ${resp.status}`);
+    const html = await resp.text();
+    const doc = new DOMParser().parseFromString(html, "text/html");
+    let maxChapter = 0;
+
+    if (doc) {
+      let maxPage = 1;
+      const pagNav = doc.querySelector("nav.ct-pagination") as any;
+      const dMax = pagNav?.getAttribute?.("data-max");
+      if (dMax && /^\d+$/.test(dMax)) {
+        maxPage = Math.max(maxPage, parseInt(dMax, 10));
+      }
+      for (const el of Array.from(doc.querySelectorAll("nav.ct-pagination a.page-numbers")) as any[]) {
+        const num = parseInt((el.textContent || "").trim(), 10);
+        if (!Number.isNaN(num) && num > maxPage) maxPage = num;
+      }
+
+      let totalOnLast = 0;
+      const page1Links = Array.from(doc.querySelectorAll("ul.chapter-list li.chapter-item a")) as any[];
+      for (const link of page1Links) {
+        const n = extractChapterNumber(link.textContent || "", link.getAttribute?.("href") || "");
+        if (n !== null && n > maxChapter) maxChapter = n;
+      }
+
+      if (maxPage > 1) {
+        const lastUrl = `${url.replace(/\/$/, "")}/page/${maxPage}/`;
+        const lastResp = await fetch(lastUrl, { headers });
+        if (lastResp.ok) {
+          const lastDoc = new DOMParser().parseFromString(await lastResp.text(), "text/html");
+          const lastLinks = lastDoc ? Array.from(lastDoc.querySelectorAll("ul.chapter-list li.chapter-item a")) : [];
+          totalOnLast = (maxPage - 1) * page1Links.length + lastLinks.length;
+        }
+      } else {
+        totalOnLast = page1Links.length;
+      }
+      maxChapter = Math.max(maxChapter, totalOnLast);
+    }
+
+    if (maxChapter === 0) {
+      throw new Error("Không lấy được số chương từ KhoTruyenChu.");
+    }
     return { chapter_number: maxChapter, title: `Chương ${maxChapter}` };
 
   } else {

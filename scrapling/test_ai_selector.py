@@ -615,6 +615,66 @@ class AiSelectorTests(unittest.TestCase):
         self.assertEqual([c["title"] for c in auto_asc], ["Ch 1", "Ch 49", "Ch 50"])
         self.assertEqual([c["chapter_number"] for c in auto_asc], [1, 2, 3])
 
+    def test_tld_agnostic_flagship_detection_and_khotruyenchu_parser(self):
+        from parsers import detect_parser
+
+        cases = [
+            ("https://khotruyenchu.fun/truyen/abc", "khotruyenchu", "https://khotruyenchu.fun", "https://khotruyenchu.fun/?s=test"),
+            ("https://khotruyenchu.net/truyen/abc", "khotruyenchu", "https://khotruyenchu.net", "https://khotruyenchu.net/?s=test"),
+            ("https://truyenfull.io/truyen-a/", "truyenfull", "https://truyenfull.io", "https://truyenfull.io/tim-kiem/?tukhoa=test"),
+            ("https://metruyenchu.xyz/truyen/a", "metruyenchu", "https://metruyenchu.xyz", "https://metruyenchu.xyz/search?q=test"),
+            ("https://truyendich.org/doc-truyen/a", "truyendich", "https://truyendich.org", "https://truyendich.org/tim-kiem?q=test"),
+            ("https://uukanshu.net/book/1", "uukanshu", "https://uukanshu.net", "https://uukanshu.net/search.html?keyword=test"),
+        ]
+        for url, expected_name, expected_base, expected_search in cases:
+            p = detect_parser(url, allow_dynamic=False)
+            self.assertIsNotNone(p, msg=f"Expected flagship parser for {url}")
+            self.assertEqual(p.name, expected_name)
+            self.assertEqual(p.base_url, expected_base)
+            self.assertEqual(p.get_search_url("test"), expected_search)
+
+        ktc_story_html = """
+        <html><body>
+          <h1 class="truyen-title">Trận Vấn Trường Sinh</h1>
+          <div class="truyen-cover"><img src="/cover.webp" /></div>
+          <div class="truyen-info">
+            <span>👤 Tác giả: Quan Hư</span>
+            <span>🏷️ Thể loại: <a href="/the-loai/tien-hiep">Tiên hiệp</a></span>
+            <span>📌 Tình trạng: Hoàn thành</span>
+          </div>
+          <div class="truyen-desc">Giới thiệu truyện</div>
+          <ul class="chapter-list">
+            <li class="chapter-item"><a href="/chuong-1/">Chương 1: Mở đầu</a></li>
+            <li class="chapter-item"><a href="/chuong-1617/">Chương 1,617: Kết</a></li>
+          </ul>
+          <nav class="ct-pagination" data-max="33"><a class="page-numbers" href="/page/2/">2</a></nav>
+        </body></html>
+        """
+        ktc_ch_html = f"""
+        <html><body>
+          <h1 class="entry-title">Chương 1: Mở đầu</h1>
+          <div class="entry-content">
+            <strong class="vlxnpyih">rác</strong>
+            <div class="story-navigation">prev/next</div>
+            <p>{LONG_PARAGRAPHS[0]}</p>
+            <p>{LONG_PARAGRAPHS[1]}</p>
+          </div>
+        </body></html>
+        """
+        ktc = detect_parser("https://khotruyenchu.net/truyen/tran-van", allow_dynamic=False)
+        info = ktc.parse_story_info(ktc_story_html, "https://khotruyenchu.net/truyen/tran-van")
+        self.assertEqual(info["title"], "Trận Vấn Trường Sinh")
+        self.assertEqual(info["author"], "Quan Hư")
+        self.assertEqual(info["status"], "completed")
+        self.assertEqual(info["genres"], ["Tiên hiệp"])
+        self.assertEqual(ktc.parse_max_pages(ktc_story_html), 33)
+        self.assertEqual(ktc.get_chapter_list_url("https://khotruyenchu.net/truyen/tran-van", 2), "https://khotruyenchu.net/truyen/tran-van/page/2/")
+        chs = ktc.parse_chapter_list(ktc_story_html)
+        self.assertEqual([c["chapter_number"] for c in chs], [1, 1617])
+        ch_data = ktc.parse_chapter_content(ktc_ch_html)
+        self.assertEqual(len(ch_data["paragraphs"]), 2)
+        self.assertNotIn("rác", "\n".join(ch_data["paragraphs"]))
+
 
 if __name__ == "__main__":
     unittest.main()

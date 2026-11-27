@@ -1003,7 +1003,7 @@ def run_scraper():
                         parser.extract_story_id(first_page_for_id)
                 sid = getattr(parser, '_story_id', None) or ''
                 if sid:
-                    api_url_1 = f"https://metruyenchuvn.com/get/listchap/{sid}?page=1"
+                    api_url_1 = f"{parser.base_url}/get/listchap/{sid}?page=1"
                     try:
                         def get_api_page_1(sess):
                             p_resp = sess.fetch(api_url_1)
@@ -1053,7 +1053,7 @@ def run_scraper():
                     
                     sid = getattr(parser, '_story_id', None) or ''
                     if sid:
-                        p_url = f"https://metruyenchuvn.com/get/listchap/{sid}?page={page_num}"
+                        p_url = f"{parser.base_url}/get/listchap/{sid}?page={page_num}"
                     else:
                         p_url = parser.get_chapter_list_url(STORY_SOURCE_URL, page=page_num)
                 else:
