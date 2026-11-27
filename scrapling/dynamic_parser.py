@@ -9,10 +9,16 @@ from sites_config import SiteConfig
 
 
 CHAPTER_NUM_RE = re.compile(
-    r"(?:chương|chuong|chapter|chap|c\.?|第)\s*(\d{1,3}(?:,\d{3})+|\d+)",
+    r"(?:chương|chuong|chapter|chap|c\.?|第)\s*(\d{1,3}(?:[,.]\d{3})+(?!\d)|\d+)",
     re.IGNORECASE,
 )
-LEADING_NUM_RE = re.compile(r"^\s*(\d{1,3}(?:,\d{3})+|\d+)\s*[.:\-–—\s]")
+LEADING_NUM_RE = re.compile(r"^\s*(\d{1,3}(?:[,.]\d{3})+(?!\d)|\d+)\s*[.:\-–—\s]")
+
+
+def _parse_formatted_int(raw: str) -> int:
+    if re.fullmatch(r"\d{1,3}(?:[,.]\d{3})+", raw):
+        return int(raw.replace(",", "").replace(".", ""))
+    return int(raw.replace(",", ""))
 URL_NUM_RE = re.compile(r"(\d+)(?:[./?#]|$)")
 _BRANDING_ATTR_RE = re.compile(r"(?:site-title|site-name|site-logo|brand|logo)", re.IGNORECASE)
 _HEADER_ANCESTOR_RE = re.compile(r"(?:site-header|navbar|topbar|main-header)", re.IGNORECASE)
@@ -211,11 +217,11 @@ class DynamicConfigParser(BaseSiteParser):
             num: int | None = None
             m = CHAPTER_NUM_RE.search(title)
             if m:
-                num = int(m.group(1).replace(",", ""))
+                num = _parse_formatted_int(m.group(1))
             else:
                 m_lead = LEADING_NUM_RE.match(title)
                 if m_lead:
-                    num = int(m_lead.group(1).replace(",", ""))
+                    num = _parse_formatted_int(m_lead.group(1))
                 else:
                     m2 = URL_NUM_RE.search(abs_url)
                     if m2:
@@ -231,6 +237,14 @@ class DynamicConfigParser(BaseSiteParser):
                 "title": title or f"Chương {num}",
                 "source_url": abs_url,
             })
+
+        # Guard against volume-reset numbering (e.g., Vol 1 Ch 1, Vol 2 Ch 1)
+        if len(chapters) >= 5:
+            unique_count = len({c["chapter_number"] for c in chapters})
+            if unique_count < len(chapters) * 0.7:
+                for seq_idx, ch in enumerate(chapters, start=1):
+                    ch["source_chapter_number"] = ch["chapter_number"]
+                    ch["chapter_number"] = seq_idx
 
         return chapters
 

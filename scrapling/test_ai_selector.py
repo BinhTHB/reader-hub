@@ -421,6 +421,40 @@ class AiSelectorTests(unittest.TestCase):
             supabase_client.get_story_by_source_url = orig_get_by_url
             supabase_client.get_story_by_slug = orig_get_by_slug
 
+    def test_dot_thousands_decimal_and_volume_reset_normalization(self):
+        html_nums = """
+        <html><body>
+          <ul class="chapters">
+            <li><a href="/read/1">Chương 1.5 Ngoại truyện</a></li>
+            <li><a href="/read/1000">Chương 1.000 Đại chiến</a></li>
+            <li><a href="/read/1617">Chương 1.617 Kết cục</a></li>
+            <li><a href="/read/1618">Chương 1,617 Bổ sung</a></li>
+          </ul>
+        </body></html>
+        """
+        parser = DynamicConfigParser(
+            domain="example.com",
+            base_url="https://example.com",
+            selectors={"chapter_list": "ul.chapters li a"},
+        )
+        parsed = parser.parse_chapter_list(html_nums)
+        self.assertEqual([c["chapter_number"] for c in parsed], [1, 1000, 1617, 1617])
+
+        html_vol = """
+        <html><body>
+          <ul class="chapters">
+            <li><a href="/v1/1">Chương 1 Mở đầu</a></li>
+            <li><a href="/v1/2">Chương 2 Tiếp nối</a></li>
+            <li><a href="/v2/1">Chương 1 Quyển 2</a></li>
+            <li><a href="/v2/2">Chương 2 Quyển 2</a></li>
+            <li><a href="/v3/1">Chương 1 Quyển 3</a></li>
+          </ul>
+        </body></html>
+        """
+        vol_parsed = parser.parse_chapter_list(html_vol)
+        self.assertEqual([c["chapter_number"] for c in vol_parsed], [1, 2, 3, 4, 5])
+        self.assertEqual([c["source_chapter_number"] for c in vol_parsed], [1, 2, 1, 2, 1])
+
 
 if __name__ == "__main__":
     unittest.main()

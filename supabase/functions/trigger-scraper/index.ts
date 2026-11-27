@@ -15,6 +15,7 @@
 
 import { serve } from "https://deno.land/std@0.208.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.48/deno-dom-wasm.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,7 +32,46 @@ interface ScrapeRequest {
   action?: "scrape" | "check_latest";
 }
 
-async function checkLatestChapter(sourceUrl: string): Promise<{ chapter_number: number; title: string }> {
+function normalizeDomain(rawUrl: string): string {
+  try {
+    const host = new URL(rawUrl).hostname.toLowerCase();
+    return host.startsWith("www.") ? host.slice(4) : host;
+  } catch {
+    return "";
+  }
+}
+
+function parseFormattedInt(raw: string): number {
+  const cleaned = /^\d{1,3}(?:[,.]\d{3})+$/.test(raw)
+    ? raw.replace(/[,.]/g, "")
+    : raw.replace(/,/g, "");
+  return parseInt(cleaned, 10);
+}
+
+function extractChapterNumber(text: string, href?: string): number | null {
+  const cleanText = (text || "").replace(/\s+/g, " ").trim();
+  const chMatch = cleanText.match(/(?:chương|chuong|chapter|chap|c\.?|第)\s*(\d{1,3}(?:[,.]\d{3})+(?!\d)|\d+)/i);
+  if (chMatch) {
+    return parseFormattedInt(chMatch[1]);
+  }
+  const leadMatch = cleanText.match(/^\s*(\d{1,3}(?:[,.]\d{3})+(?!\d)|\d+)\s*[.:\-–—\s]/);
+  if (leadMatch) {
+    return parseFormattedInt(leadMatch[1]);
+  }
+  if (href) {
+    const urlMatch = href.match(/(\d+)(?:[./?#]|$)/);
+    if (urlMatch) {
+      const candidate = parseInt(urlMatch[1], 10);
+      if (candidate > 0 && candidate <= 50000) return candidate;
+    }
+  }
+  return null;
+}
+
+async function checkLatestChapter(
+  sourceUrl: string,
+  supabase: ReturnType<typeof createClient>,
+): Promise<{ chapter_number: number; title: string }> {
   const url = sourceUrl.trim();
   const headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
@@ -75,12 +115,12 @@ async function checkLatestChapter(sourceUrl: string): Promise<{ chapter_number: 
       }
     }
 
-    const textMatches = lastPageHtml.match(/[Cc]hương\s+(\d+)/g);
+    const textMatches = lastPageHtml.match(/[Cc]hương\s+(\d{1,3}(?:,\d{3})+|\d+)/g);
     if (textMatches) {
       for (const m of textMatches) {
-        const numMatch = m.match(/\d+/);
+        const numMatch = m.match(/\d{1,3}(?:,\d{3})+|\d+/);
         if (numMatch) {
-          const num = parseInt(numMatch[0]);
+          const num = parseInt(numMatch[0].replace(/,/g, ""), 10);
           if (num > maxChapter) maxChapter = num;
         }
       }
@@ -105,23 +145,23 @@ async function checkLatestChapter(sourceUrl: string): Promise<{ chapter_number: 
       }
     }
 
-    const textMatches = html.match(/[Cc]hương\s+(\d+)/g);
+    const textMatches = html.match(/[Cc]hương\s+(\d{1,3}(?:,\d{3})+|\d+)/g);
     if (textMatches) {
       for (const m of textMatches) {
-        const numMatch = m.match(/\d+/);
+        const numMatch = m.match(/\d{1,3}(?:,\d{3})+|\d+/);
         if (numMatch) {
-          const num = parseInt(numMatch[0]);
+          const num = parseInt(numMatch[0].replace(/,/g, ""), 10);
           if (num > maxChapter) maxChapter = num;
         }
       }
     }
 
-    const chapterCountMatches = html.match(/(\d+)\s*chương/gi);
+    const chapterCountMatches = html.match(/(\d{1,3}(?:,\d{3})+|\d+)\s*chương/gi);
     if (chapterCountMatches) {
       for (const m of chapterCountMatches) {
-        const numMatch = m.match(/\d+/);
+        const numMatch = m.match(/\d{1,3}(?:,\d{3})+|\d+/);
         if (numMatch) {
-          const num = parseInt(numMatch[0]);
+          const num = parseInt(numMatch[0].replace(/,/g, ""), 10);
           if (num > maxChapter) maxChapter = num;
         }
       }
@@ -234,24 +274,93 @@ async function checkLatestChapter(sourceUrl: string): Promise<{ chapter_number: 
     const html = await resp.text();
 
     let maxChapter = 0;
-    const textMatches = html.match(/[Cc]hương\s+(\d+)/g);
-    if (textMatches) {
-      for (const m of textMatches) {
-        const numMatch = m.match(/\d+/);
-        if (numMatch) {
-          const num = parseInt(numMatch[0]);
-          if (num > maxChapter) maxChapter = num;
+
+    // 1. Single Source of Truth: use verified CSS selectors from scrape_sources if available
+    const domain = normalizeDomain(url);
+    if (domain) {
+      const { data: sourceRow } = await supabase
+        .from("scrape_sources")
+        .select("base_url, selectors")
+        .eq("domain", domain)
+        .eq("enabled", true)
+        .maybeSingle();
+
+      const selectors = sourceRow?.selectors as Record<string, any> | null;
+      const listCss = typeof selectors?.chapter_list === "string" ? selectors.chapter_list.trim() : "";
+
+      if (listCss) {
+        try {
+          const parser = new DOMParser();
+          const document = parser.parseFromString(html, "text/html");
+          let targetDoc = document;
+          let matchedLinks = targetDoc ? Array.from(targetDoc.querySelectorAll(listCss)) : [];
+
+          const pagCss = typeof selectors?.pagination_links === "string" ? selectors.pagination_links.trim() : "";
+          const pagePattern = typeof selectors?.page_url_pattern === "string" ? selectors.page_url_pattern.trim() : "";
+
+          if (document && pagCss && pagePattern) {
+            let maxPage = 1;
+            for (const el of Array.from(document.querySelectorAll(pagCss)) as any[]) {
+              const candidates = [el.textContent || "", el.getAttribute?.("href") || ""];
+              for (const cand of candidates) {
+                const nums = cand.match(/\d+/g) || [];
+                for (const n of nums) {
+                  const val = parseInt(n, 10);
+                  if (val >= 1 && val <= 5000 && val > maxPage) maxPage = val;
+                }
+              }
+            }
+            if (maxPage > 1) {
+              const baseUrl = String(sourceRow?.base_url || new URL(url).origin).replace(/\/$/, "");
+              const cleanStory = url.replace(/\/$/, "");
+              const lastPageUrl = pagePattern
+                .replace("{story_url}", cleanStory)
+                .replace("{base_url}", baseUrl)
+                .replace("{page}", String(maxPage));
+              const lastResp = await fetch(lastPageUrl, { headers });
+              if (lastResp.ok) {
+                const lastHtml = await lastResp.text();
+                targetDoc = parser.parseFromString(lastHtml, "text/html");
+                matchedLinks = targetDoc ? Array.from(targetDoc.querySelectorAll(listCss)) : [];
+              }
+            }
+          }
+
+          let maxParsed = 0;
+          for (const node of matchedLinks as any[]) {
+            const linkEl = node.tagName === "A" ? node : node.querySelector?.("a") || node;
+            const href = linkEl.getAttribute?.("href") || "";
+            const num = extractChapterNumber(linkEl.textContent || "", href);
+            if (num !== null && num > maxParsed) maxParsed = num;
+          }
+          maxChapter = Math.max(maxParsed, matchedLinks.length);
+        } catch (domErr) {
+          console.warn("scrape_sources DOM check fallback:", domErr);
         }
       }
     }
 
-    const chapterCountMatches = html.match(/(\d+)\s*chương/gi);
-    if (chapterCountMatches) {
-      for (const m of chapterCountMatches) {
-        const numMatch = m.match(/\d+/);
-        if (numMatch) {
-          const num = parseInt(numMatch[0]);
-          if (num > maxChapter) maxChapter = num;
+    // 2. Fallback regex (supports both comma and dot thousands separators, VN & EN)
+    if (maxChapter === 0) {
+      const textMatches = html.match(/(?:[Cc]hương|[Cc]hapter)\s+(\d{1,3}(?:[,.]\d{3})+(?!\d)|\d+)/g);
+      if (textMatches) {
+        for (const m of textMatches) {
+          const numMatch = m.match(/\d{1,3}(?:[,.]\d{3})+(?!\d)|\d+/);
+          if (numMatch) {
+            const num = parseFormattedInt(numMatch[0]);
+            if (num > maxChapter) maxChapter = num;
+          }
+        }
+      }
+
+      const chapterCountMatches = html.match(/(\d{1,3}(?:[,.]\d{3})+(?!\d)|\d+)\s*(?:chương|chapters?)/gi);
+      if (chapterCountMatches) {
+        for (const m of chapterCountMatches) {
+          const numMatch = m.match(/\d{1,3}(?:[,.]\d{3})+(?!\d)|\d+/);
+          if (numMatch) {
+            const num = parseFormattedInt(numMatch[0]);
+            if (num > maxChapter) maxChapter = num;
+          }
         }
       }
     }
@@ -332,7 +441,7 @@ serve(async (req: Request) => {
 
     if (action === "check_latest") {
       try {
-        const latest = await checkLatestChapter(source_url);
+        const latest = await checkLatestChapter(source_url, supabase);
         return new Response(
           JSON.stringify({
             success: true,

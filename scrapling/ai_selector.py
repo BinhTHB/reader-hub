@@ -176,6 +176,23 @@ def validate_selectors(
         errors.append(
             f"chapter_list selector matched only {len(chapters)} chapters ({len(valid_urls)} unique valid URLs); expected >= 3"
         )
+    else:
+        list_css = (selectors.get("chapter_list") or "").strip()
+        if list_css:
+            try:
+                list_soup = BeautifulSoup(story_html, "lxml")
+                matched_els = list_soup.select(list_css)
+                nav_footer_hits = sum(
+                    1
+                    for el in matched_els
+                    if any(getattr(p, "name", None) in ("nav", "footer") for p in el.parents)
+                )
+                if matched_els and nav_footer_hits > len(matched_els) / 2:
+                    errors.append(
+                        f"chapter_list selector '{list_css}' matched mostly <nav>/<footer> links instead of the story chapter list"
+                    )
+            except Exception:
+                pass
 
     preview: dict = {
         "title": title,
