@@ -102,8 +102,10 @@ class DynamicConfigParser(BaseSiteParser):
         if not pattern:
             return story_url
         clean_story = story_url.rstrip("/")
+        normalized = re.sub(r"\{story_url\}(?=[^/?#])", "{story_url}/", pattern)
+        normalized = re.sub(r"\{base_url\}(?=[^/?#])", "{base_url}/", normalized)
         return (
-            pattern.replace("{story_url}", clean_story)
+            normalized.replace("{story_url}", clean_story)
             .replace("{base_url}", self.base_url)
             .replace("{page}", str(page))
         )

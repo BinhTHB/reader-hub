@@ -313,7 +313,10 @@ async function checkLatestChapter(
             if (maxPage > 1) {
               const baseUrl = String(sourceRow?.base_url || new URL(url).origin).replace(/\/$/, "");
               const cleanStory = url.replace(/\/$/, "");
-              const lastPageUrl = pagePattern
+              const normalizedPattern = pagePattern
+                .replace(/\{story_url\}(?=[^/?#])/, "{story_url}/")
+                .replace(/\{base_url\}(?=[^/?#])/, "{base_url}/");
+              const lastPageUrl = normalizedPattern
                 .replace("{story_url}", cleanStory)
                 .replace("{base_url}", baseUrl)
                 .replace("{page}", String(maxPage));

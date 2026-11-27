@@ -514,6 +514,15 @@ class AiSelectorTests(unittest.TestCase):
             parser.parse_next_page_url(html_with_nav, "https://khotruyenchu.fun/truyen/test"),
             "https://khotruyenchu.fun/truyen/test/page/2/",
         )
+        no_slash_parser = DynamicConfigParser(
+            domain="khotruyenchu.fun",
+            base_url="https://khotruyenchu.fun",
+            selectors={"page_url_pattern": "{story_url}page/{page}/"},
+        )
+        self.assertEqual(
+            no_slash_parser.get_chapter_list_url("https://khotruyenchu.fun/truyen/test/", 2),
+            "https://khotruyenchu.fun/truyen/test/page/2/",
+        )
 
     def test_discover_live_page2_probe_and_ai_auditor_self_healing(self):
         story_p1 = _make_story_html(5).replace(

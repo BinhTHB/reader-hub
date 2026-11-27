@@ -479,6 +479,9 @@ def fetch_with_rotation_wrapper(session, action_fn, max_rotations: int = 8):
         try:
             return action_fn(session)
         except Exception as e:
+            err_msg = str(e)
+            if "HTTP 404" in err_msg or "HTTP 410" in err_msg:
+                raise e
             can_retry_proxy = (PROXY_URL or USE_FREE_PROXY) and rotation < max_rotations - 1
             if not can_retry_proxy:
                 raise e
