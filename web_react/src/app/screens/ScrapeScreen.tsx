@@ -18,6 +18,7 @@ import {
   Link2,
 } from "lucide-react";
 import { supabase } from "../../lib/supabase";
+import { triggerScrape as triggerScrapeApi, type ChapterOrderMode } from "../../lib/admin";
 
 interface SearchResult {
   id: string;
@@ -108,7 +109,10 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
   const [directUrl, setDirectUrl] = useState("");
   const [chapterStart, setChapterStart] = useState(1);
   const [chapterLimit, setChapterLimit] = useState(0);
+  const [chapterOrder, setChapterOrder] = useState<ChapterOrderMode>("auto");
+  const [forceRescrape, setForceRescrape] = useState(false);
   const [forceRediscover, setForceRediscover] = useState(false);
+  const [forceBrowser, setForceBrowser] = useState(false);
   const [isTriggeringDirect, setIsTriggeringDirect] = useState(false);
 
   const loadJobHistory = async () => {
@@ -280,7 +284,14 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
 
   const triggerScrape = async (
     targetUrl: string,
-    opts?: { chapter_start?: number; chapter_limit?: number; force_rediscover?: boolean },
+    opts?: {
+      chapter_start?: number;
+      chapter_limit?: number;
+      force_rediscover?: boolean;
+      force_rescrape?: boolean;
+      force_browser?: boolean;
+      chapter_order?: ChapterOrderMode;
+    },
   ) => {
     const cleanUrl = targetUrl.trim();
     if (!cleanUrl) {
@@ -291,23 +302,17 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
 
     const startCh = Math.max(1, Number(opts?.chapter_start) || 1);
     const limitCh = Math.max(0, Number(opts?.chapter_limit) || 0);
-    const rediscover = Boolean(opts?.force_rediscover);
 
     try {
-      const { data, error } = await supabase.functions.invoke('trigger-scraper', {
-        body: {
-          source_url: cleanUrl,
-          chapter_start: startCh,
-          chapter_limit: limitCh,
-          force_rediscover: rediscover,
-        }
+      const data = await triggerScrapeApi({
+        source_url: cleanUrl,
+        chapter_start: startCh,
+        chapter_limit: limitCh,
+        force_rediscover: Boolean(opts?.force_rediscover),
+        force_rescrape: Boolean(opts?.force_rescrape),
+        force_browser: Boolean(opts?.force_browser),
+        chapter_order: opts?.chapter_order || "auto",
       });
-
-      if (error) {
-        console.error('Trigger scraper error:', error);
-        setError("Lỗi khi khởi tạo scraper. Vui lòng thử lại.");
-        return;
-      }
 
       if (data && data.job_id) {
         const jobId = data.job_id.toString();
@@ -401,6 +406,9 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
         chapter_start: chapterStart,
         chapter_limit: chapterLimit,
         force_rediscover: forceRediscover,
+        force_rescrape: forceRescrape,
+        force_browser: forceBrowser,
+        chapter_order: chapterOrder,
       });
     } finally {
       setIsTriggeringDirect(false);
@@ -509,7 +517,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
             placeholder="https://www.lore5.com/book/... hoặc bất kỳ trang truyện nào"
             className="w-full px-3.5 py-2.5 bg-input-background rounded-xl border border-border/50 focus:border-primary focus:outline-none text-sm"
           />
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-3 gap-2">
             <div>
               <label className="text-[11px] text-muted-foreground block mb-1">
                 Chương bắt đầu
@@ -524,7 +532,7 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
             </div>
             <div>
               <label className="text-[11px] text-muted-foreground block mb-1">
-                Giới hạn chương (0 = tất cả)
+                Giới hạn (0 = hết)
               </label>
               <input
                 type="number"
@@ -534,16 +542,50 @@ export function ScrapeScreen({ onNavigate }: ScrapeScreenProps) {
                 className="w-full px-3 py-2 bg-input-background rounded-xl border border-border/50 text-sm"
               />
             </div>
+            <div>
+              <label className="text-[11px] text-muted-foreground block mb-1">
+                Thứ tự mục lục
+              </label>
+              <select
+                value={chapterOrder}
+                onChange={(e) => setChapterOrder(e.target.value as ChapterOrderMode)}
+                className="w-full px-2.5 py-2 bg-input-background rounded-xl border border-border/50 text-sm"
+              >
+                <option value="auto">Tự động</option>
+                <option value="asc">Cũ → Mới</option>
+                <option value="desc">Mới → Cũ (đảo)</option>
+              </select>
+            </div>
           </div>
-          <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={forceRediscover}
-              onChange={(e) => setForceRediscover(e.target.checked)}
-              className="rounded border-border"
-            />
-            Ép AI dò lại cấu trúc trang (force_rediscover)
-          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-0.5">
+            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={forceRescrape}
+                onChange={(e) => setForceRescrape(e.target.checked)}
+                className="rounded border-border"
+              />
+              Ghi đè chương cũ
+            </label>
+            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={forceRediscover}
+                onChange={(e) => setForceRediscover(e.target.checked)}
+                className="rounded border-border"
+              />
+              Ép AI dò lại trang
+            </label>
+            <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer select-none">
+              <input
+                type="checkbox"
+                checked={forceBrowser}
+                onChange={(e) => setForceBrowser(e.target.checked)}
+                className="rounded border-border"
+              />
+              Ép Playwright
+            </label>
+          </div>
           <button
             type="button"
             onClick={handleDirectScrape}

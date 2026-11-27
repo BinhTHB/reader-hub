@@ -383,6 +383,7 @@ class StealthySession:
 
 
 from parsers import detect_parser
+from dynamic_parser import assign_linear_chapter_numbers, canonical_chapter_url as _canonical_chapter_url
 from hybrid_session import HybridSession
 from r2_uploader import upload_chapter, upload_cover, get_existing_chapters, get_chapter_metadata
 from supabase_client import (
@@ -428,6 +429,7 @@ PROXY_URL = os.environ.get("PROXY_URL", "")
 JOB_ID = args.job_id or os.environ.get("JOB_ID", "")
 FORCE_RESCRAPE = args.force or os.environ.get("FORCE_RESCRAPE", "").lower() in {"1", "true", "yes"}
 FORCE_REDISCOVER = os.environ.get("FORCE_REDISCOVER", "false").lower() == "true"
+CHAPTER_ORDER = os.environ.get("CHAPTER_ORDER", "auto").strip().lower()
 USE_FREE_PROXY = os.environ.get("USE_FREE_PROXY", "false").lower() == "true"
 
 # Rate limiting
@@ -1137,6 +1139,18 @@ def run_scraper():
             if CHAPTER_LIMIT == 0:
                 all_chapters = normalize_misnumbered_chapters(all_chapters, parser)
 
+            print("\n📡 Fetching chapter index from Supabase...")
+            existing_index = get_story_chapters_index(story_id) if story_id else {}
+            print(f"  Found {len(existing_index)} chapters in Supabase index.")
+
+            if parser.name.startswith("dynamic:") or CHAPTER_ORDER != "auto":
+                all_chapters = assign_linear_chapter_numbers(
+                    all_chapters,
+                    existing_index,
+                    parser,
+                    order_mode=CHAPTER_ORDER,
+                )
+
             # Update story total chapters count
             if story_id and all_chapters:
                 try:
@@ -1145,10 +1159,7 @@ def run_scraper():
                     print(f"  ⚠️ Failed to update story total chapters: {e}")
 
             # Filter to requested range
-            if CHAPTER_LIMIT == 0:
-                target_chapters = [ch for ch in all_chapters if ch["chapter_number"] is not None and ch["chapter_number"] >= CHAPTER_START]
-            else:
-                target_chapters = [ch for ch in all_chapters if ch["chapter_number"] is not None and CHAPTER_START <= ch["chapter_number"] < CHAPTER_START + CHAPTER_LIMIT]
+            target_chapters = [ch for ch in all_chapters if ch["chapter_number"] is not None and ch["chapter_number"] >= CHAPTER_START]
 
             # Sort sequentially to ensure correct scrape order
             # Sort primarily by chapter_number, then by sequence_index if numbers are duplicate or None
@@ -1181,10 +1192,11 @@ def run_scraper():
             random_delay()
 
             # ─── Step 3: Scrape each chapter ───────────────
-            # Use Supabase as primary index for skip check (faster than R2 metadata)
-            print("\n📡 Fetching chapter index from Supabase...")
-            existing_index = get_story_chapters_index(story_id)
-            print(f"  Found {len(existing_index)} chapters in Supabase index.")
+            existing_by_url = {
+                _canonical_chapter_url(v.get("source_url")): (k, v)
+                for k, v in existing_index.items()
+                if v.get("source_url")
+            }
 
             # Also fetch R2 chapter list for fallback verification
             existing_r2_ch_nums = get_existing_chapters(story_info["slug"])
@@ -1228,7 +1240,15 @@ def run_scraper():
                         print(f"\n📖 [{i}/{len(target_chapters)}] Chapter {ch_num}: {ch_info['title']}")
                         last_ch_html = ""
 
-                        # Primary skip check: Supabase index (fast, 1 query for all chapters)
+                        # Primary skip check: Supabase index (by canonical source_url first, then chapter_number)
+                        canon_url = _canonical_chapter_url(ch_info.get("source_url"))
+                        if not FORCE_RESCRAPE and canon_url and canon_url in existing_by_url:
+                            _, url_existing = existing_by_url[canon_url]
+                            if url_existing.get("is_scraped") and url_existing.get("text_r2_url"):
+                                print("  ⏭️ Already scraped (Supabase URL match), skipping")
+                                chapters_scraped += 1
+                                continue
+
                         if not FORCE_RESCRAPE and ch_num in existing_index:
                             existing = existing_index[ch_num]
                             expected_url = ch_info.get("source_url")

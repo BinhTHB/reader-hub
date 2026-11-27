@@ -34,6 +34,7 @@ export function HomeScreen({ onNavigate, isAdmin = false }: HomeScreenProps) {
   const [statusFilter, setStatusFilter] = useState<
     "all" | "ongoing" | "completed" | "paused"
   >("all");
+  const [sourceFilter, setSourceFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<SortBy>("updated");
   const [modalStory, setModalStory] = useState<AdminStory | "create" | null>(null);
   const [deletingStory, setDeletingStory] = useState<AdminStory | null>(null);
@@ -77,10 +78,19 @@ export function HomeScreen({ onNavigate, isAdmin = false }: HomeScreenProps) {
     return { total: allStories.length, ongoing, completed, featured };
   }, [allStories]);
 
+  const availableSources = useMemo(() => {
+    const set = new Set<string>();
+    for (const s of allStories) {
+      if (s.source_name) set.add(s.source_name);
+    }
+    return Array.from(set).sort((a, b) => a.localeCompare(b));
+  }, [allStories]);
+
   const stories = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     const filtered = allStories.filter((story) => {
       if (statusFilter !== "all" && story.status !== statusFilter) return false;
+      if (sourceFilter !== "all" && (story.source_name || "") !== sourceFilter) return false;
       if (!q) return true;
       return (
         story.title.toLowerCase().includes(q) ||
@@ -218,16 +228,32 @@ export function HomeScreen({ onNavigate, isAdmin = false }: HomeScreenProps) {
               ))}
             </div>
 
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as SortBy)}
-              className="text-xs px-2 py-1 rounded-lg border border-border bg-background shrink-0"
-            >
-              <option value="updated">Mới cập nhật</option>
-              <option value="chapters">Nhiều chương</option>
-              <option value="views">Lượt xem</option>
-              <option value="title">Tên A-Z</option>
-            </select>
+            <div className="flex items-center gap-1.5 shrink-0">
+              {availableSources.length > 0 && (
+                <select
+                  value={sourceFilter}
+                  onChange={(e) => setSourceFilter(e.target.value)}
+                  className="text-xs px-2 py-1 rounded-lg border border-border bg-background max-w-[115px]"
+                >
+                  <option value="all">Mọi nguồn</option>
+                  {availableSources.map((src) => (
+                    <option key={src} value={src}>
+                      {formatSourceName(src) || src}
+                    </option>
+                  ))}
+                </select>
+              )}
+              <select
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as SortBy)}
+                className="text-xs px-2 py-1 rounded-lg border border-border bg-background"
+              >
+                <option value="updated">Mới cập nhật</option>
+                <option value="chapters">Nhiều chương</option>
+                <option value="views">Lượt xem</option>
+                <option value="title">Tên A-Z</option>
+              </select>
+            </div>
           </div>
         </div>
 

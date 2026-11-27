@@ -1,5 +1,6 @@
-import { useState } from "react";
-import { Moon, Sun, LogOut, User, ShieldCheck, Copy, Check } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Moon, Sun, LogOut, User, ShieldCheck, Copy, Check, Trash2, RefreshCw, Database } from "lucide-react";
+import { listScrapeSources, deleteScrapeSource, type ScrapeSourceRow } from "../../lib/admin";
 
 interface ProfileScreenProps {
   onNavigate?: (screen: string) => void;
@@ -19,6 +20,33 @@ export function ProfileScreen({
   isAdmin = false,
 }: ProfileScreenProps) {
   const [copied, setCopied] = useState(false);
+  const [sources, setSources] = useState<ScrapeSourceRow[]>([]);
+  const [loadingSources, setLoadingSources] = useState(false);
+
+  const loadSources = async () => {
+    if (!isAdmin) return;
+    setLoadingSources(true);
+    try {
+      setSources(await listScrapeSources());
+    } catch (err) {
+      console.error("Failed to load scrape_sources:", err);
+    } finally {
+      setLoadingSources(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadSources();
+  }, [isAdmin]);
+
+  const handleRemoveSource = async (domain: string) => {
+    try {
+      await deleteScrapeSource(domain);
+      setSources((prev) => prev.filter((s) => s.domain !== domain));
+    } catch (err) {
+      console.error("Failed to delete scrape source:", err);
+    }
+  };
 
   const displayName =
     user?.user_metadata?.display_name ||
@@ -150,6 +178,52 @@ export function ProfileScreen({
             </div>
           </div>
         </section>
+
+        {/* AI Selector Cache (Admin only) */}
+        {isAdmin && (
+          <section>
+            <div className="flex items-center justify-between mb-2">
+              <h2 className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+                <Database className="w-4 h-4 text-primary" />
+                Bộ nhớ AI Selectors ({sources.length})
+              </h2>
+              <button
+                type="button"
+                onClick={() => void loadSources()}
+                className="text-xs text-primary flex items-center gap-1"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${loadingSources ? "animate-spin" : ""}`} />
+                Làm mới
+              </button>
+            </div>
+            <div className="bg-card rounded-xl border border-border divide-y divide-border overflow-hidden">
+              {sources.length === 0 ? (
+                <div className="p-4 text-xs text-muted-foreground text-center">
+                  {loadingSources ? "Đang tải..." : "Chưa có domain nào được AI lưu cấu trúc."}
+                </div>
+              ) : (
+                sources.map((src) => (
+                  <div key={src.domain} className="flex items-center justify-between gap-2 px-4 py-3">
+                    <div className="min-w-0">
+                      <div className="text-xs font-medium truncate">{src.domain}</div>
+                      <div className="text-[11px] text-muted-foreground truncate">
+                        {src.model_name || "AI"} · {src.is_verified ? "Đã kiểm chứng" : "Chưa kiểm chứng"}
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void handleRemoveSource(src.domain)}
+                      className="p-1.5 rounded-lg text-red-500 hover:bg-red-500/10 shrink-0"
+                      title="Xoá cache để AI dò lại ở lần cào tới"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

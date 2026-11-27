@@ -175,3 +175,96 @@ export async function deleteContent(type: "story" | "chapter", id: number): Prom
     throw new Error(data.error);
   }
 }
+
+export interface BulkDeleteResult {
+  deleted_count: number;
+  deleted_ids: number[];
+}
+
+export async function deleteChaptersBulk(payload: {
+  story_id: number;
+  ids?: number[];
+  chapter_start?: number;
+  chapter_end?: number;
+}): Promise<BulkDeleteResult> {
+  const { data, error } = await supabase.functions.invoke("delete-content", {
+    body: { type: "chapters_bulk", ...payload },
+  });
+  if (error) {
+    throw new Error(error.message || "Không thể xoá hàng loạt chương.");
+  }
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+  return {
+    deleted_count: Number(data?.deleted_count || 0),
+    deleted_ids: Array.isArray(data?.deleted_ids) ? data.deleted_ids : [],
+  };
+}
+
+export type ChapterOrderMode = "auto" | "asc" | "desc";
+
+export interface TriggerScrapePayload {
+  story_id?: number;
+  source_url: string;
+  chapter_start?: number;
+  chapter_limit?: number;
+  force_rescrape?: boolean;
+  force_rediscover?: boolean;
+  force_browser?: boolean;
+  chapter_order?: ChapterOrderMode;
+}
+
+export async function triggerScrape(payload: TriggerScrapePayload): Promise<{ job_id?: number }> {
+  const { data, error } = await supabase.functions.invoke("trigger-scraper", {
+    body: {
+      story_id: payload.story_id,
+      source_url: payload.source_url,
+      chapter_start: Math.max(1, Number(payload.chapter_start) || 1),
+      chapter_limit: Math.max(0, Number(payload.chapter_limit) || 0),
+      force_rescrape: Boolean(payload.force_rescrape),
+      force_rediscover: Boolean(payload.force_rediscover),
+      force_browser: Boolean(payload.force_browser),
+      chapter_order: payload.chapter_order || "auto",
+      action: "scrape",
+    },
+  });
+  if (error) {
+    throw new Error(error.message || "Không thể khởi tạo scraper.");
+  }
+  if (data?.error) {
+    throw new Error(data.error);
+  }
+  return { job_id: data?.job_id };
+}
+
+export interface ScrapeSourceRow {
+  domain: string;
+  base_url: string;
+  model_name: string | null;
+  is_verified: boolean;
+  enabled: boolean;
+  updated_at: string;
+}
+
+export async function listScrapeSources(): Promise<ScrapeSourceRow[]> {
+  const { data, error } = await supabase
+    .from("scrape_sources")
+    .select("domain, base_url, model_name, is_verified, enabled, updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(50);
+  if (error) {
+    throw new Error(error.message || "Không thể tải danh sách scrape_sources.");
+  }
+  return (data || []) as ScrapeSourceRow[];
+}
+
+export async function deleteScrapeSource(domain: string): Promise<void> {
+  const { error } = await supabase
+    .from("scrape_sources")
+    .delete()
+    .eq("domain", domain);
+  if (error) {
+    throw new Error(error.message || "Không thể xoá cache selector.");
+  }
+}

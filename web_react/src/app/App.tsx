@@ -146,7 +146,7 @@ export default function App() {
   };
 
   return (
-    <div className="max-w-md mx-auto bg-background min-h-screen relative">
+    <div className="max-w-2xl mx-auto bg-background min-h-screen relative">
       <div className="h-screen overflow-y-auto">
         <Suspense
           fallback={

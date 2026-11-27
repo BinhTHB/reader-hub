@@ -25,6 +25,16 @@ _HEADER_ANCESTOR_RE = re.compile(r"(?:site-header|navbar|topbar|main-header)", r
 _AUTHOR_PREFIX_RE = re.compile(r"^(?:tác\s*giả|author|by)\s*[:：\-]?\s*", re.IGNORECASE)
 
 
+_HIDDEN_STYLE_RE = re.compile(
+    r"(?:display\s*:\s*none|visibility\s*:\s*hidden|opacity\s*:\s*0(?:\D|$)|font-size\s*:\s*0(?:px|em|rem|%)?(?:\D|$))",
+    re.IGNORECASE,
+)
+_WATERMARK_PARA_RE = re.compile(
+    r"(?:bạn đang đọc truyện tại|đọc truyện online tại|chúc bạn đọc truyện vui vẻ|truy cập website)",
+    re.IGNORECASE,
+)
+
+
 def _attr_tokens(el) -> str:
     classes = el.get("class") or []
     if isinstance(classes, str):
@@ -319,25 +329,105 @@ class DynamicConfigParser(BaseSiteParser):
             except Exception:
                 pass
 
+        # Universal Content Sanitizer: strip hidden decoy tags
+        for tag in list(content_el.find_all(True)):
+            if tag.has_attr("hidden") or _HIDDEN_STYLE_RE.search(str(tag.get("style") or "")):
+                tag.decompose()
+
         for br in content_el.find_all("br"):
             br.replace_with("\n")
 
-        paragraphs: list[str] = []
+        raw_paragraphs: list[str] = []
         # Prefer block <p> elements if present, otherwise split by newline
         p_tags = content_el.find_all("p")
         if len(p_tags) >= 2:
             for p in p_tags:
                 txt = self.clean_text(p.get_text(" ", strip=True))
                 if txt and len(txt) > 1:
-                    paragraphs.append(txt)
+                    raw_paragraphs.append(txt)
         else:
             for line in content_el.get_text(separator="\n").split("\n"):
                 txt = self.clean_text(line)
                 if txt and len(txt) > 1:
-                    paragraphs.append(txt)
+                    raw_paragraphs.append(txt)
+
+        paragraphs = [
+            p for p in raw_paragraphs
+            if not (len(p) < 140 and _WATERMARK_PARA_RE.search(p))
+        ]
 
         return {
             "title": title,
             "paragraphs": paragraphs,
             "word_count": self.count_words(paragraphs),
         }
+
+
+def canonical_chapter_url(url: str | None) -> str:
+    if not url:
+        return ""
+    return url.split("#")[0].split("?")[0].rstrip("/").lower()
+
+
+def assign_linear_chapter_numbers(
+    all_chapters: list[dict],
+    existing_index: dict[int, dict],
+    parser=None,
+    order_mode: str = "auto",
+) -> list[dict]:
+    """Assign collision-free linear chapter_number 1..N using URL-First + reading order.
+
+    - Deduplicates chapters by canonical source_url.
+    - Reverses descending lists automatically when order_mode == 'auto' (or always when 'desc').
+    - Reuses existing DB chapter_number when a chapter's source_url is already in existing_index.
+    - Assigns sequential numbers starting from max(existing_index) + 1 for new URLs.
+    """
+    if not all_chapters:
+        return []
+
+    deduped: list[dict] = []
+    seen_keys: set[str] = set()
+    for ch in all_chapters:
+        raw_url = ch.get("source_url") or ""
+        if parser is not None and hasattr(parser, "canonical_source_key"):
+            key = parser.canonical_source_key(raw_url)
+        else:
+            key = canonical_chapter_url(raw_url)
+        if key and key in seen_keys:
+            continue
+        if key:
+            seen_keys.add(key)
+        deduped.append(dict(ch))
+
+    mode = (order_mode or "auto").strip().lower()
+    if mode == "desc":
+        deduped.reverse()
+    elif mode == "auto" and len(deduped) >= 2:
+        first_num = deduped[0].get("chapter_number")
+        last_num = deduped[-1].get("chapter_number")
+        if isinstance(first_num, int) and isinstance(last_num, int) and (first_num - last_num) >= 3:
+            deduped.reverse()
+
+    existing_by_url: dict[str, int] = {}
+    for num, row in (existing_index or {}).items():
+        canon = canonical_chapter_url(row.get("source_url"))
+        if canon:
+            existing_by_url[canon] = num
+
+    next_num = max(existing_index.keys(), default=0) + 1
+    used_nums: set[int] = set()
+
+    for ch in deduped:
+        ch["source_chapter_number"] = ch.get("chapter_number")
+        canon = canonical_chapter_url(ch.get("source_url"))
+        if canon and canon in existing_by_url and existing_by_url[canon] not in used_nums:
+            assigned = existing_by_url[canon]
+        else:
+            while next_num in used_nums:
+                next_num += 1
+            assigned = next_num
+            next_num += 1
+        used_nums.add(assigned)
+        ch["chapter_number"] = assigned
+
+    return deduped

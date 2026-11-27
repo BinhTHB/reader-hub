@@ -22,8 +22,12 @@ const corsHeaders = {
 };
 
 interface DeleteRequest {
-  type: "story" | "chapter";
-  id: number;
+  type: "story" | "chapter" | "chapters_bulk";
+  id?: number;
+  story_id?: number;
+  ids?: number[];
+  chapter_start?: number;
+  chapter_end?: number;
 }
 
 function getR2Client(): AwsClient {
@@ -50,6 +54,14 @@ async function deleteR2Object(key: string, r2: AwsClient): Promise<void> {
   }
 }
 
+async function deleteR2KeysBatch(keys: string[], r2: AwsClient): Promise<void> {
+  const chunkSize = 20;
+  for (let i = 0; i < keys.length; i += chunkSize) {
+    const chunk = keys.slice(i, i + chunkSize);
+    await Promise.allSettled(chunk.map((k) => deleteR2Object(k, r2)));
+  }
+}
+
 async function deleteStoryR2Content(slug: string, r2: AwsClient): Promise<void> {
   try {
     const accountId = Deno.env.get("CF_ACCOUNT_ID")!;
@@ -57,11 +69,13 @@ async function deleteStoryR2Content(slug: string, r2: AwsClient): Promise<void> 
     const listResp = await r2.fetch(listUrl);
     if (listResp.ok) {
       const xml = await listResp.text();
+      const keys: string[] = [];
       const keyRegex = /<Key>([^<]+)<\/Key>/g;
       let match;
       while ((match = keyRegex.exec(xml)) !== null) {
-        await deleteR2Object(match[1], r2);
+        keys.push(match[1]);
       }
+      await deleteR2KeysBatch(keys, r2);
     }
   } catch (err) {
     console.warn("  Failed to list/delete R2 content for story:", slug, err);
@@ -115,16 +129,106 @@ serve(async (req: Request) => {
     if (authDenied) return authDenied;
 
     const body: DeleteRequest = await req.json();
-    const { type, id } = body;
+    const { type, id, story_id, ids, chapter_start, chapter_end } = body;
 
-    if (!id || !type) {
+    if (!type) {
       return new Response(
-        JSON.stringify({ error: "type and id are required" }),
+        JSON.stringify({ error: "type is required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     const hasR2Config = Deno.env.get("CF_ACCOUNT_ID") && Deno.env.get("R2_ACCESS_KEY_ID") && Deno.env.get("R2_SECRET_ACCESS_KEY");
+
+    if (type === "chapters_bulk") {
+      if (!story_id) {
+        return new Response(
+          JSON.stringify({ error: "story_id is required for chapters_bulk" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      let q = supabase
+        .from("chapters")
+        .select("id, chapter_number")
+        .eq("story_id", story_id);
+
+      if (Array.isArray(ids) && ids.length > 0) {
+        q = q.in("id", ids);
+      } else if (chapter_start !== undefined && chapter_end !== undefined) {
+        const lo = Math.min(chapter_start, chapter_end);
+        const hi = Math.max(chapter_start, chapter_end);
+        q = q.gte("chapter_number", lo).lte("chapter_number", hi);
+      } else {
+        return new Response(
+          JSON.stringify({ error: "ids or chapter_start/chapter_end are required" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const { data: matchedRows, error: fetchErr } = await q;
+      if (fetchErr) throw fetchErr;
+
+      const rows = matchedRows || [];
+      const matchedIds = rows.map((r: any) => r.id);
+      if (matchedIds.length === 0) {
+        return new Response(
+          JSON.stringify({ success: true, deleted_count: 0, deleted_ids: [] }),
+          { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      for (let i = 0; i < matchedIds.length; i += 500) {
+        const chunk = matchedIds.slice(i, i + 500);
+        const { error: delErr } = await supabase
+          .from("chapters")
+          .delete()
+          .in("id", chunk);
+        if (delErr) throw delErr;
+      }
+
+      const { count: remainingCount } = await supabase
+        .from("chapters")
+        .select("id", { count: "exact", head: true })
+        .eq("story_id", story_id);
+      if (typeof remainingCount === "number") {
+        await supabase
+          .from("stories")
+          .update({ total_chapters: remainingCount })
+          .eq("id", story_id);
+      }
+
+      if (hasR2Config) {
+        const { data: story } = await supabase
+          .from("stories")
+          .select("slug")
+          .eq("id", story_id)
+          .single();
+        if (story?.slug) {
+          const r2 = getR2Client();
+          const keys = rows.map(
+            (r: any) => "stories/" + story.slug + "/chapters/" + r.chapter_number + ".json",
+          );
+          await deleteR2KeysBatch(keys, r2);
+        }
+      }
+
+      return new Response(
+        JSON.stringify({
+          success: true,
+          deleted_count: matchedIds.length,
+          deleted_ids: matchedIds,
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!id) {
+      return new Response(
+        JSON.stringify({ error: "id is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     if (type === "story") {
       let slug: string | null = null;

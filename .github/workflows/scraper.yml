@@ -43,6 +43,25 @@ on:
         required: false
         default: false
         type: boolean
+      force_rescrape:
+        description: 'Force overwrite existing chapters in R2/Supabase'
+        required: false
+        default: false
+        type: boolean
+      force_browser:
+        description: 'Force Playwright browser mode (skip curl_cffi HTTP tier)'
+        required: false
+        default: false
+        type: boolean
+      chapter_order:
+        description: 'Chapter list ordering (auto, asc, desc)'
+        required: false
+        default: 'auto'
+        type: choice
+        options:
+          - auto
+          - asc
+          - desc
 env:
   SCRAPER_DIR: scrapling # Set to 'scrapling' to use the Scrapling engine
 
@@ -108,6 +127,9 @@ jobs:
           SCRAPE_MAX_DELAY: '2.5'
           USE_FREE_PROXY: 'true'
           FORCE_REDISCOVER: ${{ github.event.client_payload.force_rediscover || github.event.inputs.force_rediscover || 'false' }}
+          FORCE_RESCRAPE: ${{ github.event.client_payload.force_rescrape || github.event.inputs.force_rescrape || 'false' }}
+          FORCE_BROWSER: ${{ github.event.client_payload.force_browser || github.event.inputs.force_browser || 'false' }}
+          CHAPTER_ORDER: ${{ github.event.client_payload.chapter_order || github.event.inputs.chapter_order || 'auto' }}
 
   search:
     if: >

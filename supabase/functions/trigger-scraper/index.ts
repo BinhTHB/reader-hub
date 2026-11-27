@@ -29,6 +29,9 @@ interface ScrapeRequest {
   chapter_start?: number;
   chapter_limit?: number;
   force_rediscover?: boolean;
+  force_rescrape?: boolean;
+  force_browser?: boolean;
+  chapter_order?: "auto" | "asc" | "desc";
   action?: "scrape" | "check_latest";
 }
 
@@ -432,6 +435,9 @@ serve(async (req: Request) => {
       chapter_start = 1,
       chapter_limit = 0,
       force_rediscover = false,
+      force_rescrape = false,
+      force_browser = false,
+      chapter_order = "auto",
       action = "scrape",
     } = body;
 
@@ -505,6 +511,9 @@ serve(async (req: Request) => {
           chapter_start: chapter_start.toString(),
           chapter_limit: chapter_limit.toString(),
           force_rediscover: String(Boolean(force_rediscover)),
+          force_rescrape: String(Boolean(force_rescrape)),
+          force_browser: String(Boolean(force_browser)),
+          chapter_order: chapter_order || "auto",
         },
       }),
     });

@@ -13,9 +13,12 @@ import {
 import { supabase, R2_PUBLIC_DOMAIN } from "../../lib/supabase";
 import {
   deleteContent,
+  deleteChaptersBulk,
+  triggerScrape,
   formatSourceName,
   type AdminChapter,
   type AdminStory,
+  type ChapterOrderMode,
 } from "../../lib/admin";
 import { EditStoryModal } from "../components/EditStoryModal";
 import { EditChapterModal } from "../components/EditChapterModal";
@@ -52,10 +55,20 @@ export function DetailScreen({
 
   const [selectMode, setSelectMode] = useState(false);
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [chapterPage, setChapterPage] = useState(1);
+  const CHAPTERS_PER_PAGE = 100;
+  const [showRangeDelete, setShowRangeDelete] = useState(false);
+  const [rangeStart, setRangeStart] = useState(1);
+  const [rangeEnd, setRangeEnd] = useState(1);
+  const [showScrapeOptions, setShowScrapeOptions] = useState(false);
+  const [optRescrape, setOptRescrape] = useState(false);
+  const [optRediscover, setOptRediscover] = useState(false);
+  const [optBrowser, setOptBrowser] = useState(false);
+  const [optOrder, setOptOrder] = useState<ChapterOrderMode>("auto");
   const [isDeleting, setIsDeleting] = useState(false);
   const [deleteProgress, setDeleteProgress] = useState<string | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{
-    type: "story" | "chapter" | "bulk";
+    type: "story" | "chapter" | "bulk" | "range";
     id?: number;
     name: string;
   } | null>(null);
@@ -147,6 +160,17 @@ export function DetailScreen({
     return isDescending ? [...list].reverse() : list;
   }, [chapters, chapterQuery, isDescending]);
 
+  const totalChapterPages = Math.max(1, Math.ceil(filteredChapters.length / CHAPTERS_PER_PAGE));
+  const safeChapterPage = Math.min(chapterPage, totalChapterPages);
+  const pagedChapters = useMemo(() => {
+    const start = (safeChapterPage - 1) * CHAPTERS_PER_PAGE;
+    return filteredChapters.slice(start, start + CHAPTERS_PER_PAGE);
+  }, [filteredChapters, safeChapterPage]);
+
+  useEffect(() => {
+    setChapterPage(1);
+  }, [chapterQuery, isDescending]);
+
   const handleCheckLatest = async () => {
     if (!bookData.source_url) return;
     setIsUpdating(true);
@@ -196,17 +220,17 @@ export function DetailScreen({
     setIsUpdating(true);
     setUpdateMessage(null);
     try {
-      const { data, error } = await supabase.functions.invoke("trigger-scraper", {
-        body: {
-          story_id: bookData.id,
-          source_url: bookData.source_url,
-          chapter_start: Math.max(1, startFrom),
-          chapter_limit: 0,
-          action: "scrape",
-        },
+      const data = await triggerScrape({
+        story_id: bookData.id,
+        source_url: bookData.source_url,
+        chapter_start: Math.max(1, startFrom),
+        chapter_limit: 0,
+        force_rescrape: optRescrape,
+        force_rediscover: optRediscover,
+        force_browser: optBrowser,
+        chapter_order: optOrder,
       });
 
-      if (error) throw error;
       const jobText = data?.job_id ? ` (Job #${data.job_id})` : "";
       setUpdateMessage(
         `Đã gửi yêu cầu cào từ chương ${Math.max(1, startFrom)}${jobText}! Hệ thống đang chạy trong nền...`,
@@ -255,19 +279,37 @@ export function DetailScreen({
         return;
       }
 
-      if (deleteTarget.type === "bulk") {
+      if (deleteTarget.type === "bulk" && bookData.id) {
         const ids = Array.from(selectedIds);
-        const deleted = new Set<number>();
-        for (let i = 0; i < ids.length; i++) {
-          setDeleteProgress(`Đang xoá ${i + 1}/${ids.length}...`);
-          await deleteContent("chapter", ids[i]);
-          deleted.add(ids[i]);
-        }
+        setDeleteProgress(`Đang xoá đồng thời ${ids.length} chương...`);
+        const res = await deleteChaptersBulk({ story_id: bookData.id, ids });
+        const deleted = new Set(res.deleted_ids.length > 0 ? res.deleted_ids : ids);
         setChapters((prev) => prev.filter((ch) => !deleted.has(ch.id)));
         setSelectedIds(new Set());
         setSelectMode(false);
         setDeleteTarget(null);
-        setUpdateMessage(`Đã xoá ${deleted.size} chương.`);
+        setUpdateMessage(`Đã xoá nhanh ${res.deleted_count || deleted.size} chương.`);
+        return;
+      }
+
+      if (deleteTarget.type === "range" && bookData.id) {
+        const lo = Math.min(rangeStart, rangeEnd);
+        const hi = Math.max(rangeStart, rangeEnd);
+        setDeleteProgress(`Đang xoá khoảng chương ${lo} → ${hi}...`);
+        const res = await deleteChaptersBulk({
+          story_id: bookData.id,
+          chapter_start: lo,
+          chapter_end: hi,
+        });
+        const deletedSet = new Set(res.deleted_ids);
+        setChapters((prev) =>
+          deletedSet.size > 0
+            ? prev.filter((ch) => !deletedSet.has(ch.id))
+            : prev.filter((ch) => ch.chapter_number < lo || ch.chapter_number > hi),
+        );
+        setShowRangeDelete(false);
+        setDeleteTarget(null);
+        setUpdateMessage(`Đã xoá ${res.deleted_count} chương (từ ${lo} đến ${hi}).`);
       }
     } catch (err: any) {
       console.error("Failed to delete:", err);
@@ -379,46 +421,103 @@ export function DetailScreen({
 
         {/* Scraper Controls (Admin only) */}
         {isAdmin && bookData.source_url && (
-          <div className="flex gap-2 flex-wrap">
-            <button
-              onClick={() => void handleStartScrape(chapters.length + 1)}
-              disabled={isUpdating}
-              className="px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 inline-flex items-center gap-1.5"
-            >
-              <RefreshCw
-                className={`w-4 h-4 ${isUpdating ? "animate-spin" : ""}`}
-              />
-              Cào tiếp từ chương {chapters.length + 1}
-            </button>
-
-            <button
-              onClick={handleCheckLatest}
-              disabled={isUpdating}
-              className="px-4 py-2.5 border border-primary text-primary bg-transparent rounded-xl text-xs font-medium hover:bg-primary/5 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
-            >
-              <RefreshCw
-                className={`w-4 h-4 ${isUpdating && !showScrapeConfirm ? "animate-spin" : ""}`}
-              />
-              {isUpdating && !showScrapeConfirm
-                ? "Đang kiểm tra..."
-                : "Kiểm tra chương mới"}
-            </button>
-
-            {showScrapeConfirm && (
+          <div className="space-y-2.5">
+            <div className="flex gap-2 flex-wrap">
               <button
-                onClick={() => void handleStartScrape(1)}
-                disabled={
-                  isUpdating ||
-                  (latestChapterInfo
-                    ? latestChapterInfo.chapter_number <= chapters.length
-                    : true)
-                }
-                className="px-4 py-2.5 bg-red-600 text-white rounded-xl text-xs font-medium hover:bg-red-700 transition-colors disabled:bg-muted disabled:text-muted-foreground disabled:opacity-50"
+                onClick={() => void handleStartScrape(chapters.length + 1)}
+                disabled={isUpdating}
+                className="px-4 py-2.5 bg-primary text-white rounded-xl text-xs font-medium hover:opacity-90 transition-opacity disabled:opacity-50 inline-flex items-center gap-1.5"
               >
-                {isUpdating && showScrapeConfirm
-                  ? "Đang gửi..."
-                  : "Cào toàn bộ mới"}
+                <RefreshCw
+                  className={`w-4 h-4 ${isUpdating ? "animate-spin" : ""}`}
+                />
+                Cào tiếp từ chương {chapters.length + 1}
               </button>
+
+              <button
+                onClick={handleCheckLatest}
+                disabled={isUpdating}
+                className="px-4 py-2.5 border border-primary text-primary bg-transparent rounded-xl text-xs font-medium hover:bg-primary/5 transition-colors disabled:opacity-50 inline-flex items-center gap-1.5"
+              >
+                <RefreshCw
+                  className={`w-4 h-4 ${isUpdating && !showScrapeConfirm ? "animate-spin" : ""}`}
+                />
+                {isUpdating && !showScrapeConfirm
+                  ? "Đang kiểm tra..."
+                  : "Kiểm tra chương mới"}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setShowScrapeOptions((v) => !v)}
+                className={`px-3 py-2.5 border rounded-xl text-xs font-medium transition-colors ${
+                  showScrapeOptions
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Tuỳ chọn cào
+              </button>
+
+              {showScrapeConfirm && (
+                <button
+                  onClick={() => void handleStartScrape(1)}
+                  disabled={
+                    isUpdating ||
+                    (latestChapterInfo
+                      ? latestChapterInfo.chapter_number <= chapters.length
+                      : true)
+                  }
+                  className="px-4 py-2.5 bg-red-600 text-white rounded-xl text-xs font-medium hover:bg-red-700 transition-colors disabled:bg-muted disabled:text-muted-foreground disabled:opacity-50"
+                >
+                  {isUpdating && showScrapeConfirm
+                    ? "Đang gửi..."
+                    : "Cào toàn bộ mới"}
+                </button>
+              )}
+            </div>
+
+            {showScrapeOptions && (
+              <div className="bg-card rounded-xl p-3 border border-border space-y-2 text-xs">
+                <div className="flex flex-wrap gap-3">
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={optRescrape}
+                      onChange={(e) => setOptRescrape(e.target.checked)}
+                    />
+                    Ghi đè chương cũ
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={optRediscover}
+                      onChange={(e) => setOptRediscover(e.target.checked)}
+                    />
+                    AI dò lại trang
+                  </label>
+                  <label className="flex items-center gap-1.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={optBrowser}
+                      onChange={(e) => setOptBrowser(e.target.checked)}
+                    />
+                    Ép Playwright
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-muted-foreground">Thứ tự mục lục:</span>
+                  <select
+                    value={optOrder}
+                    onChange={(e) => setOptOrder(e.target.value as ChapterOrderMode)}
+                    className="px-2 py-1 rounded-lg border border-border bg-background text-xs"
+                  >
+                    <option value="auto">Tự động</option>
+                    <option value="asc">Cũ → Mới</option>
+                    <option value="desc">Mới → Cũ (đảo)</option>
+                  </select>
+                </div>
+              </div>
             )}
           </div>
         )}
@@ -487,20 +586,37 @@ export function DetailScreen({
                 </button>
               )}
               {isAdmin && chapters.length > 0 && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectMode((v) => !v);
-                    setSelectedIds(new Set());
-                  }}
-                  className={`text-xs px-2.5 py-1 border rounded-lg ${
-                    selectMode
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border text-muted-foreground hover:bg-muted"
-                  }`}
-                >
-                  {selectMode ? "Xong" : "Chọn nhiều"}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowRangeDelete((v) => !v);
+                      setRangeStart(1);
+                      setRangeEnd(chapters[chapters.length - 1]?.chapter_number || 1);
+                    }}
+                    className={`text-xs px-2.5 py-1 border rounded-lg ${
+                      showRangeDelete
+                        ? "border-red-500 bg-red-500/10 text-red-500"
+                        : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Xoá khoảng
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectMode((v) => !v);
+                      setSelectedIds(new Set());
+                    }}
+                    className={`text-xs px-2.5 py-1 border rounded-lg ${
+                      selectMode
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    {selectMode ? "Xong" : "Chọn nhiều"}
+                  </button>
+                </>
               )}
             </div>
           </div>
@@ -520,9 +636,61 @@ export function DetailScreen({
                 </div>
               )}
 
-              {isAdmin && selectMode && (
-                <div className="flex items-center justify-between gap-2 bg-muted/60 rounded-xl p-2.5">
+              {isAdmin && showRangeDelete && chapters.length > 0 && (
+                <div className="bg-red-500/5 border border-red-500/20 rounded-xl p-3 space-y-2.5">
+                  <div className="text-xs font-medium text-red-500">
+                    Xoá đồng thời theo khoảng chương (DB + R2)
+                  </div>
                   <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      min={1}
+                      value={rangeStart}
+                      onChange={(e) => setRangeStart(Math.max(1, Number(e.target.value) || 1))}
+                      placeholder="Từ"
+                      className="w-24 px-2.5 py-1.5 rounded-lg border border-border bg-background text-xs"
+                    />
+                    <span className="text-xs text-muted-foreground">→</span>
+                    <input
+                      type="number"
+                      min={1}
+                      value={rangeEnd}
+                      onChange={(e) => setRangeEnd(Math.max(1, Number(e.target.value) || 1))}
+                      placeholder="Đến"
+                      className="w-24 px-2.5 py-1.5 rounded-lg border border-border bg-background text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const lo = Math.min(rangeStart, rangeEnd);
+                        const hi = Math.max(rangeStart, rangeEnd);
+                        setDeleteTarget({
+                          type: "range",
+                          name: `tất cả chương từ ${lo} đến ${hi}`,
+                        });
+                      }}
+                      className="ml-auto px-3 py-1.5 rounded-lg bg-red-500 text-white text-xs font-medium hover:bg-red-600"
+                    >
+                      Xoá khoảng
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {isAdmin && selectMode && (
+                <div className="flex flex-wrap items-center justify-between gap-2 bg-muted/60 rounded-xl p-2.5">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setSelectedIds(
+                          new Set(pagedChapters.map((c) => c.id)),
+                        )
+                      }
+                      className="text-xs text-primary font-medium px-2 py-1"
+                    >
+                      Chọn trang ({pagedChapters.length})
+                    </button>
                     <button
                       type="button"
                       onClick={() =>
@@ -532,7 +700,7 @@ export function DetailScreen({
                       }
                       className="text-xs text-primary font-medium px-2 py-1"
                     >
-                      Chọn tất cả ({filteredChapters.length})
+                      Tất cả ({filteredChapters.length})
                     </button>
                     {selectedIds.size > 0 && (
                       <button
@@ -571,8 +739,9 @@ export function DetailScreen({
                     : "Chưa có chương nào"}
                 </div>
               ) : (
-                <div className="space-y-2 max-h-[60vh] overflow-y-auto">
-                  {filteredChapters.map((chapter) => {
+                <>
+                  <div className="space-y-2">
+                    {pagedChapters.map((chapter) => {
                     const checked = selectedIds.has(chapter.id);
                     return (
                       <div
@@ -641,7 +810,31 @@ export function DetailScreen({
                       </div>
                     );
                   })}
-                </div>
+                  </div>
+                  {totalChapterPages > 1 && (
+                    <div className="flex items-center justify-between pt-2 text-xs">
+                      <button
+                        type="button"
+                        disabled={safeChapterPage <= 1}
+                        onClick={() => setChapterPage((p) => Math.max(1, p - 1))}
+                        className="px-3 py-1.5 rounded-lg border border-border disabled:opacity-40"
+                      >
+                        Trang trước
+                      </button>
+                      <span className="text-muted-foreground">
+                        Trang {safeChapterPage} / {totalChapterPages}
+                      </span>
+                      <button
+                        type="button"
+                        disabled={safeChapterPage >= totalChapterPages}
+                        onClick={() => setChapterPage((p) => Math.min(totalChapterPages, p + 1))}
+                        className="px-3 py-1.5 rounded-lg border border-border disabled:opacity-40"
+                      >
+                        Trang sau
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

@@ -564,6 +564,57 @@ class AiSelectorTests(unittest.TestCase):
         self.assertEqual(selectors["page_url_pattern"], "{story_url}?page={page}")
         self.assertEqual(len(audits), 1)
 
+    def test_universal_content_sanitizer_strips_hidden_decoys_and_watermarks(self):
+        dirty_ch_html = f"""
+        <html><body>
+          <h1 class="chap-heading">Chương 1</h1>
+          <div id="chapter-body">
+            <span style="display: none;">Text rác ẩn bẫy scraper</span>
+            <p hidden>Đoạn ẩn hidden attribute</p>
+            <p>Bạn đang đọc truyện tại web-rac.com chúc bạn đọc truyện vui vẻ.</p>
+            {''.join(f'<p>{p}</p>' for p in LONG_PARAGRAPHS[:2])}
+          </div>
+        </body></html>
+        """
+        parser = DynamicConfigParser(
+            domain="example.com",
+            base_url="https://example.com",
+            selectors={"chapter_title": "h1.chap-heading", "chapter_content": "#chapter-body"},
+        )
+        res = parser.parse_chapter_content(dirty_ch_html)
+        joined = "\n".join(res["paragraphs"])
+        self.assertEqual(len(res["paragraphs"]), 2)
+        self.assertNotIn("Text rác ẩn", joined)
+        self.assertNotIn("Bạn đang đọc truyện tại", joined)
+
+    def test_assign_linear_chapter_numbers_volume_reset_desc_and_reuse(self):
+        from dynamic_parser import assign_linear_chapter_numbers
+
+        parser = DynamicConfigParser(domain="example.com", base_url="https://example.com", selectors={})
+        vol_chapters = [
+            {"chapter_number": 1, "title": "Q1 Ch 1", "source_url": "https://example.com/q1-1"},
+            {"chapter_number": 2, "title": "Q1 Ch 2", "source_url": "https://example.com/q1-2"},
+            {"chapter_number": 3, "title": "Q1 Ch 3", "source_url": "https://example.com/q1-3"},
+            {"chapter_number": 1, "title": "Q2 Ch 1", "source_url": "https://example.com/q2-1"},
+            {"chapter_number": 2, "title": "Q2 Ch 2", "source_url": "https://example.com/q2-2"},
+        ]
+        existing = {
+            1: {"source_url": "https://example.com/q1-1"},
+            2: {"source_url": "https://example.com/q1-2"},
+        }
+        linear = assign_linear_chapter_numbers(vol_chapters, existing, parser, order_mode="asc")
+        self.assertEqual([c["chapter_number"] for c in linear], [1, 2, 3, 4, 5])
+        self.assertEqual([c["source_chapter_number"] for c in linear], [1, 2, 3, 1, 2])
+
+        desc_chapters = [
+            {"chapter_number": 50, "title": "Ch 50", "source_url": "https://example.com/50"},
+            {"chapter_number": 49, "title": "Ch 49", "source_url": "https://example.com/49"},
+            {"chapter_number": 1, "title": "Ch 1", "source_url": "https://example.com/1"},
+        ]
+        auto_asc = assign_linear_chapter_numbers(desc_chapters, {}, parser, order_mode="auto")
+        self.assertEqual([c["title"] for c in auto_asc], ["Ch 1", "Ch 49", "Ch 50"])
+        self.assertEqual([c["chapter_number"] for c in auto_asc], [1, 2, 3])
+
 
 if __name__ == "__main__":
     unittest.main()
